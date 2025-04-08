@@ -38,6 +38,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250310001" />
+    <PackageReference Include="wpf-ui" Version="4.0.2" />
   </ItemGroup>
 
   <!--
