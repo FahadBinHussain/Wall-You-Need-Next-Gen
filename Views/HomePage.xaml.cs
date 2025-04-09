@@ -76,5 +76,11 @@ namespace Wall_You_Need_Next_Gen.Views
                 }
             };
         }
+        
+        private void LatestWallpapers_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            // Navigate to the Latest Wallpapers page
+            this.Frame.Navigate(typeof(LatestWallpapersPage));
+        }
     }
 } 

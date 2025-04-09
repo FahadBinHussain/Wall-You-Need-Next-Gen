@@ -15,7 +15,7 @@
                 <TextBlock Text="Home" Style="{StaticResource TitleTextBlockStyle}" Margin="0,24,0,0" />
 
                 <!-- Latest Wallpapers Section -->
-                <Grid>
+                <Grid Tapped="LatestWallpapers_Tapped">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
