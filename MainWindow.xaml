@@ -10,162 +10,176 @@
     Title="Wall-You-Need">
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="76" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         
-        <!-- App title and search bar -->
-        <Grid Grid.Column="1" Height="48" VerticalAlignment="Top" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+        <!-- Custom TitleBar -->
+        <Grid x:Name="CustomTitleBar" Grid.Row="0" Height="48" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
                 <Image Source="ms-appx:///Assets/logo.png" Width="24" Height="24" Margin="0,0,8,0" />
-                <TextBlock Text="backiee" VerticalAlignment="Center" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="Wall-You-Need" VerticalAlignment="Center" FontSize="14" Style="{StaticResource BodyTextBlockStyle}" />
             </StackPanel>
             
-            <AutoSuggestBox Grid.Column="1" PlaceholderText="Search..." 
-                            Margin="24,8" 
-                            HorizontalAlignment="Stretch" 
-                            QueryIcon="Find" />
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.4*" />
+                    <ColumnDefinition Width="0.6*" />
+                </Grid.ColumnDefinitions>
+                <AutoSuggestBox Grid.Column="1" PlaceholderText="Search..." 
+                                Margin="10,8" 
+                                Width="300"
+                                HorizontalAlignment="Left" 
+                                QueryIcon="Find" />
+            </Grid>
         </Grid>
         
-        <!-- Side Navigation -->
-        <NavigationView x:Name="NavView"
-                       Grid.Column="0"
-                       IsBackButtonVisible="Collapsed"
-                       IsPaneToggleButtonVisible="False"
-                       IsSettingsVisible="False"
-                       CompactPaneLength="76"
-                       OpenPaneLength="76"
-                       PaneDisplayMode="Left"
-                       Background="#F5F5F5"
-                       SelectionChanged="NavView_SelectionChanged"
-                       IsPaneOpen="True">
-            
-            <NavigationView.MenuItems>
-                <NavigationViewItem x:Name="HomeNavItem" Tag="Home" IsSelected="True">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/home.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="Home" />
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="CollectionsNavItem" Tag="Collections">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/collections.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="Collections" />
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="AIGeneratedNavItem" Tag="AIGenerated">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/aigenerated.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="AI generated" />
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="PersonalNavItem" Tag="Personal">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/personal.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="Personal" />
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="SlideshowNavItem" Tag="Slideshow">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/slideshow.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="Slideshow" />
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="InteractiveSlideshowNavItem" Tag="InteractiveSlideshow">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/interactive.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="Interactive slideshow" />
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="WidgetsNavItem" Tag="Widgets">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/widget.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="Widgets" />
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="UploadWallpaperNavItem" Tag="UploadWallpaper">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/upload.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="Upload wallpaper" />
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-            
-            <NavigationView.FooterMenuItems>
-                <NavigationViewItem x:Name="MyAccountNavItem" Tag="MyAccount">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/account.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="My account" />
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="SettingsNavItem" Tag="Settings">
-                    <NavigationViewItem.Icon>
-                        <IconSourceElement>
-                            <IconSourceElement.IconSource>
-                                <BitmapIconSource UriSource="ms-appx:///Assets/settings.png" ShowAsMonochrome="False" />
-                            </IconSourceElement.IconSource>
-                        </IconSourceElement>
-                    </NavigationViewItem.Icon>
-                    <TextBlock Text="Settings" />
-                </NavigationViewItem>
-            </NavigationView.FooterMenuItems>
-        </NavigationView>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="76" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
         
-        <!-- Content Frame -->
-        <Frame x:Name="ContentFrame" 
-               Grid.Column="1" 
-               Margin="0,48,0,0" 
-               Padding="0" 
-               Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+            <!-- Side Navigation -->
+            <NavigationView x:Name="NavView"
+                           Grid.Column="0"
+                           IsBackButtonVisible="Collapsed"
+                           IsPaneToggleButtonVisible="False"
+                           IsSettingsVisible="False"
+                           CompactPaneLength="76"
+                           OpenPaneLength="76"
+                           PaneDisplayMode="Left"
+                           Background="#F5F5F5"
+                           SelectionChanged="NavView_SelectionChanged"
+                           IsPaneOpen="True">
+                
+                <NavigationView.MenuItems>
+                    <NavigationViewItem x:Name="HomeNavItem" Tag="Home" IsSelected="True">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/home.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="Home" />
+                    </NavigationViewItem>
+                    
+                    <NavigationViewItem x:Name="CollectionsNavItem" Tag="Collections">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/collections.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="Collections" />
+                    </NavigationViewItem>
+                    
+                    <NavigationViewItem x:Name="AIGeneratedNavItem" Tag="AIGenerated">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/aigenerated.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="AI generated" />
+                    </NavigationViewItem>
+                    
+                    <NavigationViewItem x:Name="PersonalNavItem" Tag="Personal">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/personal.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="Personal" />
+                    </NavigationViewItem>
+                    
+                    <NavigationViewItem x:Name="SlideshowNavItem" Tag="Slideshow">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/slideshow.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="Slideshow" />
+                    </NavigationViewItem>
+                    
+                    <NavigationViewItem x:Name="InteractiveSlideshowNavItem" Tag="InteractiveSlideshow">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/interactive.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="Interactive slideshow" />
+                    </NavigationViewItem>
+                    
+                    <NavigationViewItem x:Name="WidgetsNavItem" Tag="Widgets">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/widget.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="Widgets" />
+                    </NavigationViewItem>
+                    
+                    <NavigationViewItem x:Name="UploadWallpaperNavItem" Tag="UploadWallpaper">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/upload.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="Upload wallpaper" />
+                    </NavigationViewItem>
+                </NavigationView.MenuItems>
+                
+                <NavigationView.FooterMenuItems>
+                    <NavigationViewItem x:Name="MyAccountNavItem" Tag="MyAccount">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/account.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="My account" />
+                    </NavigationViewItem>
+                    
+                    <NavigationViewItem x:Name="SettingsNavItem" Tag="Settings">
+                        <NavigationViewItem.Icon>
+                            <IconSourceElement>
+                                <IconSourceElement.IconSource>
+                                    <BitmapIconSource UriSource="ms-appx:///Assets/settings.png" ShowAsMonochrome="False" />
+                                </IconSourceElement.IconSource>
+                            </IconSourceElement>
+                        </NavigationViewItem.Icon>
+                        <TextBlock Text="Settings" />
+                    </NavigationViewItem>
+                </NavigationView.FooterMenuItems>
+            </NavigationView>
+            
+            <!-- Content Frame -->
+            <Frame x:Name="ContentFrame" 
+                   Grid.Column="1" 
+                   Padding="0" 
+                   Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+        </Grid>
     </Grid>
 </Window>
