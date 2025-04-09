@@ -71,6 +71,26 @@
                            SelectionChanged="NavView_SelectionChanged"
                            IsPaneOpen="True">
                 
+                <NavigationView.Resources>
+                    <!-- Customize icon size and layout -->
+                    <Style TargetType="NavigationViewItem">
+                        <Setter Property="Margin" Value="0,8,0,8"/>
+                        <Setter Property="MinHeight" Value="56"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    </Style>
+                    <Style TargetType="IconSourceElement">
+                        <Setter Property="Width" Value="32"/>
+                        <Setter Property="Height" Value="32"/>
+                    </Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="11"/>
+                        <Setter Property="TextAlignment" Value="Center"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="Margin" Value="0,4,0,0"/>
+                    </Style>
+                </NavigationView.Resources>
+                
                 <NavigationView.MenuItems>
                     <NavigationViewItem x:Name="HomeNavItem" Tag="Home" IsSelected="True">
                         <NavigationViewItem.Icon>
@@ -80,7 +100,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="Home" />
+                        <TextBlock Text="Home" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                     
                     <NavigationViewItem x:Name="CollectionsNavItem" Tag="Collections">
@@ -91,7 +111,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="Collections" />
+                        <TextBlock Text="Collections" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                     
                     <NavigationViewItem x:Name="AIGeneratedNavItem" Tag="AIGenerated">
@@ -102,7 +122,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="AI generated" />
+                        <TextBlock Text="AI generated" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                     
                     <NavigationViewItem x:Name="PersonalNavItem" Tag="Personal">
@@ -113,7 +133,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="Personal" />
+                        <TextBlock Text="Personal" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                     
                     <NavigationViewItem x:Name="SlideshowNavItem" Tag="Slideshow">
@@ -124,7 +144,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="Slideshow" />
+                        <TextBlock Text="Slideshow" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                     
                     <NavigationViewItem x:Name="InteractiveSlideshowNavItem" Tag="InteractiveSlideshow">
@@ -135,7 +155,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="Interactive slideshow" />
+                        <TextBlock Text="Interactive slideshow" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                     
                     <NavigationViewItem x:Name="WidgetsNavItem" Tag="Widgets">
@@ -146,7 +166,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="Widgets" />
+                        <TextBlock Text="Widgets" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                     
                     <NavigationViewItem x:Name="UploadWallpaperNavItem" Tag="UploadWallpaper">
@@ -157,7 +177,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="Upload wallpaper" />
+                        <TextBlock Text="Upload wallpaper" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                 </NavigationView.MenuItems>
                 
@@ -170,7 +190,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="My account" />
+                        <TextBlock Text="My account" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                     
                     <NavigationViewItem x:Name="SettingsNavItem" Tag="Settings">
@@ -181,7 +201,7 @@
                                 </IconSourceElement.IconSource>
                             </IconSourceElement>
                         </NavigationViewItem.Icon>
-                        <TextBlock Text="Settings" />
+                        <TextBlock Text="Settings" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                 </NavigationView.FooterMenuItems>
             </NavigationView>
