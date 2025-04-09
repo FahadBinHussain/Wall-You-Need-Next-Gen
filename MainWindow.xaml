@@ -35,9 +35,20 @@
                 </Grid.ColumnDefinitions>
                 <AutoSuggestBox Grid.Column="1" PlaceholderText="Search..." 
                                 Margin="10,8" 
-                                Width="300"
+                                Width="Auto"
+                                MinWidth="150"
+                                MaxWidth="300"
                                 HorizontalAlignment="Left" 
-                                QueryIcon="Find" />
+                                QueryIcon="Find">
+                    <AutoSuggestBox.CacheMode>
+                        <BitmapCache />
+                    </AutoSuggestBox.CacheMode>
+                    <AutoSuggestBox.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform />
+                        </TransformGroup>
+                    </AutoSuggestBox.RenderTransform>
+                </AutoSuggestBox>
             </Grid>
         </Grid>
         

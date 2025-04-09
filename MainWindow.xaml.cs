@@ -31,6 +31,10 @@ namespace Wall_You_Need_Next_Gen
     {
         private AppWindow m_appWindow;
         
+        // Add a flag to track if we're already handling a resize operation
+        private bool isHandlingResize = false;
+        private SizeInt32 lastAppliedSize;
+        
         public MainWindow()
         {
             this.InitializeComponent();
@@ -47,8 +51,30 @@ namespace Wall_You_Need_Next_Gen
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             m_appWindow = AppWindow.GetFromWindowId(windowId);
             
+            // Initialize the last applied size with default minimum values
+            lastAppliedSize = new SizeInt32(800, 600);
+            
+            // Set initial window size if needed - without triggering resize event
+            if (m_appWindow.Size.Width < 800 || m_appWindow.Size.Height < 600)
+            {
+                isHandlingResize = true;
+                try
+                {
+                    m_appWindow.Resize(new SizeInt32(
+                        Math.Max(m_appWindow.Size.Width, 800),
+                        Math.Max(m_appWindow.Size.Height, 600)));
+                }
+                finally
+                {
+                    isHandlingResize = false;
+                }
+            }
+            
             // Register for window closing event
             m_appWindow.Closing += AppWindow_Closing;
+            
+            // Register for window resizing event
+            m_appWindow.Changed += AppWindow_Changed;
             
             // Restore window position and size if available
             RestoreWindowPositionAndSize();
@@ -88,20 +114,125 @@ namespace Wall_You_Need_Next_Gen
             {
                 try
                 {
-                    // Restore position
-                    int posX = (int)localSettings.Values["WindowPositionX"];
-                    int posY = (int)localSettings.Values["WindowPositionY"];
-                    m_appWindow.Move(new PointInt32(posX, posY));
+                    // Temporarily disable resize handling during restoration
+                    isHandlingResize = true;
                     
-                    // Restore size
-                    int width = (int)localSettings.Values["WindowWidth"];
-                    int height = (int)localSettings.Values["WindowHeight"];
-                    m_appWindow.Resize(new SizeInt32(width, height));
+                    try
+                    {
+                        // Get display information to validate window position
+                        // For simplicity, we'll just ensure window is not positioned negatively
+                        
+                        // Restore position with validation
+                        int posX = (int)localSettings.Values["WindowPositionX"];
+                        int posY = (int)localSettings.Values["WindowPositionY"];
+                        
+                        // Ensure window is not positioned off-screen
+                        posX = Math.Max(posX, 0);
+                        posY = Math.Max(posY, 0);
+                        
+                        // Apply validated position
+                        m_appWindow.Move(new PointInt32(posX, posY));
+                        
+                        // Restore size with validation
+                        int width = (int)localSettings.Values["WindowWidth"];
+                        int height = (int)localSettings.Values["WindowHeight"];
+                        
+                        // Ensure window is not too small
+                        width = Math.Max(width, 800);
+                        height = Math.Max(height, 600);
+                        
+                        // Update last applied size
+                        lastAppliedSize = new SizeInt32(width, height);
+                        
+                        // Temporarily unsubscribe from resize events
+                        m_appWindow.Changed -= AppWindow_Changed;
+                        
+                        // Apply validated size
+                        m_appWindow.Resize(lastAppliedSize);
+                    }
+                    finally
+                    {
+                        // Resubscribe to resize events
+                        m_appWindow.Changed += AppWindow_Changed;
+                        isHandlingResize = false;
+                    }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // If something goes wrong, just use default size/position
+                    // If restoration fails, set to default size
+                    try
+                    {
+                        lastAppliedSize = new SizeInt32(1024, 768);
+                        m_appWindow.Changed -= AppWindow_Changed;
+                        m_appWindow.Resize(lastAppliedSize);
+                        m_appWindow.Changed += AppWindow_Changed;
+                    }
+                    catch
+                    {
+                        // Last resort - ignore if even this fails
+                    }
                 }
+            }
+            else
+            {
+                // No saved settings, use default size
+                try
+                {
+                    lastAppliedSize = new SizeInt32(1024, 768);
+                    m_appWindow.Changed -= AppWindow_Changed;
+                    m_appWindow.Resize(lastAppliedSize);
+                    m_appWindow.Changed += AppWindow_Changed;
+                }
+                catch
+                {
+                    // Ignore errors
+                }
+            }
+        }
+
+        // Add a handler for window resizing to enforce minimum size
+        private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+        {
+            try
+            {
+                // Only handle size changes and avoid reentrant calls
+                if (args.DidSizeChange && !isHandlingResize)
+                {
+                    // Get current size
+                    var currentSize = m_appWindow.Size;
+                    
+                    // Check if resize is needed
+                    int newWidth = Math.Max(currentSize.Width, 800);
+                    int newHeight = Math.Max(currentSize.Height, 600);
+                    bool needsResize = (newWidth != currentSize.Width || newHeight != currentSize.Height);
+                    
+                    // Check if we've already applied this exact size (prevents potential flickering)
+                    if (needsResize && (lastAppliedSize.Width != newWidth || lastAppliedSize.Height != newHeight))
+                    {
+                        // Set flag to prevent reentrancy
+                        isHandlingResize = true;
+                        
+                        // Remember this size to avoid duplicate operations
+                        lastAppliedSize = new SizeInt32(newWidth, newHeight);
+                        
+                        // Apply the new size immediately without event handling
+                        try
+                        {
+                            m_appWindow.Changed -= AppWindow_Changed;
+                            m_appWindow.Resize(lastAppliedSize);
+                        }
+                        finally
+                        {
+                            m_appWindow.Changed += AppWindow_Changed;
+                            isHandlingResize = false;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Catch any exceptions during resize to prevent app crashing
+                isHandlingResize = false;
             }
         }
 

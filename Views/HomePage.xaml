@@ -10,8 +10,8 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <ScrollViewer>
-            <StackPanel Margin="24,0,24,24" Spacing="24">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="24,0,24,24" Spacing="24" MinWidth="500">
                 <TextBlock Text="Home" Style="{StaticResource TitleTextBlockStyle}" Margin="0,24,0,0" />
 
                 <!-- Latest Wallpapers Section -->
@@ -95,10 +95,11 @@
                     <!-- Wallpaper Cards Grid -->
                     <ItemsRepeater x:Name="DailyWallpapersRepeater" Margin="0,12,0,0">
                         <ItemsRepeater.Layout>
-                            <UniformGridLayout MinItemWidth="320" 
+                            <UniformGridLayout MinItemWidth="250" 
                                               MinItemHeight="200"
                                               MinRowSpacing="16" 
-                                              MinColumnSpacing="16" />
+                                              MinColumnSpacing="16"
+                                              MaximumRowsOrColumns="2" />
                         </ItemsRepeater.Layout>
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate>
