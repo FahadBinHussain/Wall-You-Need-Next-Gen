@@ -46,10 +46,8 @@ namespace Wall_You_Need_Next_Gen.Views
         
         private async void LatestWallpapersPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // Show loading indicators
-            StatusTextBlock.Text = "Preparing to load wallpapers...";
-            StatusTextBlock.Visibility = Visibility.Visible;
-            LoadingProgressRing.Visibility = Visibility.Visible;
+            // Show loading indicator
+            LoadingProgressBar.Visibility = Visibility.Visible;
             
             // Initialize the GridView with wallpapers collection
             WallpapersGridView.ItemsSource = _wallpapers;
@@ -59,16 +57,11 @@ namespace Wall_You_Need_Next_Gen.Views
             _hasMoreItems = true;
             _wallpapers.Clear();
             
-            // Short delay to show the initial loading message
-            await Task.Delay(800);
-            
             // Load first page of wallpapers
             await LoadMoreWallpapers();
             
-            // Hide initial loading indicators
-            LoadingProgressRing.Visibility = Visibility.Collapsed;
-            
-            // Status text will be handled by the LoadMoreWallpapers method
+            // Hide loading indicator after first batch is loaded
+            LoadingProgressBar.Visibility = Visibility.Collapsed;
         }
         
         private void LatestWallpapersPage_Unloaded(object sender, RoutedEventArgs e)
@@ -93,16 +86,10 @@ namespace Wall_You_Need_Next_Gen.Views
             {
                 _isLoading = true;
                 
-                // Show bottom loading indicator for subsequent page loads
+                // Show loading indicator for subsequent page loads
                 if (_currentPage > 0)
                 {
-                    // Since we're having issues with direct reference, use basic approach
-                    var textBlock = BottomLoadingIndicator.Children.OfType<TextBlock>().FirstOrDefault();
-                    if (textBlock != null)
-                    {
-                        textBlock.Text = $"Loading batch {_currentPage + 1} of {_maxPages} (30 wallpapers)...";
-                    }
-                    BottomLoadingIndicator.Visibility = Visibility.Visible;
+                    LoadingProgressBar.Visibility = Visibility.Visible;
                 }
                 
                 // Increment the page counter
@@ -148,56 +135,18 @@ namespace Wall_You_Need_Next_Gen.Views
                     await Task.Delay(100);
                 }
                 
-                // Show a status message about the batch that was just loaded
-                StatusTextBlock.Text = $"Batch {_currentPage} loaded successfully (30 wallpapers)";
-                if (_currentPage == 1)
-                {
-                    StatusTextBlock.Text += " - Scroll down for more";
-                }
-                else if (_currentPage == 2)
-                {
-                    StatusTextBlock.Text += " - One more batch available";
-                }
-                else if (_currentPage == 3)
-                {
-                    StatusTextBlock.Text += " - All batches loaded";
-                }
-                StatusTextBlock.Visibility = Visibility.Visible;
-                
-                // Hide status message after 3 seconds
-                _dispatcherQueue.TryEnqueue(async () =>
-                {
-                    await Task.Delay(3000);
-                    if (StatusTextBlock.Text.StartsWith("Batch"))
-                    {
-                        StatusTextBlock.Visibility = Visibility.Collapsed;
-                    }
-                });
-                
                 // Stop after exactly 3 pages (30 + 30 + 30 = 90 total wallpapers)
                 if (_currentPage >= _maxPages)
                 {
                     _hasMoreItems = false;
-                    
-                    // Show a completion message when all batches are loaded
-                    _dispatcherQueue.TryEnqueue(async () =>
-                    {
-                        await Task.Delay(3500); // Wait until the batch message is gone
-                        StatusTextBlock.Text = "✓ All 3 batches loaded successfully (90 wallpapers total)";
-                        StatusTextBlock.Visibility = Visibility.Visible;
-                        
-                        // Hide the completion message after 4 seconds
-                        await Task.Delay(4000);
-                        StatusTextBlock.Visibility = Visibility.Collapsed;
-                    });
                 }
             }
             finally
             {
                 _isLoading = false;
                 
-                // Hide bottom loading indicator
-                BottomLoadingIndicator.Visibility = Visibility.Collapsed;
+                // Hide loading indicator
+                LoadingProgressBar.Visibility = Visibility.Collapsed;
             }
         }
         
@@ -237,45 +186,21 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             if (e.ClickedItem is WallpaperItem wallpaper)
             {
-                // Show a simple message for now
-                StatusTextBlock.Text = $"Selected wallpaper: ID {wallpaper.Id}";
-                StatusTextBlock.Visibility = Visibility.Visible;
-                
-                // Hide status after 3 seconds
-                _dispatcherQueue.TryEnqueue(async () =>
-                {
-                    await Task.Delay(3000);
-                    StatusTextBlock.Visibility = Visibility.Collapsed;
-                });
+                // Show a simple message - without using text display, just log to debug
+                System.Diagnostics.Debug.WriteLine($"Selected wallpaper: ID {wallpaper.Id}");
             }
         }
         
         private void FilterButton_Click(object sender, RoutedEventArgs e)
         {
-            // Show a simple message for now
-            StatusTextBlock.Text = "Filter button clicked";
-            StatusTextBlock.Visibility = Visibility.Visible;
-            
-            // Hide status after 3 seconds
-            _dispatcherQueue.TryEnqueue(async () =>
-            {
-                await Task.Delay(3000);
-                StatusTextBlock.Visibility = Visibility.Collapsed;
-            });
+            // Just log to debug
+            System.Diagnostics.Debug.WriteLine("Filter button clicked");
         }
         
         private void SetAsSlideshowButton_Click(object sender, RoutedEventArgs e)
         {
-            // Show a simple message for now
-            StatusTextBlock.Text = "Set as slideshow button clicked";
-            StatusTextBlock.Visibility = Visibility.Visible;
-            
-            // Hide status after 3 seconds
-            _dispatcherQueue.TryEnqueue(async () =>
-            {
-                await Task.Delay(3000);
-                StatusTextBlock.Visibility = Visibility.Collapsed;
-            });
+            // Just log to debug
+            System.Diagnostics.Debug.WriteLine("Set as slideshow button clicked");
         }
         
         private void WallpapersWrapGrid_SizeChanged(object sender, SizeChangedEventArgs e)

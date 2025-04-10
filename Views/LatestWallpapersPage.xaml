@@ -13,6 +13,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -54,110 +55,77 @@
             </StackPanel>
         </Grid>
 
-        <!-- Status indicator -->
-        <TextBlock x:Name="StatusTextBlock" 
-                   Grid.Row="1" 
-                   Text="Loading wallpapers..." 
-                   Visibility="Collapsed"
-                   HorizontalAlignment="Center" 
-                   VerticalAlignment="Center"
-                   Style="{StaticResource SubtitleTextBlockStyle}"/>
-
-        <!-- Loading spinner -->
-        <ProgressRing x:Name="LoadingProgressRing" 
-                     Grid.Row="1"
-                     IsActive="True" 
-                     Width="50" 
-                     Height="50"
-                     Visibility="Collapsed"
-                     HorizontalAlignment="Center" 
-                     VerticalAlignment="Center" 
-                     Margin="0,40,0,0"/>
+        <!-- Modern horizontal loading progress bar -->
+        <ProgressBar x:Name="LoadingProgressBar"
+                    Grid.Row="1"
+                    IsIndeterminate="True"
+                    Height="3"
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Stretch"
+                    Visibility="Collapsed"
+                    Foreground="#B25000"/>
 
         <!-- Wallpaper grid with adaptive layout -->
         <ScrollViewer x:Name="MainScrollViewer" 
-                      Grid.Row="1" 
+                      Grid.Row="2" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
                       ViewChanged="MainScrollViewer_ViewChanged"
                       Padding="0"
                       Margin="0">
             
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+            <GridView x:Name="WallpapersGridView"
+                     Margin="12,8,12,12"
+                     SelectionMode="None"
+                     IsItemClickEnabled="True"
+                     ItemClick="WallpapersGridView_ItemClick"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch"
+                     ContainerContentChanging="WallpapersGridView_ContainerContentChanging">
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="Margin" Value="4"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Width" Value="Auto"/>
+                        <Setter Property="Height" Value="Auto"/>
+                    </Style>
+                </GridView.ItemContainerStyle>
                 
-                <GridView x:Name="WallpapersGridView"
-                          Grid.Row="0"
-                          Margin="12,8,12,12"
-                          SelectionMode="None"
-                          IsItemClickEnabled="True"
-                          ItemClick="WallpapersGridView_ItemClick"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          ContainerContentChanging="WallpapersGridView_ContainerContentChanging">
-                    <GridView.ItemContainerStyle>
-                        <Style TargetType="GridViewItem">
-                            <Setter Property="Margin" Value="4"/>
-                            <Setter Property="Padding" Value="0"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-                            <Setter Property="Width" Value="Auto"/>
-                            <Setter Property="Height" Value="Auto"/>
-                        </Style>
-                    </GridView.ItemContainerStyle>
-                    
-                    <GridView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <ItemsWrapGrid x:Name="WallpapersWrapGrid"
-                                         Orientation="Horizontal"
-                                         HorizontalAlignment="Stretch"
-                                         ItemWidth="NaN"
-                                         ItemHeight="NaN"
-                                         SizeChanged="WallpapersWrapGrid_SizeChanged"
-                                         MaximumRowsOrColumns="6"/>
-                        </ItemsPanelTemplate>
-                    </GridView.ItemsPanel>
-                    
-                    <GridView.ItemTemplate>
-                        <DataTemplate x:DataType="local:WallpaperItem">
-                            <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                  CornerRadius="4"
-                                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                  BorderThickness="0.5"
-                                  Margin="1"
-                                  HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Stretch">
-                                <!-- Wallpaper Image Container -->
-                                <Image x:Name="ItemImage"
-                                       Source="{x:Bind ImageSource}"
-                                       Stretch="UniformToFill"
-                                       CacheMode="BitmapCache"
-                                       HorizontalAlignment="Stretch"
-                                       VerticalAlignment="Stretch"/>
-                            </Grid>
-                        </DataTemplate>
-                    </GridView.ItemTemplate>
-                </GridView>
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid x:Name="WallpapersWrapGrid"
+                                     Orientation="Horizontal"
+                                     HorizontalAlignment="Stretch"
+                                     ItemWidth="NaN"
+                                     ItemHeight="NaN"
+                                     SizeChanged="WallpapersWrapGrid_SizeChanged"
+                                     MaximumRowsOrColumns="6"/>
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
                 
-                <!-- Bottom loading indicator for infinite scroll -->
-                <StackPanel x:Name="BottomLoadingIndicator" 
-                           Grid.Row="1"
-                           Orientation="Horizontal" 
-                           HorizontalAlignment="Center"
-                           Visibility="Collapsed"
-                           Margin="0,0,0,20">
-                    <ProgressRing IsActive="True" 
-                                 Width="20" 
-                                 Height="20"
-                                 Margin="0,0,8,0"/>
-                    <TextBlock x:Name="BottomLoadingText"
-                              Text="Loading more wallpapers..." 
-                              VerticalAlignment="Center"/>
-                </StackPanel>
-            </Grid>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="local:WallpaperItem">
+                        <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                              CornerRadius="4"
+                              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                              BorderThickness="0.5"
+                              Margin="1"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch">
+                            <!-- Wallpaper Image Container -->
+                            <Image x:Name="ItemImage"
+                                   Source="{x:Bind ImageSource}"
+                                   Stretch="UniformToFill"
+                                   CacheMode="BitmapCache"
+                                   HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Stretch"/>
+                        </Grid>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
         </ScrollViewer>
     </Grid>
 </Page> 
