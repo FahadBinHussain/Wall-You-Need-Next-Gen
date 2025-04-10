@@ -78,16 +78,19 @@
                       Grid.Row="1" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
-                      ViewChanged="MainScrollViewer_ViewChanged">
+                      ViewChanged="MainScrollViewer_ViewChanged"
+                      Padding="0">
             
             <GridView x:Name="WallpapersGridView"
-                      Margin="24,0,24,24"
+                      Margin="8,0,8,8"
                       SelectionMode="None"
                       IsItemClickEnabled="True"
-                      ItemClick="WallpapersGridView_ItemClick">
+                      ItemClick="WallpapersGridView_ItemClick"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
                 <GridView.ItemContainerStyle>
                     <Style TargetType="GridViewItem">
-                        <Setter Property="Margin" Value="6"/>
+                        <Setter Property="Margin" Value="2"/>
                         <Setter Property="Padding" Value="0"/>
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
@@ -110,10 +113,12 @@
                 <GridView.ItemTemplate>
                     <DataTemplate>
                         <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                              CornerRadius="8"
+                              CornerRadius="6"
                               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                               BorderThickness="1"
-                              MaxWidth="350">
+                              MaxWidth="600"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
@@ -123,11 +128,11 @@
                             <Image Grid.Row="0"
                                    Source="{Binding ImageSource}"
                                    Stretch="UniformToFill"
-                                   Height="200"
+                                   Height="180"
                                    CacheMode="BitmapCache"/>
                             
                             <!-- Overlay with info -->
-                            <Grid Grid.Row="1" Padding="12,8">
+                            <Grid Grid.Row="1" Padding="8,6">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>

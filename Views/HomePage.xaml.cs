@@ -94,18 +94,28 @@ namespace Wall_You_Need_Next_Gen.Views
                 double availableWidth = e.NewSize.Width;
                 
                 // Determine desired item width (considering margins)
-                double desiredItemWidth = 300;  // Base item width
-                double itemMargin = 12;         // Total margin (left + right)
+                double desiredItemWidth = 280;  // Base item width
+                double itemMargin = 4;          // Total margin between items
                 
                 // Calculate how many items can fit in the available width
                 int columnsCount = Math.Max(1, (int)(availableWidth / (desiredItemWidth + itemMargin)));
+                
+                // Ensure we have a reasonable column count
+                columnsCount = Math.Min(columnsCount, 6);  // Limit to maximum 6 columns
                 
                 // Set the maximum columns
                 wrapGrid.MaximumRowsOrColumns = columnsCount;
                 
                 // Calculate the new item width to fill the available space evenly
-                double newItemWidth = (availableWidth - (columnsCount * itemMargin)) / columnsCount;
-                wrapGrid.ItemWidth = Math.Max(200, newItemWidth);  // Ensure minimum width of 200
+                // Accounting for margins between items
+                double totalMarginWidth = (columnsCount - 1) * itemMargin;
+                double newItemWidth = (availableWidth - totalMarginWidth) / columnsCount;
+                
+                // Set item width with a minimum threshold
+                wrapGrid.ItemWidth = Math.Max(180, newItemWidth);
+                
+                // Ensure alignment stretches to use all available space
+                wrapGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
             }
         }
     }

@@ -11,7 +11,7 @@
 
     <Grid>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="24,0,24,24" Spacing="24">
+            <StackPanel Margin="8,0,8,8" Spacing="16">
                 <TextBlock Text="Home" Style="{StaticResource TitleTextBlockStyle}" Margin="0,24,0,0" />
 
                 <!-- Latest Wallpapers Section -->
@@ -90,10 +90,10 @@
                     </Grid>
 
                     <!-- Wallpaper Cards Grid -->
-                    <GridView x:Name="DailyWallpapersGridView" Margin="0,12,0,0">
+                    <GridView x:Name="DailyWallpapersGridView" Margin="0,8,0,0">
                         <GridView.ItemContainerStyle>
                             <Style TargetType="GridViewItem">
-                                <Setter Property="Margin" Value="6"/>
+                                <Setter Property="Margin" Value="2"/>
                                 <Setter Property="Padding" Value="0"/>
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                 <Setter Property="VerticalContentAlignment" Value="Stretch"/>
@@ -115,7 +115,7 @@
                         
                         <GridView.ItemTemplate>
                             <DataTemplate>
-                                <local:WallpaperCard MaxWidth="350" />
+                                <local:WallpaperCard MaxWidth="600" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                             </DataTemplate>
                         </GridView.ItemTemplate>
                     </GridView>
