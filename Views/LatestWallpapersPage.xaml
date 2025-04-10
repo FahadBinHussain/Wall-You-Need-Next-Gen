@@ -13,8 +13,8 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Top bar with title and buttons -->
@@ -55,20 +55,9 @@
             </StackPanel>
         </Grid>
 
-        <!-- Modern horizontal loading progress bar -->
-        <ProgressBar x:Name="LoadingProgressBar"
-                    Grid.Row="1"
-                    IsIndeterminate="True"
-                    Height="3"
-                    Margin="0,0,0,0"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Stretch"
-                    Visibility="Collapsed"
-                    Foreground="#B25000"/>
-
         <!-- Wallpaper grid with adaptive layout -->
         <ScrollViewer x:Name="MainScrollViewer" 
-                      Grid.Row="2" 
+                      Grid.Row="1" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
                       ViewChanged="MainScrollViewer_ViewChanged"
@@ -127,5 +116,18 @@
                 </GridView.ItemTemplate>
             </GridView>
         </ScrollViewer>
+        
+        <!-- Orange determinate loading progress bar at bottom -->
+        <ProgressBar x:Name="LoadingProgressBar"
+                    Grid.Row="2"
+                    IsIndeterminate="False"
+                    Value="0"
+                    Maximum="100"
+                    Height="3"
+                    Margin="0"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Stretch"
+                    Visibility="Collapsed"
+                    Foreground="Orange"/>
     </Grid>
 </Page> 

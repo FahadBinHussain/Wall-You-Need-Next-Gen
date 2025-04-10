@@ -46,7 +46,8 @@ namespace Wall_You_Need_Next_Gen.Views
         
         private async void LatestWallpapersPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // Show loading indicator
+            // Show loading indicator with 0 progress
+            LoadingProgressBar.Value = 0;
             LoadingProgressBar.Visibility = Visibility.Visible;
             
             // Initialize the GridView with wallpapers collection
@@ -89,6 +90,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Show loading indicator for subsequent page loads
                 if (_currentPage > 0)
                 {
+                    LoadingProgressBar.Value = 0;
                     LoadingProgressBar.Visibility = Visibility.Visible;
                 }
                 
@@ -99,8 +101,13 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Here we'll simulate loading with placeholder images
                 int startIndex = (_currentPage - 1) * _itemsPerPage;
                 
+                // Simulate initial loading delay
+                await Task.Delay(500);
+                LoadingProgressBar.Value = 10; // Show initial progress
+                
                 // Simulate network delay - but just once per batch instead of per item
-                await Task.Delay(1500);
+                await Task.Delay(1000);
+                LoadingProgressBar.Value = 30; // Show more progress
                 
                 // Create batch of wallpapers first
                 List<WallpaperItem> newWallpapers = new List<WallpaperItem>(_itemsPerPage);
@@ -119,7 +126,15 @@ namespace Wall_You_Need_Next_Gen.Views
                     };
                     
                     newWallpapers.Add(wallpaper);
+                    
+                    // Update progress bar value based on preparation progress
+                    if (i % 5 == 0)
+                    {
+                        LoadingProgressBar.Value = 30 + (i * 20.0 / _itemsPerPage);
+                    }
                 }
+                
+                LoadingProgressBar.Value = 50; // Items prepared
                 
                 // Add all wallpapers in small batches to keep UI responsive
                 const int batchSize = 6; // Load 6 at a time for smoother UI updates
@@ -131,15 +146,25 @@ namespace Wall_You_Need_Next_Gen.Views
                         _wallpapers.Add(newWallpapers[i + j]);
                     }
                     
+                    // Update progress as we add items to the UI
+                    double progress = 50 + (i * 50.0 / newWallpapers.Count);
+                    LoadingProgressBar.Value = progress;
+                    
                     // Small delay between batches for smoother loading appearance
                     await Task.Delay(100);
                 }
+                
+                // Set progress to 100% when complete
+                LoadingProgressBar.Value = 100;
                 
                 // Stop after exactly 3 pages (30 + 30 + 30 = 90 total wallpapers)
                 if (_currentPage >= _maxPages)
                 {
                     _hasMoreItems = false;
                 }
+                
+                // Keep progress bar visible briefly to show completion
+                await Task.Delay(300);
             }
             finally
             {
