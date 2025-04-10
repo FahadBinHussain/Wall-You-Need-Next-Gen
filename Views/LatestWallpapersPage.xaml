@@ -121,41 +121,12 @@
                               Margin="1"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
                             <!-- Wallpaper Image Container -->
-                            <Grid Grid.Row="0">
-                                <Image Source="{Binding ImageSource}"
-                                       Stretch="UniformToFill"
-                                       CacheMode="BitmapCache"
-                                       HorizontalAlignment="Stretch"
-                                       VerticalAlignment="Stretch"/>
-                            </Grid>
-                            
-                            <!-- Overlay with info -->
-                            <Grid Grid.Row="1" Padding="6,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <!-- Resolution Label -->
-                                <TextBlock Grid.Column="0" 
-                                           Text="{Binding Resolution}"
-                                           Style="{StaticResource CaptionTextBlockStyle}"
-                                           VerticalAlignment="Center"/>
-                                
-                                <!-- Download Button -->
-                                <Button Grid.Column="1"
-                                        Style="{StaticResource AccentButtonStyle}"
-                                        FontSize="12"
-                                        Padding="8,4"
-                                        Content="Download"
-                                        Command="{Binding DownloadCommand}"/>
-                            </Grid>
+                            <Image Source="{Binding ImageSource}"
+                                   Stretch="UniformToFill"
+                                   CacheMode="BitmapCache"
+                                   HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Stretch"/>
                         </Grid>
                     </DataTemplate>
                 </GridView.ItemTemplate>

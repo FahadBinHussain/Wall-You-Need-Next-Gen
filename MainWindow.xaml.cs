@@ -239,9 +239,6 @@ namespace Wall_You_Need_Next_Gen
                     case "Home":
                         ContentFrame.Navigate(typeof(HomePage));
                         break;
-                    case "LatestWallpapers":
-                        ContentFrame.Navigate(typeof(LatestWallpapersPage));
-                        break;
                     case "Collections":
                     case "AIGenerated":
                     case "Personal":

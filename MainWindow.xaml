@@ -103,17 +103,6 @@
                         <TextBlock Text="Home" HorizontalAlignment="Center" />
                     </NavigationViewItem>
                     
-                    <NavigationViewItem x:Name="LatestWallpapersNavItem" Tag="LatestWallpapers">
-                        <NavigationViewItem.Icon>
-                            <IconSourceElement>
-                                <IconSourceElement.IconSource>
-                                    <BitmapIconSource UriSource="ms-appx:///Assets/home.png" ShowAsMonochrome="False" />
-                                </IconSourceElement.IconSource>
-                            </IconSourceElement>
-                        </NavigationViewItem.Icon>
-                        <TextBlock Text="Latest Wallpapers" HorizontalAlignment="Center" />
-                    </NavigationViewItem>
-                    
                     <NavigationViewItem x:Name="CollectionsNavItem" Tag="Collections">
                         <NavigationViewItem.Icon>
                             <IconSourceElement>

@@ -172,9 +172,9 @@ namespace Wall_You_Need_Next_Gen.Views
                 double aspectRatio = 16.0 / 9.0;
                 double finalHeight = finalWidth / aspectRatio;
                 
-                // Set item dimensions - reduce the extra height for info panel
+                // Set item dimensions - use only the image height since we removed the info panel
                 wrapGrid.ItemWidth = finalWidth;
-                wrapGrid.ItemHeight = finalHeight + 40; // Reduced extra space for the info panel
+                wrapGrid.ItemHeight = finalHeight;
                 
                 // Make sure the grid fills all available space
                 wrapGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
