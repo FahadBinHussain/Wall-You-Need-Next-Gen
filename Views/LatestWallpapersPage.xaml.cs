@@ -27,7 +27,7 @@ namespace Wall_You_Need_Next_Gen.Views
         private int _itemsPerPage = 30; // Exactly 30 items per page as requested
         private bool _hasMoreItems = true;
         private double _loadMoreThreshold = 0.8; // 80% of the scroll viewer height
-        private int _maxPages = 3; // Load exactly 3 pages (30 + 30 + 30 = 90 total)
+        // No max pages limit - truly infinite scrolling
         
         public LatestWallpapersPage()
         {
@@ -101,18 +101,13 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Here we'll simulate loading with placeholder images
                 int startIndex = (_currentPage - 1) * _itemsPerPage;
                 
-                // Simulate initial loading delay
-                await Task.Delay(500);
-                LoadingProgressBar.Value = 10; // Show initial progress
+                // Ultra-fast loading - no artificial delays
+                LoadingProgressBar.Value = 30;
                 
-                // Simulate network delay - but just once per batch instead of per item
-                await Task.Delay(1000);
-                LoadingProgressBar.Value = 30; // Show more progress
-                
-                // Create batch of wallpapers first
+                // Create all wallpaper items at once for maximum speed
                 List<WallpaperItem> newWallpapers = new List<WallpaperItem>(_itemsPerPage);
                 
-                // Prepare all wallpaper items (without adding to collection yet)
+                // Create all items at once
                 for (int i = 0; i < _itemsPerPage; i++)
                 {
                     int itemId = startIndex + i;
@@ -126,45 +121,21 @@ namespace Wall_You_Need_Next_Gen.Views
                     };
                     
                     newWallpapers.Add(wallpaper);
-                    
-                    // Update progress bar value based on preparation progress
-                    if (i % 5 == 0)
-                    {
-                        LoadingProgressBar.Value = 30 + (i * 20.0 / _itemsPerPage);
-                    }
                 }
                 
-                LoadingProgressBar.Value = 50; // Items prepared
+                LoadingProgressBar.Value = 70;
                 
-                // Add all wallpapers in small batches to keep UI responsive
-                const int batchSize = 6; // Load 6 at a time for smoother UI updates
-                for (int i = 0; i < newWallpapers.Count; i += batchSize)
+                // Add all items at once for maximum speed
+                foreach (var wallpaper in newWallpapers)
                 {
-                    // Add a batch of items
-                    for (int j = 0; j < batchSize && i + j < newWallpapers.Count; j++)
-                    {
-                        _wallpapers.Add(newWallpapers[i + j]);
-                    }
-                    
-                    // Update progress as we add items to the UI
-                    double progress = 50 + (i * 50.0 / newWallpapers.Count);
-                    LoadingProgressBar.Value = progress;
-                    
-                    // Small delay between batches for smoother loading appearance
-                    await Task.Delay(100);
+                    _wallpapers.Add(wallpaper);
                 }
                 
                 // Set progress to 100% when complete
                 LoadingProgressBar.Value = 100;
                 
-                // Stop after exactly 3 pages (30 + 30 + 30 = 90 total wallpapers)
-                if (_currentPage >= _maxPages)
-                {
-                    _hasMoreItems = false;
-                }
-                
-                // Keep progress bar visible briefly to show completion
-                await Task.Delay(300);
+                // No limit on number of pages - truly infinite scrolling
+                // Keep _hasMoreItems true to allow loading more pages indefinitely
             }
             finally
             {
@@ -185,24 +156,27 @@ namespace Wall_You_Need_Next_Gen.Views
         
         private async void MainScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
-            // If it's not a direct manipulation (such as a programmatic scroll), ignore
-            if (!e.IsIntermediate) 
-                return;
-            
             // Check if we need to load more items
             if (sender is ScrollViewer scrollViewer)
             {
-                // Check if we're near the bottom
+                // Check if we're approaching the bottom
                 double verticalOffset = scrollViewer.VerticalOffset;
                 double maxVerticalOffset = scrollViewer.ScrollableHeight;
                 
-                // If we've scrolled past the threshold and not loading, load more
+                // Load more items when we're 70% through the current content (more aggressive loading)
+                // This ensures the user never reaches the bottom during normal scrolling
                 if (maxVerticalOffset > 0 &&
-                    verticalOffset >= maxVerticalOffset * _loadMoreThreshold &&
-                    !_isLoading && 
-                    _hasMoreItems)
+                    verticalOffset >= maxVerticalOffset * 0.7 &&
+                    !_isLoading)
                 {
                     await LoadMoreWallpapers();
+                    
+                    // Immediately trigger another load if we're still near the bottom
+                    // This helps ensure continuous content availability for fast scrollers
+                    if (scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight * 0.85 && !_isLoading)
+                    {
+                        await LoadMoreWallpapers();
+                    }
                 }
             }
         }
