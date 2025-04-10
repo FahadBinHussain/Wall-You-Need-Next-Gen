@@ -82,7 +82,7 @@
                       Padding="0">
             
             <GridView x:Name="WallpapersGridView"
-                      Margin="8,0,8,8"
+                      Margin="2,0,2,4"
                       SelectionMode="None"
                       IsItemClickEnabled="True"
                       ItemClick="WallpapersGridView_ItemClick"
@@ -117,7 +117,6 @@
                               CornerRadius="6"
                               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                               BorderThickness="1"
-                              MaxWidth="600"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch">
                             <Grid.RowDefinitions>
@@ -128,11 +127,11 @@
                             <!-- Wallpaper Image Container -->
                             <Grid Grid.Row="0">
                                 <Image Source="{Binding ImageSource}"
-                                       Stretch="Uniform"
+                                       Stretch="UniformToFill"
                                        CacheMode="BitmapCache"
-                                       HorizontalAlignment="Center"
+                                       HorizontalAlignment="Stretch"
                                        VerticalAlignment="Center"
-                                       MaxHeight="180"/>
+                                       MaxHeight="220"/>
                             </Grid>
                             
                             <!-- Overlay with info -->
