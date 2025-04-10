@@ -155,7 +155,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Calculate how many items can fit in the available width
                 int columnsCount = Math.Max(1, (int)(availableWidth / (desiredItemWidth + itemMargin)));
                 
-                // Ensure we have a reasonable column count
+                // Ensure we have a reasonable column count based on screen size
                 columnsCount = Math.Min(columnsCount, 6);  // Limit to maximum 6 columns
                 
                 // Set the maximum columns
@@ -166,8 +166,16 @@ namespace Wall_You_Need_Next_Gen.Views
                 double totalMarginWidth = (columnsCount - 1) * itemMargin;
                 double newItemWidth = (availableWidth - totalMarginWidth) / columnsCount;
                 
-                // Set item width with a minimum threshold
-                wrapGrid.ItemWidth = Math.Max(180, newItemWidth);
+                // Ensure the width is not too small to maintain quality
+                double finalWidth = Math.Max(180, newItemWidth);
+                
+                // Calculate proportional height based on typical wallpaper aspect ratio (16:9)
+                double aspectRatio = 16.0 / 9.0;
+                double finalHeight = finalWidth / aspectRatio;
+                
+                // Set item dimensions
+                wrapGrid.ItemWidth = finalWidth;
+                wrapGrid.ItemHeight = finalHeight + 50; // Add extra space for the info panel at bottom
                 
                 // Ensure alignment stretches to use all available space
                 wrapGrid.HorizontalAlignment = HorizontalAlignment.Stretch;

@@ -108,14 +108,18 @@
                                              Orientation="Horizontal"
                                              HorizontalAlignment="Stretch"
                                              ItemWidth="NaN"
-                                             ItemHeight="NaN"
-                                             SizeChanged="DailyWallpapersWrapGrid_SizeChanged"/>
+                                             ItemHeight="NaN" 
+                                             SizeChanged="DailyWallpapersWrapGrid_SizeChanged"
+                                             MaximumRowsOrColumns="6"/>
                             </ItemsPanelTemplate>
                         </GridView.ItemsPanel>
                         
                         <GridView.ItemTemplate>
                             <DataTemplate>
-                                <local:WallpaperCard MaxWidth="600" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                <local:WallpaperCard HorizontalAlignment="Stretch" 
+                                                    VerticalAlignment="Stretch"
+                                                    Width="Auto"
+                                                    Height="Auto" />
                             </DataTemplate>
                         </GridView.ItemTemplate>
                     </GridView>

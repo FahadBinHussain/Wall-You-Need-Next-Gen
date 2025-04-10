@@ -106,7 +106,8 @@
                                      HorizontalAlignment="Stretch"
                                      ItemWidth="NaN"
                                      ItemHeight="NaN"
-                                     SizeChanged="WallpapersWrapGrid_SizeChanged"/>
+                                     SizeChanged="WallpapersWrapGrid_SizeChanged"
+                                     MaximumRowsOrColumns="6"/>
                     </ItemsPanelTemplate>
                 </GridView.ItemsPanel>
                 
@@ -125,11 +126,14 @@
                             </Grid.RowDefinitions>
                             
                             <!-- Wallpaper Image Container -->
-                            <Image Grid.Row="0"
-                                   Source="{Binding ImageSource}"
-                                   Stretch="UniformToFill"
-                                   Height="180"
-                                   CacheMode="BitmapCache"/>
+                            <Grid Grid.Row="0">
+                                <Image Source="{Binding ImageSource}"
+                                       Stretch="Uniform"
+                                       CacheMode="BitmapCache"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       MaxHeight="180"/>
+                            </Grid>
                             
                             <!-- Overlay with info -->
                             <Grid Grid.Row="1" Padding="8,6">

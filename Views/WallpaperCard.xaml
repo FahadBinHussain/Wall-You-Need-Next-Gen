@@ -23,12 +23,14 @@
         </Grid.RowDefinitions>
         
         <!-- Wallpaper Image Container -->
-        <Image x:Name="WallpaperImage"
-               Grid.Row="0"
-               Stretch="UniformToFill"
-               MinHeight="120"
-               MaxHeight="400"
-               CacheMode="BitmapCache"/>
+        <Grid Grid.Row="0" MinHeight="120">
+            <Image x:Name="WallpaperImage"
+                   Stretch="Uniform"
+                   CacheMode="BitmapCache"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   MaxHeight="300"/>
+        </Grid>
         
         <!-- Overlay with info -->
         <Grid Grid.Row="1" Padding="12,8">
