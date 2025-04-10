@@ -79,10 +79,11 @@
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
                       ViewChanged="MainScrollViewer_ViewChanged"
-                      Padding="0">
+                      Padding="0"
+                      Margin="0">
             
             <GridView x:Name="WallpapersGridView"
-                      Margin="2,0,2,4"
+                      Margin="12,8,12,12"
                       SelectionMode="None"
                       IsItemClickEnabled="True"
                       ItemClick="WallpapersGridView_ItemClick"
@@ -90,7 +91,7 @@
                       VerticalAlignment="Stretch">
                 <GridView.ItemContainerStyle>
                     <Style TargetType="GridViewItem">
-                        <Setter Property="Margin" Value="2"/>
+                        <Setter Property="Margin" Value="4"/>
                         <Setter Property="Padding" Value="0"/>
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
@@ -114,9 +115,10 @@
                 <GridView.ItemTemplate>
                     <DataTemplate>
                         <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                              CornerRadius="6"
+                              CornerRadius="4"
                               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                              BorderThickness="1"
+                              BorderThickness="0.5"
+                              Margin="1"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch">
                             <Grid.RowDefinitions>
@@ -130,12 +132,11 @@
                                        Stretch="UniformToFill"
                                        CacheMode="BitmapCache"
                                        HorizontalAlignment="Stretch"
-                                       VerticalAlignment="Center"
-                                       MaxHeight="220"/>
+                                       VerticalAlignment="Stretch"/>
                             </Grid>
                             
                             <!-- Overlay with info -->
-                            <Grid Grid.Row="1" Padding="8,6">
+                            <Grid Grid.Row="1" Padding="6,4">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -151,7 +152,7 @@
                                 <Button Grid.Column="1"
                                         Style="{StaticResource AccentButtonStyle}"
                                         FontSize="12"
-                                        Padding="10,5"
+                                        Padding="8,4"
                                         Content="Download"
                                         Command="{Binding DownloadCommand}"/>
                             </Grid>

@@ -149,11 +149,11 @@ namespace Wall_You_Need_Next_Gen.Views
                 double availableWidth = e.NewSize.Width;
                 
                 // Determine desired item width (considering margins)
-                double desiredItemWidth = 300;  // Increased base item width for better display
-                double itemMargin = 4;          // Total margin between items
+                double desiredItemWidth = 300;  // Base item width
+                double itemMargin = 8;          // Total margin between items (4px on each side)
                 
                 // Calculate how many items can fit in the available width
-                int columnsCount = Math.Max(1, (int)(availableWidth / (desiredItemWidth + itemMargin)));
+                int columnsCount = Math.Max(1, (int)(availableWidth / desiredItemWidth));
                 
                 // Ensure we have a reasonable column count based on screen size
                 columnsCount = Math.Min(columnsCount, 6);  // Limit to maximum 6 columns
@@ -161,17 +161,9 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Set the maximum columns
                 wrapGrid.MaximumRowsOrColumns = columnsCount;
                 
-                // Calculate the new item width to fill the available space evenly
-                // For fewer columns, use almost the full width with minimal margins
-                double effectiveWidth = availableWidth;
-                if (columnsCount <= 2)
-                {
-                    // When 1-2 columns, use nearly the full width with minimal margins
-                    effectiveWidth = availableWidth - (columnsCount == 1 ? 8 : 12);
-                }
-                
+                // Calculate the new item width to fill the available space with margins
                 double totalMarginWidth = (columnsCount - 1) * itemMargin;
-                double newItemWidth = (effectiveWidth - totalMarginWidth) / columnsCount;
+                double newItemWidth = (availableWidth - totalMarginWidth) / columnsCount;
                 
                 // Set a reasonable minimum width
                 double finalWidth = Math.Max(200, newItemWidth);
@@ -180,11 +172,11 @@ namespace Wall_You_Need_Next_Gen.Views
                 double aspectRatio = 16.0 / 9.0;
                 double finalHeight = finalWidth / aspectRatio;
                 
-                // Set item dimensions
+                // Set item dimensions - reduce the extra height for info panel
                 wrapGrid.ItemWidth = finalWidth;
-                wrapGrid.ItemHeight = finalHeight + 50; // Add extra space for the info panel at bottom
+                wrapGrid.ItemHeight = finalHeight + 40; // Reduced extra space for the info panel
                 
-                // Make sure the grid aligns properly
+                // Make sure the grid fills all available space
                 wrapGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
             }
         }
