@@ -3,7 +3,8 @@
     x:Class="Wall_You_Need_Next_Gen.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Wall_You_Need_Next_Gen">
+    xmlns:local="using:Wall_You_Need_Next_Gen"
+    xmlns:converters="using:Wall_You_Need_Next_Gen.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -11,6 +12,11 @@
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
+            
+            <!-- Value Converters -->
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

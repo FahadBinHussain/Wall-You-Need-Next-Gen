@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Wall_You_Need_Next_Gen.Models;
 using System.Windows.Input;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace Wall_You_Need_Next_Gen.Views
 {
@@ -17,6 +19,9 @@ namespace Wall_You_Need_Next_Gen.Views
     {
         // Collection to hold the wallpapers
         private ObservableCollection<WallpaperItem> _wallpapers;
+        
+        // For HTTP requests
+        private readonly HttpClient _httpClient = new HttpClient();
         
         // For simulating delayed loading
         private DispatcherQueue _dispatcherQueue;
@@ -28,6 +33,9 @@ namespace Wall_You_Need_Next_Gen.Views
         private bool _hasMoreItems = true;
         private double _loadMoreThreshold = 0.8; // 80% of the scroll viewer height
         // No max pages limit - truly infinite scrolling
+        
+        // Base API URL for wallpaper requests
+        private const string ApiBaseUrl = "https://backiee.com/api/wallpaper/list.php";
         
         public LatestWallpapersPage()
         {
@@ -71,12 +79,6 @@ namespace Wall_You_Need_Next_Gen.Views
             _wallpapers.Clear();
         }
         
-        private async Task LoadPlaceholderWallpapers()
-        {
-            // This method is replaced by the LoadMoreWallpapers method
-            await LoadMoreWallpapers();
-        }
-        
         private async Task LoadMoreWallpapers()
         {
             // Prevent multiple concurrent loading operations
@@ -94,48 +96,86 @@ namespace Wall_You_Need_Next_Gen.Views
                     LoadingProgressBar.Visibility = Visibility.Visible;
                 }
                 
-                // Increment the page counter
-                _currentPage++;
+                // Brief initial delay at 0%
+                LoadingProgressBar.Value = 0;
+                await Task.Delay(100);
                 
-                // In a real app, you would fetch items from an API or database
-                // Here we'll simulate loading with placeholder images
-                int startIndex = (_currentPage - 1) * _itemsPerPage;
-                
-                // Ultra-fast loading - no artificial delays
+                // Update to 30% and stay there for longer
                 LoadingProgressBar.Value = 30;
+                await Task.Delay(700);
                 
-                // Create all wallpaper items at once for maximum speed
-                List<WallpaperItem> newWallpapers = new List<WallpaperItem>(_itemsPerPage);
+                // Construct API URL with the current page number
+                string apiUrl = $"{ApiBaseUrl}?action=paging_list&list_type=latest&page={_currentPage}&page_size={_itemsPerPage}&category=all&is_ai=all&sort_by=popularity&4k=false&5k=false&8k=false&status=active&args=";
                 
-                // Create all items at once
-                for (int i = 0; i < _itemsPerPage; i++)
+                // Fetch data from API
+                HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
+                
+                if (response.IsSuccessStatusCode)
                 {
-                    int itemId = startIndex + i;
-                    
-                    // Create a simulated wallpaper with placeholder image
-                    var wallpaper = new WallpaperItem
+                    string jsonContent = await response.Content.ReadAsStringAsync();
+                    using (JsonDocument doc = JsonDocument.Parse(jsonContent))
                     {
-                        ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-dark.png")),
-                        Resolution = GetRandomResolution(),
-                        Id = itemId.ToString()
-                    };
+                        // Process API response and create wallpaper items
+                        List<WallpaperItem> newWallpapers = new List<WallpaperItem>();
+                        
+                        foreach (JsonElement wallpaperElement in doc.RootElement.EnumerateArray())
+                        {
+                            // Extract wallpaper details from JSON
+                            string id = wallpaperElement.GetProperty("ID").GetString();
+                            string title = wallpaperElement.GetProperty("Title").GetString();
+                            string imageUrl = wallpaperElement.GetProperty("FullPhotoUrl").GetString();
+                            string resolution = wallpaperElement.GetProperty("Resolution").GetString();
+                            
+                            // Extract tag data
+                            string qualityTag = wallpaperElement.GetProperty("UltraHDType").GetString();
+                            bool isAI = wallpaperElement.GetProperty("AIGenerated").GetString() == "1";
+                            string likesCount = wallpaperElement.GetProperty("Rating").GetString();
+                            string downloadsCount = wallpaperElement.GetProperty("Downloads").GetString();
+                            
+                            // Create wallpaper item
+                var wallpaper = new WallpaperItem
+                            {
+                                Id = id,
+                                Title = title,
+                                ImageSource = new BitmapImage(new Uri(imageUrl)),
+                                Resolution = resolution,
+                                QualityTag = qualityTag,
+                                IsAI = isAI,
+                                Likes = likesCount,
+                                Downloads = downloadsCount
+                            };
+                            
+                            newWallpapers.Add(wallpaper);
+                        }
+                        
+                        // Add all items at once for maximum speed
+                        foreach (var wallpaper in newWallpapers)
+                        {
+                            _wallpapers.Add(wallpaper);
+                        }
+                    }
                     
-                    newWallpapers.Add(wallpaper);
+                    // Increment page counter for next load
+                    _currentPage++;
+                    
+                    // If we received fewer items than requested, we've reached the end
+                    _hasMoreItems = true; // Always true for this API as it has many pages
                 }
-                
-                LoadingProgressBar.Value = 70;
-                
-                // Add all items at once for maximum speed
-                foreach (var wallpaper in newWallpapers)
+                else
                 {
-                    _wallpapers.Add(wallpaper);
+                    // If API request failed, mark that there are no more items
+                    _hasMoreItems = false;
                 }
                 
-                // Set progress to 100% when complete
+                // Quick jump to 100% when complete
                 LoadingProgressBar.Value = 100;
-                
-                // No limit on number of pages - truly infinite scrolling
-                // Keep _hasMoreItems true to allow loading more pages indefinitely
+                await Task.Delay(200);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                System.Diagnostics.Debug.WriteLine($"Error loading wallpapers: {ex.Message}");
+                _hasMoreItems = false;
             }
             finally
             {
@@ -144,14 +184,6 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Hide loading indicator
                 LoadingProgressBar.Visibility = Visibility.Collapsed;
             }
-        }
-        
-        private string GetRandomResolution()
-        {
-            // Generate random resolution for placeholder data
-            string[] resolutions = { "1920x1080", "2560x1440", "3840x2160 (4K)", "5120x2880 (5K)", "7680x4320 (8K)" };
-            Random random = new Random();
-            return resolutions[random.Next(resolutions.Length)];
         }
         
         private async void MainScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -269,7 +301,7 @@ namespace Wall_You_Need_Next_Gen.Views
             {
                 // Find the Image control in the template
                 var templateRoot = args.ItemContainer.ContentTemplateRoot as Grid;
-                var image = templateRoot.Children[0] as Image; // First child should be the Image
+                var image = templateRoot.FindName("ItemImage") as Image; // First child should be the Image
                 
                 // Get the wallpaper item
                 var wallpaper = args.Item as WallpaperItem;
@@ -283,13 +315,20 @@ namespace Wall_You_Need_Next_Gen.Views
         }
     }
     
-    // Model for wallpaper items
+    // Enhanced model for wallpaper items
     public class WallpaperItem
     {
         public string Id { get; set; }
+        public string Title { get; set; }
         public BitmapImage ImageSource { get; set; }
         public string Resolution { get; set; }
+        
+        // New properties for the tags
+        public string QualityTag { get; set; } // 4K, 5K, 8K
         public bool IsAI { get; set; }
+        public string Likes { get; set; }
+        public string Downloads { get; set; }
+        
         public ICommand DownloadCommand { get; set; }
         
         public WallpaperItem()
