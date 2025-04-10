@@ -63,16 +63,19 @@ namespace Wall_You_Need_Next_Gen.Views
                 _dailyWallpapers.Add(wallpaper);
             }
             
-            // Set up the ItemsRepeater
-            DailyWallpapersRepeater.ItemsSource = _dailyWallpapers;
+            // Set up the GridView
+            DailyWallpapersGridView.ItemsSource = _dailyWallpapers;
             
-            // Create element factory to build WallpaperCard controls
-            DailyWallpapersRepeater.ElementPrepared += (sender, args) =>
+            // Set up preparer for wallpaper cards
+            DailyWallpapersGridView.ContainerContentChanging += (sender, args) =>
             {
-                if (args.Element is WallpaperCard card)
+                if (args.ItemContainer.ContentTemplateRoot is WallpaperCard card)
                 {
-                    var wallpaper = _dailyWallpapers[args.Index];
-                    card.SetWallpaper(wallpaper);
+                    var wallpaper = args.Item as Wallpaper;
+                    if (wallpaper != null)
+                    {
+                        card.SetWallpaper(wallpaper);
+                    }
                 }
             };
         }
@@ -81,6 +84,29 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             // Navigate to the Latest Wallpapers page
             this.Frame.Navigate(typeof(LatestWallpapersPage));
+        }
+
+        private void DailyWallpapersWrapGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is ItemsWrapGrid wrapGrid)
+            {
+                // Calculate number of columns based on available width
+                double availableWidth = e.NewSize.Width;
+                
+                // Determine desired item width (considering margins)
+                double desiredItemWidth = 300;  // Base item width
+                double itemMargin = 12;         // Total margin (left + right)
+                
+                // Calculate how many items can fit in the available width
+                int columnsCount = Math.Max(1, (int)(availableWidth / (desiredItemWidth + itemMargin)));
+                
+                // Set the maximum columns
+                wrapGrid.MaximumRowsOrColumns = columnsCount;
+                
+                // Calculate the new item width to fill the available space evenly
+                double newItemWidth = (availableWidth - (columnsCount * itemMargin)) / columnsCount;
+                wrapGrid.ItemWidth = Math.Max(200, newItemWidth);  // Ensure minimum width of 200
+            }
         }
     }
 } 

@@ -91,15 +91,29 @@
                         <Setter Property="Padding" Value="0"/>
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Width" Value="Auto"/>
+                        <Setter Property="Height" Value="Auto"/>
                     </Style>
                 </GridView.ItemContainerStyle>
+                
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid x:Name="WallpapersWrapGrid"
+                                     Orientation="Horizontal"
+                                     HorizontalAlignment="Stretch"
+                                     ItemWidth="NaN"
+                                     ItemHeight="NaN"
+                                     SizeChanged="WallpapersWrapGrid_SizeChanged"/>
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
                 
                 <GridView.ItemTemplate>
                     <DataTemplate>
                         <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                               CornerRadius="8"
                               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                              BorderThickness="1">
+                              BorderThickness="1"
+                              MaxWidth="350">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
@@ -136,16 +150,6 @@
                         </Grid>
                     </DataTemplate>
                 </GridView.ItemTemplate>
-                
-                <GridView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <ItemsWrapGrid Orientation="Horizontal"
-                                     HorizontalAlignment="Stretch"
-                                     MaximumRowsOrColumns="4"
-                                     ItemWidth="300"
-                                     ItemHeight="280"/>
-                    </ItemsPanelTemplate>
-                </GridView.ItemsPanel>
             </GridView>
         </ScrollViewer>
     </Grid>

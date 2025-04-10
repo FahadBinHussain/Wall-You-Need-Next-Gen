@@ -41,7 +41,7 @@ namespace Wall_You_Need_Next_Gen.Views
             StatusTextBlock.Visibility = Visibility.Visible;
             LoadingProgressRing.Visibility = Visibility.Visible;
             
-            // Initialize the GridView
+            // Initialize the GridView with wallpapers collection
             WallpapersGridView.ItemsSource = _wallpapers;
             
             // Load placeholder wallpapers
@@ -139,6 +139,29 @@ namespace Wall_You_Need_Next_Gen.Views
                 await Task.Delay(3000);
                 StatusTextBlock.Visibility = Visibility.Collapsed;
             });
+        }
+        
+        private void WallpapersWrapGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is ItemsWrapGrid wrapGrid)
+            {
+                // Calculate number of columns based on available width
+                double availableWidth = e.NewSize.Width;
+                
+                // Determine desired item width (considering margins)
+                double desiredItemWidth = 300;  // Base item width
+                double itemMargin = 12;         // Total margin (left + right)
+                
+                // Calculate how many items can fit in the available width
+                int columnsCount = Math.Max(1, (int)(availableWidth / (desiredItemWidth + itemMargin)));
+                
+                // Set the maximum columns
+                wrapGrid.MaximumRowsOrColumns = columnsCount;
+                
+                // Calculate the new item width to fill the available space evenly
+                double newItemWidth = (availableWidth - (columnsCount * itemMargin)) / columnsCount;
+                wrapGrid.ItemWidth = Math.Max(200, newItemWidth);  // Ensure minimum width of 200
+            }
         }
     }
     

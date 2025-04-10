@@ -90,21 +90,35 @@
                     </Grid>
 
                     <!-- Wallpaper Cards Grid -->
-                    <ItemsRepeater x:Name="DailyWallpapersRepeater" Margin="0,12,0,0">
-                        <ItemsRepeater.Layout>
-                            <UniformGridLayout MinItemWidth="250" 
-                                              MinItemHeight="200"
-                                              MinRowSpacing="16" 
-                                              MinColumnSpacing="16"
-                                              ItemsStretch="Uniform"
-                                              MaximumRowsOrColumns="4" />
-                        </ItemsRepeater.Layout>
-                        <ItemsRepeater.ItemTemplate>
+                    <GridView x:Name="DailyWallpapersGridView" Margin="0,12,0,0">
+                        <GridView.ItemContainerStyle>
+                            <Style TargetType="GridViewItem">
+                                <Setter Property="Margin" Value="6"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Width" Value="Auto"/>
+                                <Setter Property="Height" Value="Auto"/>
+                            </Style>
+                        </GridView.ItemContainerStyle>
+                        
+                        <GridView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid x:Name="DailyWallpapersWrapGrid"
+                                             Orientation="Horizontal"
+                                             HorizontalAlignment="Stretch"
+                                             ItemWidth="NaN"
+                                             ItemHeight="NaN"
+                                             SizeChanged="DailyWallpapersWrapGrid_SizeChanged"/>
+                            </ItemsPanelTemplate>
+                        </GridView.ItemsPanel>
+                        
+                        <GridView.ItemTemplate>
                             <DataTemplate>
-                                <local:WallpaperCard />
+                                <local:WallpaperCard MaxWidth="350" />
                             </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                        </GridView.ItemTemplate>
+                    </GridView>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

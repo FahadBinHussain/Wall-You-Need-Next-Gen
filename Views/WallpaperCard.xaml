@@ -14,7 +14,9 @@
           Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
           CornerRadius="8"
           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-          BorderThickness="1">
+          BorderThickness="1"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -24,6 +26,8 @@
         <Image x:Name="WallpaperImage"
                Grid.Row="0"
                Stretch="UniformToFill"
+               MinHeight="120"
+               MaxHeight="400"
                CacheMode="BitmapCache"/>
         
         <!-- Overlay with info -->
