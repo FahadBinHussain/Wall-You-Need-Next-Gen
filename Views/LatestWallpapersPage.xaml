@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Wall_You_Need_Next_Gen.Views"
+    xmlns:models="using:Wall_You_Need_Next_Gen.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -82,55 +83,81 @@
                       Padding="0"
                       Margin="0">
             
-            <GridView x:Name="WallpapersGridView"
-                      Margin="12,8,12,12"
-                      SelectionMode="None"
-                      IsItemClickEnabled="True"
-                      ItemClick="WallpapersGridView_ItemClick"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch">
-                <GridView.ItemContainerStyle>
-                    <Style TargetType="GridViewItem">
-                        <Setter Property="Margin" Value="4"/>
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-                        <Setter Property="Width" Value="Auto"/>
-                        <Setter Property="Height" Value="Auto"/>
-                    </Style>
-                </GridView.ItemContainerStyle>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 
-                <GridView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <ItemsWrapGrid x:Name="WallpapersWrapGrid"
-                                     Orientation="Horizontal"
-                                     HorizontalAlignment="Stretch"
-                                     ItemWidth="NaN"
-                                     ItemHeight="NaN"
-                                     SizeChanged="WallpapersWrapGrid_SizeChanged"
-                                     MaximumRowsOrColumns="6"/>
-                    </ItemsPanelTemplate>
-                </GridView.ItemsPanel>
+                <GridView x:Name="WallpapersGridView"
+                          Grid.Row="0"
+                          Margin="12,8,12,12"
+                          SelectionMode="None"
+                          IsItemClickEnabled="True"
+                          ItemClick="WallpapersGridView_ItemClick"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          ContainerContentChanging="WallpapersGridView_ContainerContentChanging">
+                    <GridView.ItemContainerStyle>
+                        <Style TargetType="GridViewItem">
+                            <Setter Property="Margin" Value="4"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Width" Value="Auto"/>
+                            <Setter Property="Height" Value="Auto"/>
+                        </Style>
+                    </GridView.ItemContainerStyle>
+                    
+                    <GridView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid x:Name="WallpapersWrapGrid"
+                                         Orientation="Horizontal"
+                                         HorizontalAlignment="Stretch"
+                                         ItemWidth="NaN"
+                                         ItemHeight="NaN"
+                                         SizeChanged="WallpapersWrapGrid_SizeChanged"
+                                         MaximumRowsOrColumns="6"/>
+                        </ItemsPanelTemplate>
+                    </GridView.ItemsPanel>
+                    
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="local:WallpaperItem">
+                            <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  CornerRadius="4"
+                                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                  BorderThickness="0.5"
+                                  Margin="1"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch">
+                                <!-- Wallpaper Image Container -->
+                                <Image x:Name="ItemImage"
+                                       Source="{x:Bind ImageSource}"
+                                       Stretch="UniformToFill"
+                                       CacheMode="BitmapCache"
+                                       HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Stretch"/>
+                            </Grid>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
                 
-                <GridView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                              CornerRadius="4"
-                              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                              BorderThickness="0.5"
-                              Margin="1"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch">
-                            <!-- Wallpaper Image Container -->
-                            <Image Source="{Binding ImageSource}"
-                                   Stretch="UniformToFill"
-                                   CacheMode="BitmapCache"
-                                   HorizontalAlignment="Stretch"
-                                   VerticalAlignment="Stretch"/>
-                        </Grid>
-                    </DataTemplate>
-                </GridView.ItemTemplate>
-            </GridView>
+                <!-- Bottom loading indicator for infinite scroll -->
+                <StackPanel x:Name="BottomLoadingIndicator" 
+                           Grid.Row="1"
+                           Orientation="Horizontal" 
+                           HorizontalAlignment="Center"
+                           Visibility="Collapsed"
+                           Margin="0,0,0,20">
+                    <ProgressRing IsActive="True" 
+                                 Width="20" 
+                                 Height="20"
+                                 Margin="0,0,8,0"/>
+                    <TextBlock x:Name="BottomLoadingText"
+                              Text="Loading more wallpapers..." 
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </ScrollViewer>
     </Grid>
 </Page> 

@@ -9,6 +9,7 @@ using Microsoft.UI.Dispatching;
 using System.Threading.Tasks;
 using Wall_You_Need_Next_Gen.Models;
 using System.Windows.Input;
+using System.Linq;
 
 namespace Wall_You_Need_Next_Gen.Views
 {
@@ -19,6 +20,14 @@ namespace Wall_You_Need_Next_Gen.Views
         
         // For simulating delayed loading
         private DispatcherQueue _dispatcherQueue;
+        
+        // Properties for infinite scrolling
+        private bool _isLoading = false;
+        private int _currentPage = 0;
+        private int _itemsPerPage = 30; // Exactly 30 items per page as requested
+        private bool _hasMoreItems = true;
+        private double _loadMoreThreshold = 0.8; // 80% of the scroll viewer height
+        private int _maxPages = 3; // Load exactly 3 pages (30 + 30 + 30 = 90 total)
         
         public LatestWallpapersPage()
         {
@@ -38,18 +47,28 @@ namespace Wall_You_Need_Next_Gen.Views
         private async void LatestWallpapersPage_Loaded(object sender, RoutedEventArgs e)
         {
             // Show loading indicators
+            StatusTextBlock.Text = "Preparing to load wallpapers...";
             StatusTextBlock.Visibility = Visibility.Visible;
             LoadingProgressRing.Visibility = Visibility.Visible;
             
             // Initialize the GridView with wallpapers collection
             WallpapersGridView.ItemsSource = _wallpapers;
             
-            // Load placeholder wallpapers
-            await LoadPlaceholderWallpapers();
+            // Reset paging variables
+            _currentPage = 0;
+            _hasMoreItems = true;
+            _wallpapers.Clear();
             
-            // Hide loading indicators
-            StatusTextBlock.Visibility = Visibility.Collapsed;
+            // Short delay to show the initial loading message
+            await Task.Delay(800);
+            
+            // Load first page of wallpapers
+            await LoadMoreWallpapers();
+            
+            // Hide initial loading indicators
             LoadingProgressRing.Visibility = Visibility.Collapsed;
+            
+            // Status text will be handled by the LoadMoreWallpapers method
         }
         
         private void LatestWallpapersPage_Unloaded(object sender, RoutedEventArgs e)
@@ -60,25 +79,125 @@ namespace Wall_You_Need_Next_Gen.Views
         
         private async Task LoadPlaceholderWallpapers()
         {
-            // Clear existing items
-            _wallpapers.Clear();
+            // This method is replaced by the LoadMoreWallpapers method
+            await LoadMoreWallpapers();
+        }
+        
+        private async Task LoadMoreWallpapers()
+        {
+            // Prevent multiple concurrent loading operations
+            if (_isLoading || !_hasMoreItems)
+                return;
             
-            // Add placeholder wallpapers (3 rows x 4 columns = 12 items)
-            for (int i = 0; i < 12; i++)
+            try
             {
-                // Create a simulated wallpaper with placeholder image
-                var wallpaper = new WallpaperItem
+                _isLoading = true;
+                
+                // Show bottom loading indicator for subsequent page loads
+                if (_currentPage > 0)
                 {
-                    ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-dark.png")),
-                    Resolution = GetRandomResolution(),
-                    Id = i.ToString()
-                };
+                    // Since we're having issues with direct reference, use basic approach
+                    var textBlock = BottomLoadingIndicator.Children.OfType<TextBlock>().FirstOrDefault();
+                    if (textBlock != null)
+                    {
+                        textBlock.Text = $"Loading batch {_currentPage + 1} of {_maxPages} (30 wallpapers)...";
+                    }
+                    BottomLoadingIndicator.Visibility = Visibility.Visible;
+                }
                 
-                // Add to collection
-                _wallpapers.Add(wallpaper);
+                // Increment the page counter
+                _currentPage++;
                 
-                // Small delay for smoother loading appearance
-                await Task.Delay(50);
+                // In a real app, you would fetch items from an API or database
+                // Here we'll simulate loading with placeholder images
+                int startIndex = (_currentPage - 1) * _itemsPerPage;
+                
+                // Simulate network delay - but just once per batch instead of per item
+                await Task.Delay(1500);
+                
+                // Create batch of wallpapers first
+                List<WallpaperItem> newWallpapers = new List<WallpaperItem>(_itemsPerPage);
+                
+                // Prepare all wallpaper items (without adding to collection yet)
+                for (int i = 0; i < _itemsPerPage; i++)
+                {
+                    int itemId = startIndex + i;
+                    
+                    // Create a simulated wallpaper with placeholder image
+                    var wallpaper = new WallpaperItem
+                    {
+                        ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-dark.png")),
+                        Resolution = GetRandomResolution(),
+                        Id = itemId.ToString()
+                    };
+                    
+                    newWallpapers.Add(wallpaper);
+                }
+                
+                // Add all wallpapers in small batches to keep UI responsive
+                const int batchSize = 6; // Load 6 at a time for smoother UI updates
+                for (int i = 0; i < newWallpapers.Count; i += batchSize)
+                {
+                    // Add a batch of items
+                    for (int j = 0; j < batchSize && i + j < newWallpapers.Count; j++)
+                    {
+                        _wallpapers.Add(newWallpapers[i + j]);
+                    }
+                    
+                    // Small delay between batches for smoother loading appearance
+                    await Task.Delay(100);
+                }
+                
+                // Show a status message about the batch that was just loaded
+                StatusTextBlock.Text = $"Batch {_currentPage} loaded successfully (30 wallpapers)";
+                if (_currentPage == 1)
+                {
+                    StatusTextBlock.Text += " - Scroll down for more";
+                }
+                else if (_currentPage == 2)
+                {
+                    StatusTextBlock.Text += " - One more batch available";
+                }
+                else if (_currentPage == 3)
+                {
+                    StatusTextBlock.Text += " - All batches loaded";
+                }
+                StatusTextBlock.Visibility = Visibility.Visible;
+                
+                // Hide status message after 3 seconds
+                _dispatcherQueue.TryEnqueue(async () =>
+                {
+                    await Task.Delay(3000);
+                    if (StatusTextBlock.Text.StartsWith("Batch"))
+                    {
+                        StatusTextBlock.Visibility = Visibility.Collapsed;
+                    }
+                });
+                
+                // Stop after exactly 3 pages (30 + 30 + 30 = 90 total wallpapers)
+                if (_currentPage >= _maxPages)
+                {
+                    _hasMoreItems = false;
+                    
+                    // Show a completion message when all batches are loaded
+                    _dispatcherQueue.TryEnqueue(async () =>
+                    {
+                        await Task.Delay(3500); // Wait until the batch message is gone
+                        StatusTextBlock.Text = "✓ All 3 batches loaded successfully (90 wallpapers total)";
+                        StatusTextBlock.Visibility = Visibility.Visible;
+                        
+                        // Hide the completion message after 4 seconds
+                        await Task.Delay(4000);
+                        StatusTextBlock.Visibility = Visibility.Collapsed;
+                    });
+                }
+            }
+            finally
+            {
+                _isLoading = false;
+                
+                // Hide bottom loading indicator
+                BottomLoadingIndicator.Visibility = Visibility.Collapsed;
             }
         }
         
@@ -90,10 +209,28 @@ namespace Wall_You_Need_Next_Gen.Views
             return resolutions[random.Next(resolutions.Length)];
         }
         
-        private void MainScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        private async void MainScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
-            // This would be implemented for infinite scrolling
-            // Not implemented in this placeholder version
+            // If it's not a direct manipulation (such as a programmatic scroll), ignore
+            if (!e.IsIntermediate) 
+                return;
+            
+            // Check if we need to load more items
+            if (sender is ScrollViewer scrollViewer)
+            {
+                // Check if we're near the bottom
+                double verticalOffset = scrollViewer.VerticalOffset;
+                double maxVerticalOffset = scrollViewer.ScrollableHeight;
+                
+                // If we've scrolled past the threshold and not loading, load more
+                if (maxVerticalOffset > 0 &&
+                    verticalOffset >= maxVerticalOffset * _loadMoreThreshold &&
+                    !_isLoading && 
+                    _hasMoreItems)
+                {
+                    await LoadMoreWallpapers();
+                }
+            }
         }
         
         private void WallpapersGridView_ItemClick(object sender, ItemClickEventArgs e)
@@ -178,6 +315,46 @@ namespace Wall_You_Need_Next_Gen.Views
                 
                 // Make sure the grid fills all available space
                 wrapGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
+            }
+        }
+        
+        private void WallpapersGridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (args.InRecycleQueue)
+            {
+                // Clear image from items that are being recycled
+                var templateRoot = args.ItemContainer.ContentTemplateRoot as Grid;
+                var image = templateRoot.FindName("ItemImage") as Image;
+                if (image != null)
+                {
+                    image.Source = null;
+                }
+            }
+            
+            if (args.Phase == 0)
+            {
+                // Register for the next phase to load the image
+                args.RegisterUpdateCallback(ShowImage);
+                args.Handled = true;
+            }
+        }
+        
+        private void ShowImage(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (args.Phase == 1)
+            {
+                // Find the Image control in the template
+                var templateRoot = args.ItemContainer.ContentTemplateRoot as Grid;
+                var image = templateRoot.Children[0] as Image; // First child should be the Image
+                
+                // Get the wallpaper item
+                var wallpaper = args.Item as WallpaperItem;
+                
+                // Set the image source
+                if (image != null && wallpaper != null)
+                {
+                    image.Source = wallpaper.ImageSource;
+                }
             }
         }
     }
