@@ -193,46 +193,37 @@ namespace Wall_You_Need_Next_Gen
         // Add a handler for window resizing to enforce minimum size
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
         {
-            try
+            // Only handle size changes
+            if (args.DidSizeChange && !isHandlingResize)
             {
-                // Only handle size changes and avoid reentrant calls
-                if (args.DidSizeChange && !isHandlingResize)
+                // Get current size
+                var currentSize = m_appWindow.Size;
+                
+                // Check if resize is needed
+                int newWidth = Math.Max(currentSize.Width, 800);
+                int newHeight = Math.Max(currentSize.Height, 600);
+                
+                // Only resize if necessary and different from last applied size
+                if ((newWidth != currentSize.Width || newHeight != currentSize.Height) &&
+                    (newWidth != lastAppliedSize.Width || newHeight != lastAppliedSize.Height))
                 {
-                    // Get current size
-                    var currentSize = m_appWindow.Size;
+                    // Set flag to prevent reentrancy and remember this size
+                    isHandlingResize = true;
+                    lastAppliedSize = new SizeInt32(newWidth, newHeight);
                     
-                    // Check if resize is needed
-                    int newWidth = Math.Max(currentSize.Width, 800);
-                    int newHeight = Math.Max(currentSize.Height, 600);
-                    bool needsResize = (newWidth != currentSize.Width || newHeight != currentSize.Height);
-                    
-                    // Check if we've already applied this exact size (prevents potential flickering)
-                    if (needsResize && (lastAppliedSize.Width != newWidth || lastAppliedSize.Height != newHeight))
+                    try
                     {
-                        // Set flag to prevent reentrancy
-                        isHandlingResize = true;
-                        
-                        // Remember this size to avoid duplicate operations
-                        lastAppliedSize = new SizeInt32(newWidth, newHeight);
-                        
-                        // Apply the new size immediately without event handling
-                        try
-                        {
-                            m_appWindow.Changed -= AppWindow_Changed;
-                            m_appWindow.Resize(lastAppliedSize);
-                        }
-                        finally
-                        {
-                            m_appWindow.Changed += AppWindow_Changed;
-                            isHandlingResize = false;
-                        }
+                        // Temporarily unsubscribe to prevent events while changing size
+                        m_appWindow.Changed -= AppWindow_Changed;
+                        m_appWindow.Resize(lastAppliedSize);
+                    }
+                    finally
+                    {
+                        // Always resubscribe and clear flag
+                        m_appWindow.Changed += AppWindow_Changed;
+                        isHandlingResize = false;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                // Catch any exceptions during resize to prevent app crashing
-                isHandlingResize = false;
             }
         }
 
@@ -247,6 +238,9 @@ namespace Wall_You_Need_Next_Gen
                 {
                     case "Home":
                         ContentFrame.Navigate(typeof(HomePage));
+                        break;
+                    case "LatestWallpapers":
+                        ContentFrame.Navigate(typeof(LatestWallpapersPage));
                         break;
                     case "Collections":
                     case "AIGenerated":

@@ -8,51 +8,45 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="200"
-    d:DesignWidth="320">
+    d:DesignWidth="300">
 
-    <Grid>
+    <Grid x:Name="RootGrid" 
+          Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+          CornerRadius="8"
+          BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+          BorderThickness="1">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <Image x:Name="WallpaperImage" Stretch="UniformToFill" />
         
-        <Grid VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,8,0">
-            <Border Background="#99000000" CornerRadius="4" Padding="8,4">
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                    <Image x:Name="ResolutionImage" Width="12" Height="12" />
-                    <TextBlock x:Name="ResolutionText" Foreground="White" FontWeight="SemiBold" />
-                </StackPanel>
-            </Border>
-        </Grid>
+        <!-- Wallpaper Image Container -->
+        <Image x:Name="WallpaperImage"
+               Grid.Row="0"
+               Stretch="UniformToFill"
+               CacheMode="BitmapCache"/>
         
-        <Grid VerticalAlignment="Top" HorizontalAlignment="Left" Margin="8,8,0,0" x:Name="AIBadge" Visibility="Collapsed">
-            <Border Background="#99000000" CornerRadius="4" Padding="8,4">
-                <StackPanel Orientation="Horizontal">
-                    <Image Source="ms-appx:///Assets/aigenerated-icon.png" Width="12" Height="12" Margin="0,0,4,0" />
-                    <TextBlock Text="AI" Foreground="White" FontWeight="SemiBold" />
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid Grid.Row="1" Background="#22000000" Padding="8,4">
+        <!-- Overlay with info -->
+        <Grid Grid.Row="1" Padding="12,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-
-            <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="8">
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                    <FontIcon Glyph="&#xE19F;" FontSize="12" />
-                    <TextBlock x:Name="LikesText" />
-                </StackPanel>
-                
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                    <FontIcon Glyph="&#xE118;" FontSize="12" />
-                    <TextBlock x:Name="DownloadsText" />
-                </StackPanel>
-            </StackPanel>
+            
+            <!-- Resolution Label -->
+            <TextBlock x:Name="ResolutionText" 
+                       Grid.Column="0" 
+                       Style="{StaticResource CaptionTextBlockStyle}"
+                       VerticalAlignment="Center"/>
+            
+            <!-- Download Button -->
+            <Button x:Name="DownloadButton"
+                    Grid.Column="1"
+                    Style="{StaticResource AccentButtonStyle}"
+                    FontSize="12"
+                    Padding="10,5"
+                    Content="Download"
+                    Click="DownloadButton_Click"/>
         </Grid>
     </Grid>
 </UserControl> 

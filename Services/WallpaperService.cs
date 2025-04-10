@@ -97,6 +97,60 @@ namespace Wall_You_Need_Next_Gen.Services
                     Likes = 17, 
                     Downloads = 68, 
                     Category = "Sci-Fi" 
+                },
+                new Wallpaper { 
+                    Title = "Night Sky", 
+                    ImagePath = "ms-appx:///Assets/placeholder-dark.png", 
+                    Resolution = "5K", 
+                    IsAIGenerated = false, 
+                    Likes = 45, 
+                    Downloads = 112, 
+                    Category = "Nature" 
+                },
+                new Wallpaper { 
+                    Title = "Solar System", 
+                    ImagePath = "ms-appx:///Assets/placeholder-dark.png", 
+                    Resolution = "8K UltraHD", 
+                    IsAIGenerated = false, 
+                    Likes = 89, 
+                    Downloads = 205, 
+                    Category = "Space" 
+                },
+                new Wallpaper { 
+                    Title = "Cyberpunk City", 
+                    ImagePath = "ms-appx:///Assets/placeholder-dark.png", 
+                    Resolution = "4K", 
+                    IsAIGenerated = true, 
+                    Likes = 103, 
+                    Downloads = 237, 
+                    Category = "Sci-Fi" 
+                },
+                new Wallpaper { 
+                    Title = "Tropical Beach", 
+                    ImagePath = "ms-appx:///Assets/placeholder-dark.png", 
+                    Resolution = "5K", 
+                    IsAIGenerated = false, 
+                    Likes = 56, 
+                    Downloads = 143, 
+                    Category = "Nature" 
+                },
+                new Wallpaper { 
+                    Title = "Mountain Range", 
+                    ImagePath = "ms-appx:///Assets/placeholder-dark.png", 
+                    Resolution = "4K", 
+                    IsAIGenerated = false, 
+                    Likes = 67, 
+                    Downloads = 178, 
+                    Category = "Nature" 
+                },
+                new Wallpaper { 
+                    Title = "AI Abstract Art", 
+                    ImagePath = "ms-appx:///Assets/placeholder-dark.png", 
+                    Resolution = "4K", 
+                    IsAIGenerated = true, 
+                    Likes = 41, 
+                    Downloads = 104, 
+                    Category = "Abstract" 
                 }
             };
         }
