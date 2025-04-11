@@ -391,17 +391,42 @@ namespace Wall_You_Need_Next_Gen
             if (navButton?.Content is not StackPanel buttonStack || buttonStack.Children.Count == 0)
                 return;
                 
-            // Reset border style
-            if (buttonStack.Children[0] is Border buttonBorder)
+            // Check if we're using the new Grid-based approach or the old Border approach
+            if (buttonStack.Children[0] is Grid buttonGrid)
             {
-                // First try to get the style resource
+                // Hide the background and orange indicator for inactive buttons
+                foreach (var child in buttonGrid.Children)
+                {
+                    if (child is Border border)
+                    {
+                        border.Background = new SolidColorBrush(Colors.Transparent);
+                    }
+                    else if (child is Microsoft.UI.Xaml.Shapes.Rectangle rectangle)
+                    {
+                        rectangle.Visibility = Visibility.Collapsed;
+                    }
+                    else if (child is StackPanel contentPanel)
+                    {
+                        // Reset text color in the content panel
+                        foreach (var contentChild in contentPanel.Children)
+                        {
+                            if (contentChild is TextBlock textBlock)
+                            {
+                                textBlock.Foreground = new SolidColorBrush(Colors.DarkGray);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (buttonStack.Children[0] is Border buttonBorder)
+            {
+                // Old approach - reset border style
+                bool isFooter = navButton.Tag?.ToString() == "MyAccount" || navButton.Tag?.ToString() == "Settings";
+                
+                // Apply appropriate style based on whether it's a footer button or not
                 Style defaultStyle = null;
                 try
                 {
-                    // Check if this is a footer button
-                    bool isFooter = navButton.Tag?.ToString() == "MyAccount" || navButton.Tag?.ToString() == "Settings";
-                    
-                    // Apply appropriate style based on whether it's a footer button or not
                     if (isFooter)
                     {
                         defaultStyle = Application.Current.Resources["FooterNavItemBorderStyle"] as Style;
@@ -409,6 +434,12 @@ namespace Wall_You_Need_Next_Gen
                     else
                     {
                         defaultStyle = Application.Current.Resources["NavItemBorderStyle"] as Style;
+                    }
+                    
+                    // Apply the style if we found it
+                    if (defaultStyle != null)
+                    {
+                        buttonBorder.Style = defaultStyle;
                     }
                 }
                 catch
@@ -418,25 +449,66 @@ namespace Wall_You_Need_Next_Gen
                     buttonBorder.BorderThickness = new Thickness(0);
                 }
                 
-                // Apply the style if we found it
-                if (defaultStyle != null)
-                {
-                    buttonBorder.Style = defaultStyle;
-                }
+                // Reset text color
+                FindAndUpdateTextBlock(buttonStack, new SolidColorBrush(Colors.DarkGray));
             }
-            
-            // Reset text color
-            FindAndUpdateTextBlock(buttonStack, new SolidColorBrush(Colors.DarkGray));
         }
 
         private void ApplySelectedButtonStyle(Button button)
         {
             if (button?.Content is not StackPanel selectedStack || selectedStack.Children.Count == 0)
                 return;
-                
-            // Apply active style to border
-            if (selectedStack.Children[0] is Border selectedBorder)
+            
+            // Check if we're using the new Grid-based approach or the old Border approach
+            if (selectedStack.Children[0] is Grid selectedGrid)
             {
+                // Set up the background and orange indicator for active buttons
+                foreach (var child in selectedGrid.Children)
+                {
+                    if (child is Border border)
+                    {
+                        border.Background = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 234, 234, 234)); // #eaeaea
+                    }
+                    else if (child is Microsoft.UI.Xaml.Shapes.Rectangle rectangle)
+                    {
+                        rectangle.Visibility = Visibility.Visible;
+                        rectangle.Fill = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 255, 87, 51)); // #FF5733
+                    }
+                    else if (child is StackPanel contentPanel)
+                    {
+                        // Set selected text color in the content panel
+                        foreach (var contentChild in contentPanel.Children)
+                        {
+                            if (contentChild is TextBlock textBlock)
+                            {
+                                // Try to get the brush from resources first
+                                SolidColorBrush textBrush;
+                                try 
+                                {
+                                    textBrush = Application.Current.Resources["NavbarSelectedTextBrush"] as SolidColorBrush;
+                                }
+                                catch
+                                {
+                                    // Fall back to creating the brush directly
+                                    textBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 25, 25, 25)); // #191919
+                                }
+                                
+                                // If we couldn't get the brush from resources or caught an exception, create it directly
+                                if (textBrush == null)
+                                {
+                                    textBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 25, 25, 25)); // #191919
+                                }
+                                
+                                textBlock.Foreground = textBrush;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (selectedStack.Children[0] is Border selectedBorder)
+            {
+                // Old approach
+                // Apply active style to border
                 // Always directly set the background color to ensure consistency
                 selectedBorder.Background = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 234, 234, 234)); // #eaeaea
                 selectedBorder.BorderThickness = new Thickness(4, 0, 0, 0);
@@ -480,28 +552,28 @@ namespace Wall_You_Need_Next_Gen
                     // Log the error but continue
                     System.Diagnostics.Debug.WriteLine($"Failed to apply active style: {ex.Message}");
                 }
+                
+                // Update selected text color
+                SolidColorBrush selectedTextBrush;
+                try 
+                {
+                    // Try to get the brush from resources first
+                    selectedTextBrush = Application.Current.Resources["NavbarSelectedTextBrush"] as SolidColorBrush;
+                }
+                catch
+                {
+                    // Fall back to creating the brush directly
+                    selectedTextBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 25, 25, 25)); // #191919
+                }
+                
+                // If we couldn't get the brush from resources or caught an exception, create it directly
+                if (selectedTextBrush == null)
+                {
+                    selectedTextBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 25, 25, 25)); // #191919
+                }
+                
+                FindAndUpdateTextBlock(selectedStack, selectedTextBrush);
             }
-            
-            // Update selected text color
-            SolidColorBrush selectedTextBrush;
-            try 
-            {
-                // Try to get the brush from resources first
-                selectedTextBrush = Application.Current.Resources["NavbarSelectedTextBrush"] as SolidColorBrush;
-            }
-            catch
-            {
-                // Fall back to creating the brush directly
-                selectedTextBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 25, 25, 25)); // #191919
-            }
-            
-            // If we couldn't get the brush from resources or caught an exception, create it directly
-            if (selectedTextBrush == null)
-            {
-                selectedTextBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 25, 25, 25)); // #191919
-            }
-            
-            FindAndUpdateTextBlock(selectedStack, selectedTextBrush);
         }
 
         private void FindAndUpdateTextBlock(StackPanel stack, Brush foreground)
