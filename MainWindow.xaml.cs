@@ -83,7 +83,54 @@ namespace Wall_You_Need_Next_Gen
             // Navigate to the homepage by default
             ContentFrame.Navigate(typeof(HomePage));
         }
+
+        private void ResetAllNavButtonStyles()
+        {
+            // Reset all navigation buttons in main nav panel
+            ResetButtonsInNavPanel(NavPanel);
+            
+            // Reset footer buttons - do this by finding all buttons with MyAccount or Settings tags
+            ResetSpecificButtons("MyAccount", "Settings");
+        }
         
+        private void ResetButtonsInNavPanel(StackPanel panel)
+        {
+            if (panel == null) return;
+            
+            foreach (var child in panel.Children)
+            {
+                if (child is Button button)
+                {
+                    try
+                    {
+                        ResetButtonStyle(button);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error but continue
+                        System.Diagnostics.Debug.WriteLine($"Error resetting button style: {ex.Message}");
+                    }
+                }
+            }
+        }
+        
+        private void ResetSpecificButtons(params string[] buttonTags)
+        {
+            // Find and reset specific buttons by their tag values
+            try
+            {
+                if (MyAccountButton != null)
+                    ResetButtonStyle(MyAccountButton);
+                    
+                if (SettingsButton != null)
+                    ResetButtonStyle(SettingsButton);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error resetting specific buttons: {ex.Message}");
+            }
+        }
+
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
             // Save window position and size when closing
@@ -267,38 +314,11 @@ namespace Wall_You_Need_Next_Gen
                     if (string.IsNullOrEmpty(navItemTag))
                         return;
                     
-                    // Get the parent StackPanel that contains all navigation buttons
-                    var navPanel = FindParentNavPanel(button);
-                    if (navPanel == null)
-                        return;
-
-                    // Update visual state - highlight selected button and reset others
-                    foreach (var child in navPanel.Children)
-                    {
-                        if (child is Button navButton)
-                        {
-                            try
-                            {
-                                ResetButtonStyle(navButton);
-                            }
-                            catch (Exception ex)
-                            {
-                                // Log or handle the error, but continue with other buttons
-                                System.Diagnostics.Debug.WriteLine($"Error resetting button style: {ex.Message}");
-                            }
-                        }
-                    }
+                    // Reset all nav buttons to their default style
+                    ResetAllNavButtonStyles();
                     
-                    // Highlight selected button
-                    try
-                    {
-                        ApplySelectedButtonStyle(button);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log or handle the error
-                        System.Diagnostics.Debug.WriteLine($"Error applying selected style: {ex.Message}");
-                    }
+                    // Apply selected style to the clicked button
+                    ApplySelectedButtonStyle(button);
                     
                     // Navigate based on the tag
                     switch (navItemTag)
@@ -327,12 +347,6 @@ namespace Wall_You_Need_Next_Gen
                 // Log the exception but don't crash
                 System.Diagnostics.Debug.WriteLine($"Navigation error: {ex.Message}");
             }
-        }
-
-        private StackPanel FindParentNavPanel(Button button)
-        {
-            // Simply return the NavPanel reference
-            return NavPanel;
         }
 
         private void ResetButtonStyle(Button navButton)

@@ -106,152 +106,164 @@
             </Grid.ColumnDefinitions>
         
             <!-- Side Navigation -->
-            <Border Grid.Column="0" 
+            <Border x:Name="NavigationContainer"
+                    Grid.Column="0" 
                     Background="#F9F9F9" 
                     BorderBrush="#EEEEEE" 
                     BorderThickness="0,0,1,0">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel x:Name="NavPanel" Orientation="Vertical" Spacing="4">
-                        <!-- Home Button -->
-                        <Button x:Name="HomeButton" 
-                                Click="NavButton_Click"
-                                Tag="Home"
-                                Style="{StaticResource NavButtonStyle}">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemActiveBorderStyle}">
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/home.png" 
-                                               Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="Home" 
-                                                   Style="{StaticResource NavTextStyle}"
-                                                   Foreground="{StaticResource NavbarAccentBrush}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Button>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                        <!-- Collections Button -->
-                        <Button x:Name="CollectionsButton" 
-                                Click="NavButton_Click"
-                                Tag="Collections"
-                                Style="{StaticResource NavButtonStyle}">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemBorderStyle}">
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/collections.png" 
-                                               Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="Collections" 
-                                                   Style="{StaticResource NavTextStyle}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Button>
+                    <!-- Main Navigation Items -->
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="NavPanel" Orientation="Vertical" Spacing="4">
+                            <!-- Home Button -->
+                            <Button x:Name="HomeButton" 
+                                    Click="NavButton_Click"
+                                    Tag="Home"
+                                    Style="{StaticResource NavButtonStyle}">
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Style="{StaticResource NavItemActiveBorderStyle}">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="ms-appx:///Assets/home.png" 
+                                                   Style="{StaticResource NavIconStyle}" />
+                                            <TextBlock Text="Home" 
+                                                       Style="{StaticResource NavTextStyle}"
+                                                       Foreground="{StaticResource NavbarAccentBrush}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
 
-                        <!-- AI Generated Button -->
-                        <Button x:Name="AIGeneratedButton" 
-                                Click="NavButton_Click"
-                                Tag="AIGenerated"
-                                Style="{StaticResource NavButtonStyle}">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemBorderStyle}">
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/aigenerated.png" 
-                                               Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="AI generated" 
-                                                   Style="{StaticResource NavTextStyle}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Button>
+                            <!-- Collections Button -->
+                            <Button x:Name="CollectionsButton" 
+                                    Click="NavButton_Click"
+                                    Tag="Collections"
+                                    Style="{StaticResource NavButtonStyle}">
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Style="{StaticResource NavItemBorderStyle}">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="ms-appx:///Assets/collections.png" 
+                                                   Style="{StaticResource NavIconStyle}" />
+                                            <TextBlock Text="Collections" 
+                                                       Style="{StaticResource NavTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
 
-                        <!-- Personal Button -->
-                        <Button x:Name="PersonalButton" 
-                                Click="NavButton_Click"
-                                Tag="Personal"
-                                Style="{StaticResource NavButtonStyle}">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemBorderStyle}">
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/personal.png" 
-                                               Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="Personal" 
-                                                   Style="{StaticResource NavTextStyle}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Button>
+                            <!-- AI Generated Button -->
+                            <Button x:Name="AIGeneratedButton" 
+                                    Click="NavButton_Click"
+                                    Tag="AIGenerated"
+                                    Style="{StaticResource NavButtonStyle}">
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Style="{StaticResource NavItemBorderStyle}">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="ms-appx:///Assets/aigenerated.png" 
+                                                   Style="{StaticResource NavIconStyle}" />
+                                            <TextBlock Text="AI generated" 
+                                                       Style="{StaticResource NavTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
 
-                        <!-- Slideshow Button -->
-                        <Button x:Name="SlideshowButton" 
-                                Click="NavButton_Click"
-                                Tag="Slideshow"
-                                Style="{StaticResource NavButtonStyle}">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemBorderStyle}">
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/slideshow.png" 
-                                               Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="Slideshow" 
-                                                   Style="{StaticResource NavTextStyle}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Button>
+                            <!-- Personal Button -->
+                            <Button x:Name="PersonalButton" 
+                                    Click="NavButton_Click"
+                                    Tag="Personal"
+                                    Style="{StaticResource NavButtonStyle}">
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Style="{StaticResource NavItemBorderStyle}">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="ms-appx:///Assets/personal.png" 
+                                                   Style="{StaticResource NavIconStyle}" />
+                                            <TextBlock Text="Personal" 
+                                                       Style="{StaticResource NavTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
 
-                        <!-- Interactive Slideshow Button -->
-                        <Button x:Name="InteractiveSlideshowButton" 
-                                Click="NavButton_Click"
-                                Tag="InteractiveSlideshow"
-                                Style="{StaticResource NavButtonStyle}">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemBorderStyle}">
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/interactive.png" 
-                                               Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="Interactive slideshow" 
-                                                   Style="{StaticResource NavTextStyle}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Button>
+                            <!-- Slideshow Button -->
+                            <Button x:Name="SlideshowButton" 
+                                    Click="NavButton_Click"
+                                    Tag="Slideshow"
+                                    Style="{StaticResource NavButtonStyle}">
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Style="{StaticResource NavItemBorderStyle}">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="ms-appx:///Assets/slideshow.png" 
+                                                   Style="{StaticResource NavIconStyle}" />
+                                            <TextBlock Text="Slideshow" 
+                                                       Style="{StaticResource NavTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
 
-                        <!-- Widgets Button -->
-                        <Button x:Name="WidgetsButton" 
-                                Click="NavButton_Click"
-                                Tag="Widgets"
-                                Style="{StaticResource NavButtonStyle}">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemBorderStyle}">
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/widget.png" 
-                                               Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="Widgets" 
-                                                   Style="{StaticResource NavTextStyle}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Button>
+                            <!-- Interactive Slideshow Button -->
+                            <Button x:Name="InteractiveSlideshowButton" 
+                                    Click="NavButton_Click"
+                                    Tag="InteractiveSlideshow"
+                                    Style="{StaticResource NavButtonStyle}">
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Style="{StaticResource NavItemBorderStyle}">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="ms-appx:///Assets/interactive.png" 
+                                                   Style="{StaticResource NavIconStyle}" />
+                                            <TextBlock Text="Interactive slideshow" 
+                                                       Style="{StaticResource NavTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
 
-                        <!-- Upload Wallpaper Button -->
-                        <Button x:Name="UploadWallpaperButton" 
-                                Click="NavButton_Click"
-                                Tag="UploadWallpaper"
-                                Style="{StaticResource NavButtonStyle}">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemBorderStyle}">
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/upload.png" 
-                                               Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="Upload wallpaper" 
-                                                   Style="{StaticResource NavTextStyle}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Button>
+                            <!-- Widgets Button -->
+                            <Button x:Name="WidgetsButton" 
+                                    Click="NavButton_Click"
+                                    Tag="Widgets"
+                                    Style="{StaticResource NavButtonStyle}">
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Style="{StaticResource NavItemBorderStyle}">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="ms-appx:///Assets/widget.png" 
+                                                   Style="{StaticResource NavIconStyle}" />
+                                            <TextBlock Text="Widgets" 
+                                                       Style="{StaticResource NavTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
 
-                        <!-- Spacer to push footer items to bottom -->
-                        <Rectangle Height="20" Fill="Transparent" />
+                            <!-- Upload Wallpaper Button -->
+                            <Button x:Name="UploadWallpaperButton" 
+                                    Click="NavButton_Click"
+                                    Tag="UploadWallpaper"
+                                    Style="{StaticResource NavButtonStyle}">
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Style="{StaticResource NavItemBorderStyle}">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="ms-appx:///Assets/upload.png" 
+                                                   Style="{StaticResource NavIconStyle}" />
+                                            <TextBlock Text="Upload wallpaper" 
+                                                       Style="{StaticResource NavTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </ScrollViewer>
 
+                    <!-- Footer Navigation Items (fixed at bottom) -->
+                    <StackPanel Grid.Row="1" x:Name="FooterNavPanel" Orientation="Vertical" Spacing="4" Margin="0,4,0,0">
+                        <!-- Add a separator line -->
+                        <Rectangle Height="1" Fill="#EEEEEE" Margin="8,0,8,4"/>
+                        
                         <!-- My Account Button -->
                         <Button x:Name="MyAccountButton" 
                                 Click="NavButton_Click"
@@ -286,7 +298,7 @@
                             </StackPanel>
                         </Button>
                     </StackPanel>
-                </ScrollViewer>
+                </Grid>
             </Border>
             
             <!-- Content Frame -->
