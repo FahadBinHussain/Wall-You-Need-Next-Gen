@@ -123,7 +123,20 @@ namespace Wall_You_Need_Next_Gen.Views
                             // Extract wallpaper details from JSON
                             string id = wallpaperElement.GetProperty("ID").GetString();
                             string title = wallpaperElement.GetProperty("Title").GetString();
-                            string imageUrl = wallpaperElement.GetProperty("FullPhotoUrl").GetString();
+                            
+                            // Try to get MiniPhotoUrl
+                            string imageUrl;
+                            try
+                            {
+                                imageUrl = wallpaperElement.GetProperty("MiniPhotoUrl").GetString();
+                            }
+                            catch (KeyNotFoundException)
+                            {
+                                // If MiniPhotoUrl doesn't exist, use a default or the regular photo URL from the API
+                                imageUrl = wallpaperElement.GetProperty("FullPhotoUrl").GetString();
+                                System.Diagnostics.Debug.WriteLine($"MiniPhotoUrl not found for wallpaper ID {id}, using regular photo URL instead");
+                            }
+                            
                             string resolution = wallpaperElement.GetProperty("Resolution").GetString();
                             
                             // Extract tag data
