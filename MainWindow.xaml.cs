@@ -108,6 +108,16 @@ namespace Wall_You_Need_Next_Gen
             
             // Navigate to the homepage by default
             ContentFrame.Navigate(typeof(HomePage));
+            
+            // Apply the correct style to the default selected Home button
+            if (HomeButton != null)
+            {
+                // Reset all buttons to ensure clean state
+                ResetAllNavButtonStyles();
+                
+                // Apply the selected style with the correct text color to Home button
+                ApplySelectedButtonStyle(HomeButton);
+            }
         }
 
         private void ResetAllNavButtonStyles()
@@ -473,7 +483,25 @@ namespace Wall_You_Need_Next_Gen
             }
             
             // Update selected text color
-            FindAndUpdateTextBlock(selectedStack, new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 255, 87, 51)));
+            SolidColorBrush selectedTextBrush;
+            try 
+            {
+                // Try to get the brush from resources first
+                selectedTextBrush = Application.Current.Resources["NavbarSelectedTextBrush"] as SolidColorBrush;
+            }
+            catch
+            {
+                // Fall back to creating the brush directly
+                selectedTextBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 25, 25, 25)); // #191919
+            }
+            
+            // If we couldn't get the brush from resources or caught an exception, create it directly
+            if (selectedTextBrush == null)
+            {
+                selectedTextBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 25, 25, 25)); // #191919
+            }
+            
+            FindAndUpdateTextBlock(selectedStack, selectedTextBrush);
         }
 
         private void FindAndUpdateTextBlock(StackPanel stack, Brush foreground)

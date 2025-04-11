@@ -141,7 +141,7 @@
                                                    Style="{StaticResource NavIconStyle}" />
                                             <TextBlock Text="Home" 
                                                        Style="{StaticResource NavTextStyle}"
-                                                       Foreground="{StaticResource NavbarAccentBrush}" />
+                                                       Foreground="{StaticResource NavbarSelectedTextBrush}" />
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>

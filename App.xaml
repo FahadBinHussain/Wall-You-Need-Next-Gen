@@ -22,6 +22,7 @@
             <SolidColorBrush x:Key="NavbarAccentBrush" Color="#FF5733"/>
             <SolidColorBrush x:Key="NavbarIconBrush" Color="#FF5733"/>
             <SolidColorBrush x:Key="NavbarTextBrush" Color="#6C757D"/>
+            <SolidColorBrush x:Key="NavbarSelectedTextBrush" Color="#191919"/>
             
         </ResourceDictionary>
     </Application.Resources>
