@@ -44,6 +44,32 @@ namespace Wall_You_Need_Next_Gen
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(CustomTitleBar);
             
+            // Ensure the navbar selected brush is correctly initialized
+            try
+            {
+                // Initialize the selected background brush with the desired color
+                var selectedBgBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 234, 234, 234)); // #eaeaea
+                
+                // We need to access the resource dictionary through Content's Resources in WinUI 3
+                if (Content is FrameworkElement element)
+                {
+                    // Try to add or replace the resource in the content's resource dictionary
+                    if (element.Resources.TryGetValue("NavbarSelectedBgBrush", out _))
+                    {
+                        element.Resources["NavbarSelectedBgBrush"] = selectedBgBrush;
+                    }
+                    else
+                    {
+                        element.Resources.Add("NavbarSelectedBgBrush", selectedBgBrush);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log any error but don't crash
+                System.Diagnostics.Debug.WriteLine($"Failed to initialize selected brush: {ex.Message}");
+            }
+            
             // Change the window's title
             Title = "Wall-You-Need";
             
@@ -362,7 +388,18 @@ namespace Wall_You_Need_Next_Gen
                 Style defaultStyle = null;
                 try
                 {
-                    defaultStyle = Application.Current.Resources["NavItemBorderStyle"] as Style;
+                    // Check if this is a footer button
+                    bool isFooter = navButton.Tag?.ToString() == "MyAccount" || navButton.Tag?.ToString() == "Settings";
+                    
+                    // Apply appropriate style based on whether it's a footer button or not
+                    if (isFooter)
+                    {
+                        defaultStyle = Application.Current.Resources["FooterNavItemBorderStyle"] as Style;
+                    }
+                    else
+                    {
+                        defaultStyle = Application.Current.Resources["NavItemBorderStyle"] as Style;
+                    }
                 }
                 catch
                 {
@@ -390,25 +427,48 @@ namespace Wall_You_Need_Next_Gen
             // Apply active style to border
             if (selectedStack.Children[0] is Border selectedBorder)
             {
+                // Always directly set the background color to ensure consistency
+                selectedBorder.Background = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 234, 234, 234)); // #eaeaea
+                selectedBorder.BorderThickness = new Thickness(4, 0, 0, 0);
+                selectedBorder.BorderBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 255, 87, 51)); // #FF5733
+                
                 // Try to get the style from different resource dictionaries
                 Style activeStyle = null;
                 
                 try
                 {
-                    activeStyle = Application.Current.Resources["NavItemActiveBorderStyle"] as Style;
+                    // Check if this is a footer button
+                    bool isFooter = button.Tag?.ToString() == "MyAccount" || button.Tag?.ToString() == "Settings";
+                    
+                    // Apply appropriate style based on whether it's a footer button or not
+                    if (isFooter)
+                    {
+                        activeStyle = Application.Current.Resources["FooterNavItemActiveBorderStyle"] as Style;
+                        
+                        // Make sure to set the height for footer items
+                        selectedBorder.Height = 60;
+                    }
+                    else
+                    {
+                        activeStyle = Application.Current.Resources["NavItemActiveBorderStyle"] as Style;
+                        
+                        // Make sure to set the height for regular items
+                        selectedBorder.Height = 76;
+                    }
+                    
+                    // Apply the style if we found it
+                    if (activeStyle != null)
+                    {
+                        selectedBorder.Style = activeStyle;
+                        
+                        // Ensure the background is set to our desired color even after applying the style
+                        selectedBorder.Background = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 234, 234, 234)); // #eaeaea
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // If we can't get the style, set properties directly
-                    selectedBorder.Background = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(20, 255, 87, 51));
-                    selectedBorder.BorderThickness = new Thickness(4, 0, 0, 0);
-                    selectedBorder.BorderBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 255, 87, 51));
-                }
-                
-                // Apply the style if we found it
-                if (activeStyle != null)
-                {
-                    selectedBorder.Style = activeStyle;
+                    // Log the error but continue
+                    System.Diagnostics.Debug.WriteLine($"Failed to apply active style: {ex.Message}");
                 }
             }
             

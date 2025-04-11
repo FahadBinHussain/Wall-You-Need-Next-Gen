@@ -16,12 +16,6 @@
         </Grid.RowDefinitions>
         
         <Grid.Resources>
-            <!-- Define colors -->
-            <SolidColorBrush x:Key="NavbarAccentBrush" Color="#FF5733"/>
-            <SolidColorBrush x:Key="NavbarIconBrush" Color="#FF5733"/>
-            <SolidColorBrush x:Key="NavbarTextBrush" Color="#6C757D"/>
-            <SolidColorBrush x:Key="NavbarSelectedBgBrush" Color="#F0F0F0"/>
-            
             <!-- Define styles -->
             <Style x:Key="NavButtonStyle" TargetType="Button">
                 <Setter Property="Width" Value="76"/>
@@ -34,6 +28,11 @@
                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             </Style>
             
+            <!-- Footer specific button style with reduced height -->
+            <Style x:Key="FooterNavButtonStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                <Setter Property="Height" Value="60"/>
+            </Style>
+            
             <Style x:Key="NavItemBorderStyle" TargetType="Border">
                 <Setter Property="Width" Value="76"/>
                 <Setter Property="Height" Value="76"/>
@@ -43,10 +42,20 @@
                 <Setter Property="HorizontalAlignment" Value="Stretch"/>
             </Style>
             
+            <!-- Footer specific border style with reduced height -->
+            <Style x:Key="FooterNavItemBorderStyle" TargetType="Border" BasedOn="{StaticResource NavItemBorderStyle}">
+                <Setter Property="Height" Value="60"/>
+            </Style>
+            
             <Style x:Key="NavItemActiveBorderStyle" TargetType="Border" BasedOn="{StaticResource NavItemBorderStyle}">
                 <Setter Property="Background" Value="{StaticResource NavbarSelectedBgBrush}"/>
                 <Setter Property="BorderBrush" Value="{StaticResource NavbarAccentBrush}"/>
                 <Setter Property="BorderThickness" Value="4,0,0,0"/>
+            </Style>
+            
+            <!-- Footer specific active border style with reduced height -->
+            <Style x:Key="FooterNavItemActiveBorderStyle" TargetType="Border" BasedOn="{StaticResource NavItemActiveBorderStyle}">
+                <Setter Property="Height" Value="60"/>
             </Style>
             
             <Style x:Key="NavIconStyle" TargetType="Image">
@@ -260,17 +269,17 @@
                     </ScrollViewer>
 
                     <!-- Footer Navigation Items (fixed at bottom) -->
-                    <StackPanel Grid.Row="1" x:Name="FooterNavPanel" Orientation="Vertical" Spacing="4" Margin="0,4,0,0">
+                    <StackPanel Grid.Row="1" x:Name="FooterNavPanel" Orientation="Vertical" Spacing="2" Margin="0,2,0,0">
                         <!-- Add a separator line -->
-                        <Rectangle Height="1" Fill="#EEEEEE" Margin="8,0,8,4"/>
+                        <Rectangle Height="1" Fill="#EEEEEE" Margin="8,0,8,2"/>
                         
                         <!-- My Account Button -->
                         <Button x:Name="MyAccountButton" 
                                 Click="NavButton_Click"
                                 Tag="MyAccount"
-                                Style="{StaticResource NavButtonStyle}">
+                                Style="{StaticResource FooterNavButtonStyle}">
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemBorderStyle}">
+                                <Border Style="{StaticResource FooterNavItemBorderStyle}">
                                     <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <Image Source="ms-appx:///Assets/account.png" 
                                                Style="{StaticResource NavIconStyle}" />
@@ -285,9 +294,9 @@
                         <Button x:Name="SettingsButton" 
                                 Click="NavButton_Click"
                                 Tag="Settings"
-                                Style="{StaticResource NavButtonStyle}">
+                                Style="{StaticResource FooterNavButtonStyle}">
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource NavItemBorderStyle}">
+                                <Border Style="{StaticResource FooterNavItemBorderStyle}">
                                     <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <Image Source="ms-appx:///Assets/settings.png" 
                                                Style="{StaticResource NavIconStyle}" />

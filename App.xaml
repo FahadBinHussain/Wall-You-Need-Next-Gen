@@ -17,6 +17,12 @@
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             
+            <!-- App-wide Colors -->
+            <SolidColorBrush x:Key="NavbarSelectedBgBrush" Color="#eaeaea"/>
+            <SolidColorBrush x:Key="NavbarAccentBrush" Color="#FF5733"/>
+            <SolidColorBrush x:Key="NavbarIconBrush" Color="#FF5733"/>
+            <SolidColorBrush x:Key="NavbarTextBrush" Color="#6C757D"/>
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>
