@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using Microsoft.UI.Xaml.Media.Animation; // For Storyboard
 
 namespace Wall_You_Need_Next_Gen.Views
 {
@@ -34,6 +35,9 @@ namespace Wall_You_Need_Next_Gen.Views
         private double _loadMoreThreshold = 0.4; // 40% of the scroll viewer height
         // No max pages limit - truly infinite scrolling
         
+        // Flag to track if initial load is complete
+        private bool _initialLoadComplete = false;
+        
         // Base API URL for wallpaper requests
         private const string ApiBaseUrl = "https://backiee.com/api/wallpaper/list.php";
         
@@ -54,9 +58,8 @@ namespace Wall_You_Need_Next_Gen.Views
         
         private async void LatestWallpapersPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // Show loading indicator with 0 progress
-            LoadingProgressBar.Value = 0;
-            LoadingProgressBar.Visibility = Visibility.Visible;
+            // Reset the initial load flag
+            _initialLoadComplete = false;
             
             // Initialize the GridView with wallpapers collection
             WallpapersGridView.ItemsSource = _wallpapers;
@@ -69,8 +72,8 @@ namespace Wall_You_Need_Next_Gen.Views
             // Load first page of wallpapers
             await LoadMoreWallpapers();
             
-            // Hide loading indicator after first batch is loaded
-            LoadingProgressBar.Visibility = Visibility.Collapsed;
+            // Mark initial load as complete
+            _initialLoadComplete = true;
         }
         
         private void LatestWallpapersPage_Unloaded(object sender, RoutedEventArgs e)
@@ -89,39 +92,11 @@ namespace Wall_You_Need_Next_Gen.Views
             {
                 _isLoading = true;
                 
-                // Show loading indicator for subsequent page loads
-                if (_currentPage > 0)
-                {
-                    LoadingProgressBar.Value = 0;
-                    LoadingProgressBar.Visibility = Visibility.Visible;
-                }
+                // Show loading indicator for every API call
+                LoadingProgressBar.Visibility = Visibility.Visible;
                 
                 // Start the API call immediately
                 string apiUrl = $"{ApiBaseUrl}?action=paging_list&list_type=latest&page={_currentPage}&page_size={_itemsPerPage}&category=all&is_ai=all&sort_by=popularity&4k=false&5k=false&8k=false&status=active&args=";
-                
-                // Start the progress animation in a separate task that runs in parallel with the API call
-                var progressAnimationTask = Task.Run(async () =>
-                {
-                    // Initial delay at 0%
-                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 0);
-                    await Task.Delay(50);
-                    
-                    // Gradual progression with smaller steps
-                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 15);
-                    await Task.Delay(100);
-                    
-                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 30);
-                    await Task.Delay(150);
-                    
-                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 45);
-                    await Task.Delay(150);
-                    
-                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 65);
-                    await Task.Delay(100);
-                    
-                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 85);
-                    await Task.Delay(50);
-                });
                 
                 // Fetch data from API
                 HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
@@ -195,10 +170,6 @@ namespace Wall_You_Need_Next_Gen.Views
                     // If API request failed, mark that there are no more items
                     _hasMoreItems = false;
                 }
-                
-                // Quick jump to 100% when complete
-                LoadingProgressBar.Value = 100;
-                await Task.Delay(100);
             }
             catch (Exception ex)
             {
@@ -229,6 +200,7 @@ namespace Wall_You_Need_Next_Gen.Views
                     verticalOffset >= maxVerticalOffset * _loadMoreThreshold &&
                     !_isLoading)
                 {
+                    // LoadMoreWallpapers without showing the progress bar
                     await LoadMoreWallpapers();
                 }
             }
