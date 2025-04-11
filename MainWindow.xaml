@@ -9,6 +9,10 @@
     mc:Ignorable="d"
     Title="Wall-You-Need">
 
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="Base"/>
+    </Window.SystemBackdrop>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -16,6 +20,12 @@
         </Grid.RowDefinitions>
         
         <Grid.Resources>
+            <!-- Define color resources -->
+            <SolidColorBrush x:Key="NavbarSelectedBgBrush" Color="#00000000"/> <!-- Completely transparent -->
+            <SolidColorBrush x:Key="NavbarAccentBrush" Color="#FF5733"/> <!-- Orange accent -->
+            <SolidColorBrush x:Key="NavbarTextBrush" Color="#808080"/> <!-- Gray text -->
+            <SolidColorBrush x:Key="NavbarSelectedTextBrush" Color="#191919"/> <!-- Dark gray text for selected items -->
+            
             <!-- Define styles -->
             <Style x:Key="NavButtonStyle" TargetType="Button">
                 <Setter Property="Width" Value="76"/>
@@ -86,8 +96,8 @@
             </Style>
         </Grid.Resources>
         
-        <!-- Custom TitleBar -->
-        <Grid x:Name="CustomTitleBar" Grid.Row="0" Height="48" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <!-- Custom TitleBar with transparent background -->
+        <Grid x:Name="CustomTitleBar" Grid.Row="0" Height="48" Background="Transparent">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -129,12 +139,12 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
         
-            <!-- Side Navigation -->
+            <!-- Side Navigation with translucent background -->
             <Border x:Name="NavigationContainer"
                     Grid.Column="0" 
-                    Background="#F9F9F9" 
-                    BorderBrush="#EEEEEE" 
-                    BorderThickness="0,0,1,0">
+                    BorderBrush="Transparent" 
+                    BorderThickness="0,0,1,0"
+                    Background="Transparent">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
@@ -413,7 +423,7 @@
                     <!-- Footer Navigation Items (fixed at bottom) -->
                     <StackPanel Grid.Row="1" x:Name="FooterNavPanel" Orientation="Vertical" Spacing="2" Margin="0,2,0,0">
                         <!-- Add a separator line -->
-                        <Rectangle Height="1" Fill="#EEEEEE" Margin="8,0,8,2"/>
+                        <Rectangle Height="1" Fill="Transparent" Margin="8,0,8,2"/>
                         
                         <!-- My Account Button -->
                         <Button x:Name="MyAccountButton" 
@@ -484,11 +494,11 @@
                 </Grid>
             </Border>
             
-            <!-- Content Frame -->
+            <!-- Content Frame with translucent background -->
             <Frame x:Name="ContentFrame" 
                    Grid.Column="1" 
                    Padding="0" 
-                   Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+                   Background="Transparent" />
         </Grid>
     </Grid>
 </Window>
