@@ -31,7 +31,7 @@ namespace Wall_You_Need_Next_Gen.Views
         private int _currentPage = 0;
         private int _itemsPerPage = 30; // Exactly 30 items per page as requested
         private bool _hasMoreItems = true;
-        private double _loadMoreThreshold = 0.8; // 80% of the scroll viewer height
+        private double _loadMoreThreshold = 0.4; // 40% of the scroll viewer height
         // No max pages limit - truly infinite scrolling
         
         // Base API URL for wallpaper requests
@@ -96,16 +96,32 @@ namespace Wall_You_Need_Next_Gen.Views
                     LoadingProgressBar.Visibility = Visibility.Visible;
                 }
                 
-                // Brief initial delay at 0%
-                LoadingProgressBar.Value = 0;
-                await Task.Delay(100);
-                
-                // Update to 30% and stay there for longer
-                LoadingProgressBar.Value = 30;
-                await Task.Delay(700);
-                
-                // Construct API URL with the current page number
+                // Start the API call immediately
                 string apiUrl = $"{ApiBaseUrl}?action=paging_list&list_type=latest&page={_currentPage}&page_size={_itemsPerPage}&category=all&is_ai=all&sort_by=popularity&4k=false&5k=false&8k=false&status=active&args=";
+                
+                // Start the progress animation in a separate task that runs in parallel with the API call
+                var progressAnimationTask = Task.Run(async () =>
+                {
+                    // Initial delay at 0%
+                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 0);
+                    await Task.Delay(50);
+                    
+                    // Gradual progression with smaller steps
+                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 15);
+                    await Task.Delay(100);
+                    
+                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 30);
+                    await Task.Delay(150);
+                    
+                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 45);
+                    await Task.Delay(150);
+                    
+                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 65);
+                    await Task.Delay(100);
+                    
+                    _dispatcherQueue.TryEnqueue(() => LoadingProgressBar.Value = 85);
+                    await Task.Delay(50);
+                });
                 
                 // Fetch data from API
                 HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
@@ -146,7 +162,7 @@ namespace Wall_You_Need_Next_Gen.Views
                             string downloadsCount = wallpaperElement.GetProperty("Downloads").GetString();
                             
                             // Create wallpaper item
-                var wallpaper = new WallpaperItem
+                            var wallpaper = new WallpaperItem
                             {
                                 Id = id,
                                 Title = title,
@@ -182,7 +198,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 
                 // Quick jump to 100% when complete
                 LoadingProgressBar.Value = 100;
-                await Task.Delay(200);
+                await Task.Delay(100);
             }
             catch (Exception ex)
             {
@@ -208,20 +224,12 @@ namespace Wall_You_Need_Next_Gen.Views
                 double verticalOffset = scrollViewer.VerticalOffset;
                 double maxVerticalOffset = scrollViewer.ScrollableHeight;
                 
-                // Load more items when we're 70% through the current content (more aggressive loading)
-                // This ensures the user never reaches the bottom during normal scrolling
+                // Load more items when the scrollbar is at the defined threshold of the scrollable content
                 if (maxVerticalOffset > 0 &&
-                    verticalOffset >= maxVerticalOffset * 0.7 &&
+                    verticalOffset >= maxVerticalOffset * _loadMoreThreshold &&
                     !_isLoading)
                 {
                     await LoadMoreWallpapers();
-                    
-                    // Immediately trigger another load if we're still near the bottom
-                    // This helps ensure continuous content availability for fast scrollers
-                    if (scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight * 0.85 && !_isLoading)
-                    {
-                        await LoadMoreWallpapers();
-                    }
                 }
             }
         }
