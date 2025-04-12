@@ -7,11 +7,15 @@
     xmlns:models="using:Wall_You_Need_Next_Gen.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:Microsoft.UI.Xaml"
+    xmlns:data="using:Microsoft.UI.Xaml.Data"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <!-- Remove custom style, no replacement needed -->
+        <!-- Custom converters -->
+        <local:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -83,6 +87,7 @@
                         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
                         <Setter Property="Width" Value="Auto"/>
                         <Setter Property="Height" Value="Auto"/>
+                        <Setter Property="BorderThickness" Value="0"/>
                     </Style>
                 </GridView.ItemContainerStyle>
                 
@@ -99,95 +104,74 @@
                 </GridView.ItemsPanel>
                 
                 <GridView.ItemTemplate>
-                    <DataTemplate x:DataType="local:WallpaperItem">
+                    <DataTemplate>
                         <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                              CornerRadius="4"
+                              CornerRadius="12"
                               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                               BorderThickness="0.5"
-                              Margin="1"
+                              Margin="0"
+                              Padding="0"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch">
                             
                             <!-- Wallpaper Image Container -->
                             <Image x:Name="ItemImage"
-                                   Source="{x:Bind ImageSource}"
                                    Stretch="UniformToFill"
                                    CacheMode="BitmapCache"
                                    HorizontalAlignment="Stretch"
                                    VerticalAlignment="Stretch"/>
                             
                             <!-- Tag Overlays -->
-                            <Grid>
+                            <Grid Margin="0" Padding="0">
                                 <!-- Quality Tag - Top Left -->
-                                <Border Background="#CC000000" 
-                                        CornerRadius="2"
+                                <Border x:Name="QualityTagBorder"
                                         HorizontalAlignment="Left" 
                                         VerticalAlignment="Top"
-                                        Margin="0,0,0,0"
-                                        Padding="6,2"
-                                        Visibility="{x:Bind QualityTag, Converter={StaticResource StringToVisibilityConverter}}">
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <FontIcon FontFamily="Segoe Fluent Icons" 
-                                                  Glyph="&#xE9D9;" 
-                                                  FontSize="10" 
-                                                  Foreground="White"/>
-                                        <TextBlock Text="{x:Bind QualityTag}" 
-                                                   Foreground="White" 
-                                                   FontSize="10" 
-                                                   FontWeight="SemiBold"/>
-                                    </StackPanel>
+                                        Margin="0"
+                                        Padding="0"
+                                        Visibility="Collapsed">
+                                    <Image x:Name="QualityImage" Width="90" Height="54" Margin="0" HorizontalAlignment="Left"/>
                                 </Border>
                                 
                                 <!-- AI Tag - Top Right -->
-                                <Border Background="#CC6B00D1" 
-                                        CornerRadius="2"
+                                <Border x:Name="AITagBorder"
                                         HorizontalAlignment="Right" 
                                         VerticalAlignment="Top"
-                                        Margin="0,0,0,0"
-                                        Padding="6,2"
-                                        Visibility="{x:Bind IsAI, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <FontIcon FontFamily="Segoe Fluent Icons" 
-                                                  Glyph="&#xF0E3;" 
-                                                  FontSize="10" 
-                                                  Foreground="White"/>
-                                        <TextBlock Text="AI" 
-                                                   Foreground="White" 
-                                                   FontSize="10" 
-                                                   FontWeight="SemiBold"/>
-                                    </StackPanel>
+                                        Margin="0,0,8,0"
+                                        Padding="0"
+                                        Visibility="Collapsed">
+                                    <Image x:Name="AIImage" Width="40" Height="40" Margin="0"/>
                                 </Border>
                                 
-                                <!-- Bottom Right Stats Container -->
-                                <Border Background="#99000000" 
-                                        CornerRadius="2"
+                                <!-- Stats Container (Bottom Right) integrated with card -->
+                                <Border CornerRadius="8,0,12,0"
                                         HorizontalAlignment="Right" 
                                         VerticalAlignment="Bottom"
-                                        Margin="0,0,0,0"
-                                        Padding="6,3">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        Margin="0"
+                                        Padding="10,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
                                         <!-- Likes -->
                                         <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock x:Name="LikesText" 
+                                                       Foreground="White" 
+                                                       FontSize="14" 
+                                                       FontWeight="SemiBold"/>
                                             <FontIcon FontFamily="Segoe Fluent Icons" 
                                                       Glyph="&#xEB52;" 
-                                                      FontSize="10" 
+                                                      FontSize="14" 
                                                       Foreground="White"/>
-                                            <TextBlock Text="{x:Bind Likes}" 
-                                                       Foreground="White" 
-                                                       FontSize="10" 
-                                                       FontWeight="SemiBold"/>
                                         </StackPanel>
                                         
                                         <!-- Downloads -->
                                         <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock x:Name="DownloadsText" 
+                                                       Foreground="White" 
+                                                       FontSize="14" 
+                                                       FontWeight="SemiBold"/>
                                             <FontIcon FontFamily="Segoe Fluent Icons" 
                                                       Glyph="&#xE896;" 
-                                                      FontSize="10" 
+                                                      FontSize="14" 
                                                       Foreground="White"/>
-                                            <TextBlock Text="{x:Bind Downloads}" 
-                                                       Foreground="White" 
-                                                       FontSize="10" 
-                                                       FontWeight="SemiBold"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>

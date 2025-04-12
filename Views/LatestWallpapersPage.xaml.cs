@@ -13,9 +13,50 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using Microsoft.UI.Xaml.Media.Animation; // For Storyboard
+using Microsoft.UI.Xaml.Data; // For value converter
 
 namespace Wall_You_Need_Next_Gen.Views
 {
+    // Converter to convert boolean to visibility (visible if true)
+    public class BooleanToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool boolValue)
+            {
+                return boolValue ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            if (value is Visibility visibility)
+            {
+                return visibility == Visibility.Visible;
+            }
+            return false;
+        }
+    }
+    
+    // Converter to convert string to visibility (visible if not null or empty)
+    public class StringToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is string stringValue)
+            {
+                return string.IsNullOrEmpty(stringValue) ? Visibility.Collapsed : Visibility.Visible;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
     public sealed partial class LatestWallpapersPage : Page
     {
         // Collection to hold the wallpapers
@@ -303,56 +344,47 @@ namespace Wall_You_Need_Next_Gen.Views
                 if (image != null && wallpaper != null)
                 {
                     image.Source = wallpaper.ImageSource;
+                    
+                    // Handle quality tag
+                    var qualityTagBorder = templateRoot.FindName("QualityTagBorder") as Border;
+                    var qualityImage = templateRoot.FindName("QualityImage") as Image;
+                    if (qualityTagBorder != null && qualityImage != null && !string.IsNullOrEmpty(wallpaper.QualityTag))
+                    {
+                        qualityTagBorder.Visibility = Visibility.Visible;
+                        // Set the quality image source
+                        string qualityImagePath = wallpaper.QualityLogoPath;
+                        if (!string.IsNullOrEmpty(qualityImagePath))
+                        {
+                            qualityImage.Source = new BitmapImage(new Uri(qualityImagePath));
+                        }
+                    }
+                    
+                    // Handle AI tag
+                    var aiTagBorder = templateRoot.FindName("AITagBorder") as Border;
+                    var aiImage = templateRoot.FindName("AIImage") as Image;
+                    if (aiTagBorder != null && aiImage != null)
+                    {
+                        aiTagBorder.Visibility = wallpaper.IsAI ? Visibility.Visible : Visibility.Collapsed;
+                        if (wallpaper.IsAI)
+                        {
+                            aiImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/aigenerated-icon.png"));
+                        }
+                    }
+                    
+                    // Handle likes and downloads text
+                    var likesText = templateRoot.FindName("LikesText") as TextBlock;
+                    if (likesText != null)
+                    {
+                        likesText.Text = wallpaper.Likes;
+                    }
+                    
+                    var downloadsText = templateRoot.FindName("DownloadsText") as TextBlock;
+                    if (downloadsText != null)
+                    {
+                        downloadsText.Text = wallpaper.Downloads;
+                    }
                 }
             }
         }
-    }
-    
-    // Enhanced model for wallpaper items
-    public class WallpaperItem
-    {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public BitmapImage ImageSource { get; set; }
-        public string Resolution { get; set; }
-        
-        // New properties for the tags
-        public string QualityTag { get; set; } // 4K, 5K, 8K
-        public bool IsAI { get; set; }
-        public string Likes { get; set; }
-        public string Downloads { get; set; }
-        
-        public ICommand DownloadCommand { get; set; }
-        
-        public WallpaperItem()
-        {
-            // Initialize the download command
-            DownloadCommand = new RelayCommand(_ => 
-            {
-                // This would download the wallpaper
-                // Not implemented in this placeholder version
-            });
-        }
-    }
-    
-    // Simple RelayCommand implementation for the DownloadCommand
-    public class RelayCommand : ICommand
-    {
-        private readonly Action<object> _execute;
-        private readonly Func<object, bool> _canExecute;
-        
-        public event EventHandler CanExecuteChanged;
-        
-        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
-        {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
-        }
-        
-        public bool CanExecute(object parameter) => _canExecute == null || _canExecute(parameter);
-        
-        public void Execute(object parameter) => _execute(parameter);
-        
-        public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 } 
