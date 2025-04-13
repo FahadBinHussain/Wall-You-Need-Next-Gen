@@ -4,71 +4,82 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Wall_You_Need_Next_Gen.Views"
+    xmlns:models="using:Wall_You_Need_Next_Gen.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="Transparent">
+
+    <Page.Resources>
+        <!-- Animation Storyboards -->
+        <Storyboard x:Name="FadeOutBanner">
+            <DoubleAnimation Storyboard.TargetName="LatestBannerImage" 
+                             Storyboard.TargetProperty="Opacity" 
+                             To="0" Duration="0:0:0.3" 
+                             Completed="FadeOutBanner_Completed"/>
+        </Storyboard>
+        <Storyboard x:Name="FadeInBanner">
+            <DoubleAnimation Storyboard.TargetName="LatestBannerImage" 
+                             Storyboard.TargetProperty="Opacity" 
+                             From="0" To="1" Duration="0:0:0.5"/>
+        </Storyboard>
+    </Page.Resources>
 
     <Grid>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="8,0,8,8" Spacing="16">
+            <StackPanel Margin="24,0,24,24" Spacing="16">
                 <TextBlock Text="Home" Style="{StaticResource TitleTextBlockStyle}" Margin="0,24,0,0" />
 
-                <!-- Latest Wallpapers Section -->
-                <Grid Tapped="LatestWallpapers_Tapped" Height="300">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- Banner image with overlay text -->
-                    <Image x:Name="LatestBannerImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
-                    <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="24">
-                        <StackPanel>
-                            <TextBlock Text="Latest wallpapers" 
-                                        Style="{StaticResource SubtitleTextBlockStyle}" 
-                                        Foreground="White" 
-                                        FontWeight="SemiBold" />
-                            <TextBlock Text="The lastest wallpapers in one collection. You can find the freshest wallpapers here." 
-                                        Foreground="White"
-                                        TextWrapping="Wrap" 
-                                        Margin="0,4,0,0" />
-                        </StackPanel>
-                    </Grid>
-                </Grid>
-
-                <!-- Two Column Grid for Other Categories -->
-                <Grid Height="150">
+                <!-- Top Banners Section - Grid Layout -->
+                <Grid ColumnSpacing="16" Height="300">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*"/> <!-- Left column for large banner -->
+                        <ColumnDefinition Width="1*"/> <!-- Right column for stacked smaller banners -->
                     </Grid.ColumnDefinitions>
 
-                    <!-- 8K UltraHD Wallpapers -->
-                    <Grid Grid.Column="0" Margin="0,0,8,0">
-                        <Image x:Name="UltraHdImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
-                        <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="16">
-                            <TextBlock Text="8K UltraHD wallpapers" 
-                                        Style="{StaticResource BodyTextBlockStyle}" 
-                                        Foreground="White" 
-                                        FontWeight="SemiBold" />
+                    <!-- Latest Wallpapers Section (Left Column) -->
+                    <Grid Grid.Column="0" Tapped="LatestWallpapers_Tapped" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                        <Image x:Name="LatestBannerImage" Stretch="UniformToFill" CacheMode="BitmapCache" Opacity="1" />
+                        <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="24">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock x:Name="LatestBannerTitle" Text="Latest wallpapers" 
+                                           Style="{StaticResource SubtitleTextBlockStyle}" 
+                                           Foreground="White" 
+                                           TextAlignment="Center"
+                                           FontWeight="SemiBold" />
+                                <TextBlock x:Name="LatestBannerDescription" Text="The lastest wallpapers in one collection. You can find the freshest wallpapers here." 
+                                           Foreground="White"
+                                           TextWrapping="Wrap" 
+                                           TextAlignment="Center"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
                         </Grid>
                     </Grid>
 
-                    <!-- AI Generated -->
-                    <Grid Grid.Column="1" Margin="8,0,0,0">
-                        <Image x:Name="AiGeneratedImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
-                        <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="16">
-                            <TextBlock Text="AI generated" 
-                                        Style="{StaticResource BodyTextBlockStyle}" 
-                                        Foreground="White" 
-                                        FontWeight="SemiBold" />
+                    <!-- Stacked Banners Section (Right Column) -->
+                    <StackPanel Grid.Column="1" Spacing="16">
+                        <!-- 8K UltraHD Wallpapers -->
+                        <Grid CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Height="142"> <!-- Adjusted height -->
+                            <Image x:Name="UltraHdImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
+                            <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="16">
+                                <TextBlock Text="8K UltraHD wallpapers" 
+                                           Style="{StaticResource BodyTextBlockStyle}" 
+                                           Foreground="White" 
+                                           FontWeight="SemiBold" />
+                            </Grid>
                         </Grid>
-                    </Grid>
-                </Grid>
 
-                <!-- AI Chat Widget Banner -->
-                <Grid Height="120">
-                    <Image x:Name="AiChatWidgetImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
+                        <!-- AI Generated -->
+                        <Grid CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Height="142"> <!-- Adjusted height -->
+                            <Image x:Name="AiGeneratedImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
+                            <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="16">
+                                <TextBlock Text="AI generated" 
+                                           Style="{StaticResource BodyTextBlockStyle}" 
+                                           Foreground="White" 
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </Grid>
+                    </StackPanel>
                 </Grid>
 
                 <!-- Daily Popular Wallpapers Section -->
@@ -115,11 +126,83 @@
                         </GridView.ItemsPanel>
                         
                         <GridView.ItemTemplate>
-                            <DataTemplate>
-                                <local:WallpaperCard HorizontalAlignment="Stretch" 
-                                                    VerticalAlignment="Stretch"
-                                                    Width="Auto"
-                                                    Height="Auto" />
+                            <DataTemplate x:DataType="models:Wallpaper">
+                                <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                      CornerRadius="12"
+                                      BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                      BorderThickness="0.5"
+                                      Margin="0"
+                                      Padding="0"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch">
+                                    
+                                    <!-- Wallpaper Image Container -->
+                                    <Image x:Name="ItemImage"
+                                           Source="{x:Bind ImagePath}" 
+                                           Stretch="UniformToFill"
+                                           CacheMode="BitmapCache"
+                                           HorizontalAlignment="Stretch"
+                                           VerticalAlignment="Stretch"/>
+                                    
+                                    <!-- Tag Overlays -->
+                                    <Grid Margin="0" Padding="0">
+                                        <!-- Quality Tag - Top Left (Placeholder) -->
+                                        <Border x:Name="QualityTagBorder"
+                                                HorizontalAlignment="Left" 
+                                                VerticalAlignment="Top"
+                                                Margin="0"
+                                                Padding="0"
+                                                Visibility="Collapsed">
+                                            <Image x:Name="QualityImage" Width="90" Height="54" Margin="0" HorizontalAlignment="Left"/>
+                                        </Border>
+                                        
+                                        <!-- AI Tag - Top Right -->
+                                        <Border x:Name="AITagBorder"
+                                                HorizontalAlignment="Right" 
+                                                VerticalAlignment="Top"
+                                                Margin="0,0,8,0"
+                                                Padding="0"
+                                                Visibility="{x:Bind IsAIGenerated, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <Image x:Name="AIImage" Width="40" Height="40" Margin="0" Source="ms-appx:///Assets/aigenerated-icon.png"/>
+                                        </Border>
+                                        
+                                        <!-- Stats Container (Bottom Right) integrated with card -->
+                                        <Border CornerRadius="8,0,12,0"
+                                                Background="#AA000000" 
+                                                HorizontalAlignment="Right" 
+                                                VerticalAlignment="Bottom"
+                                                Margin="0"
+                                                Padding="10,6">
+                                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                                <!-- Likes -->
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock x:Name="LikesText" 
+                                                               Text="{x:Bind Likes}"
+                                                               Foreground="White" 
+                                                               FontSize="14" 
+                                                               FontWeight="SemiBold"/>
+                                                    <FontIcon FontFamily="Segoe Fluent Icons" 
+                                                              Glyph="&#xEB52;" 
+                                                              FontSize="14" 
+                                                              Foreground="White"/>
+                                                </StackPanel>
+                                                
+                                                <!-- Downloads -->
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock x:Name="DownloadsText" 
+                                                               Text="{x:Bind Downloads}"
+                                                               Foreground="White" 
+                                                               FontSize="14" 
+                                                               FontWeight="SemiBold"/>
+                                                    <FontIcon FontFamily="Segoe Fluent Icons" 
+                                                              Glyph="&#xE896;" 
+                                                              FontSize="14" 
+                                                              Foreground="White"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </Grid>
                             </DataTemplate>
                         </GridView.ItemTemplate>
                     </GridView>

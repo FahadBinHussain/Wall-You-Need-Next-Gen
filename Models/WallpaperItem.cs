@@ -10,6 +10,7 @@ namespace Wall_You_Need_Next_Gen.Models
     {
         public string Id { get; set; }
         public string Title { get; set; }
+        public string Description { get; set; }
         public string ImageUrl { get; set; }
         public BitmapImage ImageSource { get; set; }
         public string Resolution { get; set; }
