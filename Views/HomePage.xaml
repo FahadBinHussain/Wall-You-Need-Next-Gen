@@ -26,21 +26,66 @@
     </Page.Resources>
 
     <Grid>
+        <!-- Add VisualStateManager -->
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="WindowSizeStates">
+                <VisualState x:Name="NarrowLayout"> <!-- Default state (single column) -->
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="TopBannersGrid.RowSpacing" Value="16"/>
+                        <Setter Target="TopBannersGrid.ColumnSpacing" Value="0"/>
+                        <Setter Target="LatestBannerGrid.(Grid.Row)" Value="0"/>
+                        <Setter Target="LatestBannerGrid.(Grid.Column)" Value="0"/>
+                        <Setter Target="LatestBannerGrid.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="SmallBannersGrid.(Grid.Row)" Value="1"/>
+                        <Setter Target="SmallBannersGrid.(Grid.Column)" Value="0"/>
+                        <Setter Target="SmallBannersGrid.(Grid.ColumnSpan)" Value="2"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="WideLayout"> <!-- State for wider screens (two columns) -->
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="850" /> <!-- Adjust breakpoint as needed -->
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="TopBannersGrid.RowSpacing" Value="0"/>
+                        <Setter Target="TopBannersGrid.ColumnSpacing" Value="16"/>
+                        <Setter Target="LatestBannerGrid.(Grid.Row)" Value="0"/>
+                        <Setter Target="LatestBannerGrid.(Grid.Column)" Value="0"/>
+                        <Setter Target="LatestBannerGrid.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="SmallBannersGrid.(Grid.Row)" Value="0"/>
+                        <Setter Target="SmallBannersGrid.(Grid.Column)" Value="1"/>
+                        <Setter Target="SmallBannersGrid.(Grid.ColumnSpan)" Value="1"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="24,0,24,24" Spacing="16">
                 <TextBlock Text="Home" Style="{StaticResource TitleTextBlockStyle}" Margin="0,24,0,0" />
 
                 <!-- Top Banners Section - Grid Layout -->
-                <Grid ColumnSpacing="16" Height="300">
+                <Grid x:Name="TopBannersGrid" Height="Auto"> <!-- Set Height=Auto, add x:Name -->
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/> <!-- Add second row for narrow layout -->
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/> <!-- Left column for large banner -->
-                        <ColumnDefinition Width="1*"/> <!-- Right column for stacked smaller banners -->
+                        <ColumnDefinition Width="2*"/> 
+                        <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Latest Wallpapers Section (Left Column) -->
-                    <Grid Grid.Column="0" Tapped="LatestWallpapers_Tapped" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                        <Image x:Name="LatestBannerImage" Stretch="UniformToFill" CacheMode="BitmapCache" Opacity="1" />
-                        <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="24">
+                    <!-- Latest Wallpapers Section (Set initial Grid position for narrow) -->
+                    <Grid x:Name="LatestBannerGrid" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" 
+                          Tapped="LatestWallpapers_Tapped" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                        <!-- Remove Viewbox, keep Image -->
+                        <Image x:Name="LatestBannerImage" 
+                               Stretch="UniformToFill" 
+                               CacheMode="BitmapCache" 
+                               Opacity="1" />
+                        <Grid Background="#88000000" VerticalAlignment="Bottom" Padding="24">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="Latest wallpapers" 
                                            Style="{StaticResource SubtitleTextBlockStyle}" 
@@ -56,12 +101,18 @@
                         </Grid>
                     </Grid>
 
-                    <!-- Stacked Banners Section (Right Column) -->
-                    <StackPanel Grid.Column="1" Spacing="16">
-                        <!-- 8K UltraHD Wallpapers -->
-                        <Grid CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Height="142"> <!-- Adjusted height -->
+                    <!-- Stacked Banners Section (Set initial Grid position for narrow) -->
+                    <Grid x:Name="SmallBannersGrid" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+                          RowSpacing="16"> 
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- 8K UltraHD Wallpapers (Remove Height, set Grid.Row) -->
+                        <Grid Grid.Row="0" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <Image x:Name="UltraHdImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
-                            <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="16">
+                            <Grid Background="#88000000" VerticalAlignment="Bottom" Padding="16">
                                 <TextBlock Text="8K UltraHD wallpapers" 
                                            Style="{StaticResource BodyTextBlockStyle}" 
                                            Foreground="White" 
@@ -69,17 +120,17 @@
                             </Grid>
                         </Grid>
 
-                        <!-- AI Generated -->
-                        <Grid CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Height="142"> <!-- Adjusted height -->
+                        <!-- AI Generated (Remove Height, set Grid.Row) -->
+                        <Grid Grid.Row="1" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <Image x:Name="AiGeneratedImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
-                            <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="16">
+                            <Grid Background="#88000000" VerticalAlignment="Bottom" Padding="16">
                                 <TextBlock Text="AI generated" 
                                            Style="{StaticResource BodyTextBlockStyle}" 
                                            Foreground="White" 
                                            FontWeight="SemiBold" />
                             </Grid>
                         </Grid>
-                    </StackPanel>
+                    </Grid>
                 </Grid>
 
                 <!-- Daily Popular Wallpapers Section -->
