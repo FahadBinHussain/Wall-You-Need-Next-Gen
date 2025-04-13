@@ -42,12 +42,12 @@
                         <Image x:Name="LatestBannerImage" Stretch="UniformToFill" CacheMode="BitmapCache" Opacity="1" />
                         <Grid Background="#44000000" VerticalAlignment="Bottom" Padding="24">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="LatestBannerTitle" Text="Latest wallpapers" 
+                                <TextBlock Text="Latest wallpapers" 
                                            Style="{StaticResource SubtitleTextBlockStyle}" 
                                            Foreground="White" 
                                            TextAlignment="Center"
                                            FontWeight="SemiBold" />
-                                <TextBlock x:Name="LatestBannerDescription" Text="The lastest wallpapers in one collection. You can find the freshest wallpapers here." 
+                                <TextBlock Text="The lastest wallpapers in one collection. You can find the freshest wallpapers here." 
                                            Foreground="White"
                                            TextWrapping="Wrap" 
                                            TextAlignment="Center"

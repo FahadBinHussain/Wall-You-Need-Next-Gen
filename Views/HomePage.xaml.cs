@@ -173,8 +173,6 @@ namespace Wall_You_Need_Next_Gen.Views
             var currentWallpaper = _latestBannerWallpapers[_currentBannerIndex];
 
             LatestBannerImage.Source = new BitmapImage(new Uri(currentWallpaper.ImageUrl));
-            LatestBannerTitle.Text = currentWallpaper.Title;
-            LatestBannerDescription.Text = currentWallpaper.Description;
         }
 
         private void LoadDailyPopularWallpapers()
