@@ -87,19 +87,19 @@
                                Opacity="1" />
                         <Grid Background="#88000000" VerticalAlignment="Bottom" Padding="24">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="Latest wallpapers" 
-                                           Style="{StaticResource SubtitleTextBlockStyle}" 
-                                           Foreground="White" 
+                            <TextBlock Text="Latest wallpapers" 
+                                        Style="{StaticResource SubtitleTextBlockStyle}" 
+                                        Foreground="White" 
                                            TextAlignment="Center"
-                                           FontWeight="SemiBold" />
-                                <TextBlock Text="The lastest wallpapers in one collection. You can find the freshest wallpapers here." 
-                                           Foreground="White"
-                                           TextWrapping="Wrap" 
+                                        FontWeight="SemiBold" />
+                            <TextBlock Text="The lastest wallpapers in one collection. You can find the freshest wallpapers here." 
+                                        Foreground="White"
+                                        TextWrapping="Wrap" 
                                            TextAlignment="Center"
-                                           Margin="0,4,0,0" />
-                            </StackPanel>
-                        </Grid>
+                                        Margin="0,4,0,0" />
+                        </StackPanel>
                     </Grid>
+                </Grid>
 
                     <!-- Stacked Banners Section (Set initial Grid position for narrow) -->
                     <Grid x:Name="SmallBannersGrid" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
@@ -111,26 +111,26 @@
                         
                         <!-- 8K UltraHD Wallpapers (Remove Height, set Grid.Row) -->
                         <Grid Grid.Row="0" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                            <Image x:Name="UltraHdImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
+                        <Image x:Name="UltraHdImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
                             <Grid Background="#88000000" VerticalAlignment="Bottom" Padding="16">
-                                <TextBlock Text="8K UltraHD wallpapers" 
-                                           Style="{StaticResource BodyTextBlockStyle}" 
-                                           Foreground="White" 
-                                           FontWeight="SemiBold" />
-                            </Grid>
+                            <TextBlock Text="8K UltraHD wallpapers" 
+                                        Style="{StaticResource BodyTextBlockStyle}" 
+                                        Foreground="White" 
+                                        FontWeight="SemiBold" />
                         </Grid>
+                    </Grid>
 
                         <!-- AI Generated (Remove Height, set Grid.Row) -->
                         <Grid Grid.Row="1" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                            <Image x:Name="AiGeneratedImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
+                        <Image x:Name="AiGeneratedImage" Stretch="UniformToFill" CacheMode="BitmapCache" />
                             <Grid Background="#88000000" VerticalAlignment="Bottom" Padding="16">
-                                <TextBlock Text="AI generated" 
-                                           Style="{StaticResource BodyTextBlockStyle}" 
-                                           Foreground="White" 
-                                           FontWeight="SemiBold" />
-                            </Grid>
+                            <TextBlock Text="AI generated" 
+                                        Style="{StaticResource BodyTextBlockStyle}" 
+                                        Foreground="White" 
+                                        FontWeight="SemiBold" />
                         </Grid>
                     </Grid>
+                </Grid>
                 </Grid>
 
                 <!-- Daily Popular Wallpapers Section -->

@@ -19,6 +19,7 @@ using Wall_You_Need_Next_Gen.Views;
 using WinRT.Interop;
 using Windows.Storage;
 using Windows.Graphics;
+using Windows.UI;   // Needed for Colors too (namespace collision needs explicit use)
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -81,6 +82,27 @@ namespace Wall_You_Need_Next_Gen
             // Initialize the last applied size with default minimum values
             lastAppliedSize = new SizeInt32(800, 600);
             
+            // *** Add TitleBar color customization ***
+            if (AppWindowTitleBar.IsCustomizationSupported()) // Check if customization is supported
+            {
+                var titleBar = m_appWindow.TitleBar;
+                titleBar.ExtendsContentIntoTitleBar = true; // Ensure this is true
+
+                // Set transparent background for caption buttons
+                titleBar.ButtonBackgroundColor = Colors.Transparent;
+                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+                
+                // Register theme change handler
+                if(this.Content is FrameworkElement rootElement)
+                {
+                    rootElement.ActualThemeChanged += RootElement_ActualThemeChanged;
+                }
+                
+                // Set initial colors
+                UpdateTitleBarColors(titleBar);
+            }
+            // *** End TitleBar color customization ***
+            
             // Set initial window size if needed - without triggering resize event
             if (m_appWindow.Size.Width < 800 || m_appWindow.Size.Height < 600)
             {
@@ -118,6 +140,9 @@ namespace Wall_You_Need_Next_Gen
                 // Apply the selected style with the correct text color to Home button
                 ApplySelectedButtonStyle(HomeButton);
             }
+            
+            // Register the navigated event handler for the ContentFrame
+            ContentFrame.Navigated += ContentFrame_Navigated;
         }
 
         private void ResetAllNavButtonStyles()
@@ -603,5 +628,70 @@ namespace Wall_You_Need_Next_Gen
                 textBlock.Foreground = foreground;
             }
         }
+
+        // Event handler for the ContentFrame's Navigated event
+        private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
+        {
+            // Show the back arrow button if we can go back, hide otherwise
+            BackArrowButton.Visibility = ContentFrame.CanGoBack ? Visibility.Visible : Visibility.Collapsed;
+            
+            // Update the IsEnabled state (though binding should handle this, explicit update can be safer)
+            BackArrowButton.IsEnabled = ContentFrame.CanGoBack;
+            
+            // Optional: Adjust margin of the AppTitlePanel based on back button visibility
+            // This ensures the title stays visually centered or appropriately spaced
+            AppTitlePanel.Margin = ContentFrame.CanGoBack ? new Thickness(0) : new Thickness(16, 0, 0, 0); // Add left margin only if back button is hidden
+        }
+        
+        // Event handler for the Back Arrow Button click
+        private void BackArrowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentFrame.CanGoBack)
+            {
+                ContentFrame.GoBack();
+            }
+        }
+
+        // *** Add Theme Change Handler and Color Update Method ***
+        private void RootElement_ActualThemeChanged(FrameworkElement sender, object args)
+        {
+             if (AppWindowTitleBar.IsCustomizationSupported())
+             {
+                UpdateTitleBarColors(m_appWindow.TitleBar);
+             }
+        }
+        
+        private void UpdateTitleBarColors(AppWindowTitleBar titleBar)
+        {
+            if (Content is FrameworkElement rootElement)
+            {
+                // Check the current theme
+                if (rootElement.ActualTheme == ElementTheme.Dark)
+                {
+                    // Dark theme colors
+                    titleBar.ButtonForegroundColor = Colors.White;
+                    titleBar.ButtonHoverForegroundColor = Colors.White;
+                    titleBar.ButtonPressedForegroundColor = Colors.White;
+                    titleBar.ButtonInactiveForegroundColor = Color.FromArgb(255, 160, 160, 160); // Lighter gray when inactive
+
+                    // Subtle hover/press backgrounds for dark theme
+                    titleBar.ButtonHoverBackgroundColor = Color.FromArgb(255, 60, 60, 60);
+                    titleBar.ButtonPressedBackgroundColor = Color.FromArgb(255, 90, 90, 90);
+                }
+                else
+                {
+                    // Light theme colors
+                    titleBar.ButtonForegroundColor = Colors.Black;
+                    titleBar.ButtonHoverForegroundColor = Colors.Black;
+                    titleBar.ButtonPressedForegroundColor = Colors.Black;
+                    titleBar.ButtonInactiveForegroundColor = Color.FromArgb(255, 100, 100, 100); // Darker gray when inactive
+
+                    // Subtle hover/press backgrounds for light theme
+                    titleBar.ButtonHoverBackgroundColor = Color.FromArgb(20, 0, 0, 0); // Slightly darker transparent
+                    titleBar.ButtonPressedBackgroundColor = Color.FromArgb(50, 0, 0, 0); // Darker transparent
+                }
+            }
+        }
+        // *** End Theme Change Handler ***
     }
 }

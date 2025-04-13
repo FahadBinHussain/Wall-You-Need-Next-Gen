@@ -99,27 +99,91 @@
         <!-- Custom TitleBar with transparent background -->
         <Grid x:Name="CustomTitleBar" Grid.Row="0" Height="48" Background="Transparent">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/> <!-- Column for back button and title -->
+                <ColumnDefinition Width="*"/> <!-- Central column for Search -->
+                <ColumnDefinition Width="Auto"/> <!-- Right drag area / padding -->
             </Grid.ColumnDefinitions>
-            
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                <Image Source="ms-appx:///Assets/logo.png" Width="24" Height="24" Margin="0,0,8,0" />
-                <TextBlock Text="Wall-You-Need" VerticalAlignment="Center" FontSize="14" Style="{StaticResource BodyTextBlockStyle}" />
+
+            <!-- Container for Back button and Title -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,0">
+                <!-- Back Button -->
+                <Button x:Name="BackArrowButton"
+                        VerticalAlignment="Center"
+                        Width="48" Height="48"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Margin="0" Padding="0"
+                        Click="BackArrowButton_Click"
+                        Visibility="Collapsed"
+                        IsEnabled="{x:Bind ContentFrame.CanGoBack, Mode=OneWay}">
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE830;" FontSize="16"/>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                                            <VisualStateManager.VisualStateGroups>
+                                                <VisualStateGroup x:Name="CommonStates">
+                                                    <VisualState x:Name="Normal"/>
+                                                    <VisualState x:Name="PointerOver">
+                                                        <Storyboard>
+                                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleFillColorSecondaryBrush}"/>
+                                                            </ObjectAnimationUsingKeyFrames>
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                    <VisualState x:Name="Pressed">
+                                                        <Storyboard>
+                                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
+                                                            </ObjectAnimationUsingKeyFrames>
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                    <VisualState x:Name="Disabled">
+                                                        <Storyboard>
+                                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorDisabledBrush}"/>
+                                                            </ObjectAnimationUsingKeyFrames>
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                </VisualStateGroup>
+                                            </VisualStateManager.VisualStateGroups>
+                                            <ContentPresenter x:Name="ContentPresenter"
+                                                              Content="{TemplateBinding Content}"
+                                                              HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"
+                                                              AutomationProperties.AccessibilityView="Raw"/>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <!-- Existing Logo and Title - Set initial margin -->
+                <StackPanel x:Name="AppTitlePanel" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+                    <Image Source="ms-appx:///Assets/logo.png" Width="24" Height="24" Margin="0,0,8,0" />
+                    <TextBlock Text="Wall-You-Need" VerticalAlignment="Center" FontSize="14" Style="{StaticResource BodyTextBlockStyle}" />
+                </StackPanel>
             </StackPanel>
-            
+
+            <!-- Search Box in the middle column -->
             <Grid Grid.Column="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="0.4*" />
-                    <ColumnDefinition Width="0.6*" />
-                </Grid.ColumnDefinitions>
-                <AutoSuggestBox Grid.Column="1" PlaceholderText="Search..." 
+                <!-- Optional: Add column definitions if needed for fine-grained control -->
+                <!-- <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" /> 
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions> -->
+                <AutoSuggestBox Grid.Column="0" PlaceholderText="Search..." 
                                 Margin="10,8" 
                                 Width="Auto"
                                 MinWidth="200"
                                 MaxWidth="400"
-                                HorizontalAlignment="Left" 
+                                HorizontalAlignment="Center" 
                                 QueryIcon="Find">
                     <AutoSuggestBox.CacheMode>
                         <BitmapCache />
