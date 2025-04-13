@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace Wall_You_Need_Next_Gen.Models
 {
@@ -9,6 +10,7 @@ namespace Wall_You_Need_Next_Gen.Models
     {
         public string Id { get; set; }
         public string Title { get; set; }
+        public string ImageUrl { get; set; }
         public BitmapImage ImageSource { get; set; }
         public string Resolution { get; set; }
         
@@ -40,6 +42,39 @@ namespace Wall_You_Need_Next_Gen.Models
                     return "ms-appx:///Assets/8k_logo.png";
                 
                 // Return null if no matching logo is found
+                return null;
+            }
+        }
+        
+        // Async method to load the actual image when needed
+        public async Task<BitmapImage> LoadImageAsync()
+        {
+            if (string.IsNullOrEmpty(ImageUrl))
+                return null;
+                
+            try
+            {
+                // Create a simple BitmapImage - the simpler approach often works better
+                var bitmap = new BitmapImage();
+                
+                // Set bitmap properties
+                bitmap.CreateOptions = BitmapCreateOptions.None;
+                
+                // Important: log the URL we're trying to load
+                System.Diagnostics.Debug.WriteLine($"Loading image from URL: {ImageUrl}");
+                
+                // Set URI source directly without the complex TaskCompletionSource
+                bitmap.UriSource = new Uri(ImageUrl);
+                
+                // Use a simple timeout to give the image a chance to load
+                await Task.Delay(100); // Small delay to allow the loading to start
+                
+                // Return the bitmap - the image will continue loading asynchronously
+                return bitmap;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error creating image: {ex.Message}");
                 return null;
             }
         }

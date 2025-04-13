@@ -65,8 +65,14 @@ namespace Wall_You_Need_Next_Gen.Views
         // For HTTP requests
         private readonly HttpClient _httpClient = new HttpClient();
         
+        // Preloaded placeholder image for faster loading
+        private BitmapImage _placeholderImage;
+        
         // For simulating delayed loading
         private DispatcherQueue _dispatcherQueue;
+        
+        // Timer for periodically checking placeholder images
+        private DispatcherQueueTimer _placeholderTimer;
         
         // Properties for infinite scrolling
         private bool _isLoading = false;
@@ -92,9 +98,37 @@ namespace Wall_You_Need_Next_Gen.Views
             // Get the dispatcher queue for this thread
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             
+            // Preload the placeholder image
+            InitializePlaceholderImage();
+            
+            // We're using a fully asynchronous approach now, so no timer is needed
+            // _placeholderTimer = _dispatcherQueue.CreateTimer();
+            // _placeholderTimer.Interval = TimeSpan.FromMilliseconds(1000); 
+            // _placeholderTimer.Tick += (s, e) => EnsurePlaceholdersForVisibleItems();
+            // _placeholderTimer.Start();
+            
             // Register for events
             Loaded += LatestWallpapersPage_Loaded;
             Unloaded += LatestWallpapersPage_Unloaded;
+        }
+        
+        private void InitializePlaceholderImage()
+        {
+            try
+            {
+                _placeholderImage = new BitmapImage();
+                _placeholderImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                _placeholderImage.UriSource = new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg");
+                
+                // Log success
+                System.Diagnostics.Debug.WriteLine("Placeholder image initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing placeholder image: {ex.Message}");
+                // Create a fallback placeholder if needed
+                _placeholderImage = new BitmapImage();
+            }
         }
         
         private async void LatestWallpapersPage_Loaded(object sender, RoutedEventArgs e)
@@ -121,6 +155,13 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             // Clean up
             _wallpapers.Clear();
+            
+            // Stop timer
+            if (_placeholderTimer != null)
+            {
+                _placeholderTimer.Stop();
+                _placeholderTimer = null;
+            }
         }
         
         private async Task LoadMoreWallpapers()
@@ -177,12 +218,13 @@ namespace Wall_You_Need_Next_Gen.Views
                             string likesCount = wallpaperElement.GetProperty("Rating").GetString();
                             string downloadsCount = wallpaperElement.GetProperty("Downloads").GetString();
                             
-                            // Create wallpaper item
+                            // Create wallpaper item - don't try to load the image yet, just store the URL
                             var wallpaper = new WallpaperItem
                             {
                                 Id = id,
                                 Title = title,
-                                ImageSource = new BitmapImage(new Uri(imageUrl)),
+                                ImageUrl = imageUrl, // Store URL instead of trying to load now
+                                ImageSource = _placeholderImage, // Initially use placeholder
                                 Resolution = resolution,
                                 QualityTag = qualityTag,
                                 IsAI = isAI,
@@ -310,80 +352,224 @@ namespace Wall_You_Need_Next_Gen.Views
         
         private void WallpapersGridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
+            // Add logging to track container lifecycle
+            System.Diagnostics.Debug.WriteLine($"Container changing for phase {args.Phase}, recycling: {args.InRecycleQueue}");
+            
             if (args.InRecycleQueue)
             {
-                // Clear image from items that are being recycled
+                // Use placeholder image for items that are being recycled
                 var templateRoot = args.ItemContainer.ContentTemplateRoot as Grid;
                 var image = templateRoot.FindName("ItemImage") as Image;
                 if (image != null)
                 {
-                    image.Source = null;
+                    // Always set to placeholder when recycling, don't try to reuse
+                    image.Source = _placeholderImage;
+                    
+                    // Clear the tag to prevent confusion
+                    image.Tag = null;
                 }
+                return;
             }
             
             if (args.Phase == 0)
             {
-                // Register for the next phase to load the image
+                // Register for the next phase to load the actual image
+                // Don't set placeholder here - it's already set in XAML
                 args.RegisterUpdateCallback(ShowImage);
                 args.Handled = true;
             }
         }
         
-        private void ShowImage(ListViewBase sender, ContainerContentChangingEventArgs args)
+        private async void ShowImage(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             if (args.Phase == 1)
             {
-                // Find the Image control in the template
-                var templateRoot = args.ItemContainer.ContentTemplateRoot as Grid;
-                var image = templateRoot.FindName("ItemImage") as Image; // First child should be the Image
-                
                 // Get the wallpaper item
                 var wallpaper = args.Item as WallpaperItem;
+                if (wallpaper == null) return;
                 
-                // Set the image source
-                if (image != null && wallpaper != null)
+                // Find the Image control
+                var templateRoot = args.ItemContainer.ContentTemplateRoot as Grid;
+                if (templateRoot == null) return;
+                
+                var image = templateRoot.FindName("ItemImage") as Image;
+                if (image == null) return;
+                
+                // Get a unique identifier for this specific instance
+                string imageKey = $"image_{wallpaper.Id}_{args.ItemContainer.GetHashCode()}";
+                
+                try
                 {
-                    image.Source = wallpaper.ImageSource;
+                    // Set a tag to track the current loading request
+                    image.Tag = imageKey;
                     
-                    // Handle quality tag
-                    var qualityTagBorder = templateRoot.FindName("QualityTagBorder") as Border;
-                    var qualityImage = templateRoot.FindName("QualityImage") as Image;
-                    if (qualityTagBorder != null && qualityImage != null && !string.IsNullOrEmpty(wallpaper.QualityTag))
+                    // Make sure placeholder is showing while we load
+                    image.Source = _placeholderImage;
+                    
+                    // Handle the metadata display
+                    SetItemMetadata(templateRoot, wallpaper);
+                    
+                    // Now trigger an asynchronous load of the actual image
+                    // This is done after setting metadata so UI is responsive
+                    await LoadImageForItemAsync(image, wallpaper, imageKey);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error in ShowImage: {ex.Message}");
+                }
+            }
+        }
+        
+        private async Task LoadImageForItemAsync(Image imageControl, WallpaperItem wallpaper, string requestKey)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"Starting image load for {wallpaper.Id} with key {requestKey}");
+                
+                // Load the image asynchronously
+                var bitmap = await wallpaper.LoadImageAsync();
+                
+                // If we got a valid bitmap
+                if (bitmap != null)
+                {
+                    // Set up event handlers to track loading
+                    bitmap.ImageOpened += (s, e) => 
                     {
-                        qualityTagBorder.Visibility = Visibility.Visible;
-                        // Set the quality image source
-                        string qualityImagePath = wallpaper.QualityLogoPath;
-                        if (!string.IsNullOrEmpty(qualityImagePath))
+                        System.Diagnostics.Debug.WriteLine($"SUCCESS: Image loaded for {wallpaper.Id}");
+                        
+                        // After successful load, update the item's ImageSource
+                        wallpaper.ImageSource = bitmap;
+                        
+                        // Double check tag to ensure we're setting the right image
+                        if (_dispatcherQueue.HasThreadAccess && imageControl.Tag?.ToString() == requestKey)
                         {
-                            qualityImage.Source = new BitmapImage(new Uri(qualityImagePath));
+                            imageControl.Source = bitmap;
                         }
-                    }
+                    };
                     
-                    // Handle AI tag
-                    var aiTagBorder = templateRoot.FindName("AITagBorder") as Border;
-                    var aiImage = templateRoot.FindName("AIImage") as Image;
-                    if (aiTagBorder != null && aiImage != null)
+                    bitmap.ImageFailed += (s, e) => 
                     {
-                        aiTagBorder.Visibility = wallpaper.IsAI ? Visibility.Visible : Visibility.Collapsed;
-                        if (wallpaper.IsAI)
+                        System.Diagnostics.Debug.WriteLine($"FAILED: Image failed to load for {wallpaper.Id}: {e.ErrorMessage}");
+                        
+                        // If image fails to load, ensure we keep the placeholder
+                        if (_dispatcherQueue.HasThreadAccess && imageControl.Tag?.ToString() == requestKey)
                         {
-                            aiImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/aigenerated-icon.png"));
+                            imageControl.Source = _placeholderImage;
                         }
-                    }
+                    };
                     
-                    // Handle likes and downloads text
-                    var likesText = templateRoot.FindName("LikesText") as TextBlock;
-                    if (likesText != null)
+                    // Check if this image control is still showing the same item
+                    if (imageControl.Tag?.ToString() == requestKey)
                     {
-                        likesText.Text = wallpaper.Likes;
-                    }
-                    
-                    var downloadsText = templateRoot.FindName("DownloadsText") as TextBlock;
-                    if (downloadsText != null)
-                    {
-                        downloadsText.Text = wallpaper.Downloads;
+                        // Always update on UI thread to avoid threading issues
+                        if (_dispatcherQueue.HasThreadAccess)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Setting image source for {wallpaper.Id}");
+                            imageControl.Source = bitmap;
+                        }
+                        else
+                        {
+                            _dispatcherQueue.TryEnqueue(() => 
+                            {
+                                if (imageControl.Tag?.ToString() == requestKey)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Setting image source via dispatcher for {wallpaper.Id}");
+                                    imageControl.Source = bitmap;
+                                }
+                            });
+                        }
                     }
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to create bitmap for {wallpaper.Id}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Exception loading image for {wallpaper.Id}: {ex.Message}");
+                
+                // Keep the placeholder on failure
+                if (imageControl.Tag?.ToString() == requestKey && _dispatcherQueue.HasThreadAccess)
+                {
+                    imageControl.Source = _placeholderImage;
+                }
+            }
+        }
+        
+        // Extract metadata setup to a separate method for clarity
+        private void SetItemMetadata(Grid templateRoot, WallpaperItem wallpaper)
+        {
+            // Handle quality tag
+            var qualityTagBorder = templateRoot.FindName("QualityTagBorder") as Border;
+            var qualityImage = templateRoot.FindName("QualityImage") as Image;
+            if (qualityTagBorder != null && qualityImage != null && !string.IsNullOrEmpty(wallpaper.QualityTag))
+            {
+                qualityTagBorder.Visibility = Visibility.Visible;
+                // Set the quality image source
+                string qualityImagePath = wallpaper.QualityLogoPath;
+                if (!string.IsNullOrEmpty(qualityImagePath))
+                {
+                    qualityImage.Source = new BitmapImage(new Uri(qualityImagePath));
+                }
+            }
+            
+            // Handle AI tag
+            var aiTagBorder = templateRoot.FindName("AITagBorder") as Border;
+            var aiImage = templateRoot.FindName("AIImage") as Image;
+            if (aiTagBorder != null && aiImage != null)
+            {
+                aiTagBorder.Visibility = wallpaper.IsAI ? Visibility.Visible : Visibility.Collapsed;
+                if (wallpaper.IsAI)
+                {
+                    aiImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/aigenerated-icon.png"));
+                }
+            }
+            
+            // Handle likes and downloads text
+            var likesText = templateRoot.FindName("LikesText") as TextBlock;
+            if (likesText != null)
+            {
+                likesText.Text = wallpaper.Likes;
+            }
+            
+            var downloadsText = templateRoot.FindName("DownloadsText") as TextBlock;
+            if (downloadsText != null)
+            {
+                downloadsText.Text = wallpaper.Downloads;
+            }
+        }
+        
+        // Make sure we always set placeholders for all visible items
+        private void EnsurePlaceholdersForVisibleItems()
+        {
+            try
+            {
+                if (WallpapersGridView.ItemsPanelRoot == null) return;
+                
+                foreach (var item in WallpapersGridView.ItemsPanelRoot.Children)
+                {
+                    var container = item as GridViewItem;
+                    if (container != null)
+                    {
+                        var templateRoot = container.ContentTemplateRoot as Grid;
+                        var image = templateRoot?.FindName("ItemImage") as Image;
+                        if (image != null)
+                        {
+                            // Only set placeholder if there is absolutely no image showing
+                            if (image.Source == null)
+                            {
+                                image.Source = _placeholderImage;
+                                System.Diagnostics.Debug.WriteLine("Set placeholder for idle item with no source");
+                            }
+                            // Don't override images that are already being loaded or displayed
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error setting placeholders: {ex.Message}");
             }
         }
     }

@@ -116,6 +116,7 @@
                             
                             <!-- Wallpaper Image Container -->
                             <Image x:Name="ItemImage"
+                                   Source="ms-appx:///Assets/placeholder-wallpaper-1000.jpg"
                                    Stretch="UniformToFill"
                                    CacheMode="BitmapCache"
                                    HorizontalAlignment="Stretch"
