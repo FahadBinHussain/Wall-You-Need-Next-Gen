@@ -1,0 +1,60 @@
+<Page
+    x:Class="Wall_You_Need_Next_Gen.Views.WallpaperDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Wall_You_Need_Next_Gen.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Wallpaper Title at the top -->
+        <TextBlock x:Name="TitleTextBlock" 
+                   Grid.Row="0"
+                   Text="Wallpaper Title" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Center"
+                   Margin="10,10,10,0"/>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="20">
+                
+                <!-- Wallpaper Image -->
+                <Border Background="#f0f0f0" CornerRadius="8" HorizontalAlignment="Center">
+                    <Image x:Name="WallpaperImage" 
+                           Stretch="Uniform" 
+                           Source="ms-appx:///Assets/placeholder-wallpaper-1000.jpg" 
+                           MaxHeight="800" 
+                           MaxWidth="1200"/>
+                </Border>
+
+                <!-- Metadata (Tags only) Section -->
+                <Grid Margin="0,20,0,0" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                        <!-- AI Tag -->
+                        <Border x:Name="AITagBorder" Background="#FF5733" CornerRadius="4" Padding="6,2" Visibility="Collapsed">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image x:Name="AIImage" Width="16" Height="16" Source="ms-appx:///Assets/aigenerated-icon.png"/>
+                            </StackPanel>
+                        </Border>
+                        <!-- Quality Tag (e.g., 4K, 8K) -->
+                         <Border x:Name="QualityTagBorder" Background="#50C878" CornerRadius="4" Padding="6,2" Visibility="Collapsed">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image x:Name="QualityImage" Width="16" Height="16" Margin="0,0,4,0" Source="ms-appx:///Assets/4k-icon.png"/>
+                                <TextBlock x:Name="QualityTagText" Text="4K" FontSize="12" Foreground="White" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page> 

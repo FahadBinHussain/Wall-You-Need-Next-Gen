@@ -229,7 +229,8 @@ namespace Wall_You_Need_Next_Gen.Views
                                 QualityTag = qualityTag,
                                 IsAI = isAI,
                                 Likes = likesCount,
-                                Downloads = downloadsCount
+                                Downloads = downloadsCount,
+                                FullPhotoUrl = wallpaperElement.GetProperty("FullPhotoUrl").GetString() // Store the full photo URL
                             };
                             
                             newWallpapers.Add(wallpaper);
@@ -293,8 +294,8 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             if (e.ClickedItem is WallpaperItem wallpaper)
             {
-                // Show a simple message - without using text display, just log to debug
-                System.Diagnostics.Debug.WriteLine($"Selected wallpaper: ID {wallpaper.Id}");
+                // Navigate to the WallpaperDetailPage and pass the full WallpaperItem object
+                this.Frame.Navigate(typeof(WallpaperDetailPage), wallpaper);
             }
         }
         

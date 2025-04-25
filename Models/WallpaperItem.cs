@@ -8,18 +8,19 @@ namespace Wall_You_Need_Next_Gen.Models
     // Model for wallpaper items
     public class WallpaperItem
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string ImageUrl { get; set; }
-        public BitmapImage ImageSource { get; set; }
-        public string Resolution { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty; // URL for the thumbnail
+        public string FullPhotoUrl { get; set; } = string.Empty; // URL for the full size image
+        public BitmapImage ImageSource { get; set; } // The loaded image source for the thumbnail
+        public string Resolution { get; set; } = string.Empty;
         
         // Properties for the tags
-        public string QualityTag { get; set; } // 4K, 5K, 8K
+        public string QualityTag { get; set; } = string.Empty; // e.g., 4K, 8K, UltraHD
         public bool IsAI { get; set; }
-        public string Likes { get; set; }
-        public string Downloads { get; set; }
+        public string Likes { get; set; } = "0";
+        public string Downloads { get; set; } = "0";
         
         public ICommand DownloadCommand { get; set; }
         
@@ -28,22 +29,10 @@ namespace Wall_You_Need_Next_Gen.Models
         {
             get
             {
-                if (string.IsNullOrEmpty(QualityTag))
-                    return null;
-                
-                // Convert the quality tag to lowercase and remove any spaces
-                string normalizedTag = QualityTag.ToLowerInvariant().Replace(" ", "");
-                
-                // Map the normalized tag to the corresponding logo path
-                if (normalizedTag.Contains("4k"))
-                    return "ms-appx:///Assets/4k_logo.png";
-                else if (normalizedTag.Contains("5k"))
-                    return "ms-appx:///Assets/5k_logo.png";
-                else if (normalizedTag.Contains("8k"))
-                    return "ms-appx:///Assets/8k_logo.png";
-                
-                // Return null if no matching logo is found
-                return null;
+                if (QualityTag?.ToUpper() == "4K") return "ms-appx:///Assets/4k-icon.png";
+                if (QualityTag?.ToUpper() == "8K") return "ms-appx:///Assets/8k-icon.png";
+                // Add other quality types if needed
+                return string.Empty;
             }
         }
         
@@ -76,6 +65,26 @@ namespace Wall_You_Need_Next_Gen.Models
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error creating image: {ex.Message}");
+                return null;
+            }
+        }
+        
+        // Method to load the full image
+        public async Task<BitmapImage> LoadFullImageAsync()
+        {
+            if (string.IsNullOrEmpty(FullPhotoUrl))
+                return null;
+
+            try
+            {
+                var bitmap = new BitmapImage();
+                bitmap.UriSource = new Uri(FullPhotoUrl);
+                // Optionally add caching or other loading options here
+                return bitmap;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading full image from URL {FullPhotoUrl}: {ex.Message}");
                 return null;
             }
         }
