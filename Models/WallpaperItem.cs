@@ -29,8 +29,9 @@ namespace Wall_You_Need_Next_Gen.Models
         {
             get
             {
-                if (QualityTag?.ToUpper() == "4K") return "ms-appx:///Assets/4k-icon.png";
-                if (QualityTag?.ToUpper() == "8K") return "ms-appx:///Assets/8k-icon.png";
+                if (QualityTag?.ToUpper() == "4K") return "ms-appx:///Assets/4k_logo.png";
+                if (QualityTag?.ToUpper() == "5K") return "ms-appx:///Assets/5k_logo.png";
+                if (QualityTag?.ToUpper() == "8K") return "ms-appx:///Assets/8k_logo.png";
                 // Add other quality types if needed
                 return string.Empty;
             }

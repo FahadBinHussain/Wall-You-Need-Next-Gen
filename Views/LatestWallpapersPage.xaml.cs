@@ -197,6 +197,9 @@ namespace Wall_You_Need_Next_Gen.Views
                             string id = wallpaperElement.GetProperty("ID").GetString();
                             string title = wallpaperElement.GetProperty("Title").GetString();
                             
+                            // Debug output the full JSON for this wallpaper
+                            System.Diagnostics.Debug.WriteLine($"Wallpaper {id} JSON: {wallpaperElement.ToString()}");
+                            
                             // Try to get MiniPhotoUrl
                             string imageUrl;
                             try
@@ -208,6 +211,20 @@ namespace Wall_You_Need_Next_Gen.Views
                                 // If MiniPhotoUrl doesn't exist, use a default or the regular photo URL from the API
                                 imageUrl = wallpaperElement.GetProperty("FullPhotoUrl").GetString();
                                 System.Diagnostics.Debug.WriteLine($"MiniPhotoUrl not found for wallpaper ID {id}, using regular photo URL instead");
+                            }
+                            
+                            // Get FullPhotoUrl with proper error handling
+                            string fullPhotoUrl = string.Empty;
+                            try 
+                            {
+                                fullPhotoUrl = wallpaperElement.GetProperty("FullPhotoUrl").GetString();
+                                System.Diagnostics.Debug.WriteLine($"FullPhotoUrl for ID {id}: {fullPhotoUrl}");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Error getting FullPhotoUrl for ID {id}: {ex.Message}");
+                                // Fallback to using the thumbnail URL if full photo URL is not available
+                                fullPhotoUrl = imageUrl;
                             }
                             
                             string resolution = wallpaperElement.GetProperty("Resolution").GetString();
@@ -230,7 +247,7 @@ namespace Wall_You_Need_Next_Gen.Views
                                 IsAI = isAI,
                                 Likes = likesCount,
                                 Downloads = downloadsCount,
-                                FullPhotoUrl = wallpaperElement.GetProperty("FullPhotoUrl").GetString() // Store the full photo URL
+                                FullPhotoUrl = fullPhotoUrl // Store the full photo URL
                             };
                             
                             newWallpapers.Add(wallpaper);
