@@ -78,12 +78,39 @@
                                 Margin="0,0,8,0"
                                 Padding="0"
                                 Visibility="Collapsed">
-                            <Image x:Name="AIImage" Width="40" Height="40" Margin="0"/>
+                            <Image x:Name="AIImage" 
+                                   Source="ms-appx:///Assets/aigenerated-icon.png"
+                                   Width="40" Height="40" Margin="0"/>
                         </Border>
-                                
-                        <!-- Stats Container has been removed as requested -->
                     </Grid>
                 </Grid>
+                
+                <!-- Action Buttons -->
+                <StackPanel Orientation="Horizontal" 
+                            HorizontalAlignment="Center" 
+                            Margin="0,15,0,20" 
+                            Spacing="15">
+                    
+                    <!-- Set As Wallpaper Button -->
+                    <Button x:Name="SetAsWallpaperButton"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Click="SetAsWallpaperButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE136;" FontSize="14"/>
+                            <TextBlock Text="Set as Wallpaper" FontSize="14" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Download Button -->
+                    <Button x:Name="DownloadButton"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Click="DownloadButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE118;" FontSize="14"/>
+                            <TextBlock Text="Download" FontSize="14" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
                 
                 <!-- Publisher Card -->
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -119,7 +146,9 @@
                             </Grid.RowDefinitions>
                             
                             <!-- Publisher Image -->
-                            <Ellipse Grid.Row="0" Width="100" Height="100" 
+                            <Ellipse Grid.Row="0" 
+                                     x:Name="PublisherProfileEllipse"
+                                     Width="100" Height="100" 
                                      HorizontalAlignment="Center" 
                                      Margin="0,0,0,15">
                                 <Ellipse.Fill>
@@ -132,6 +161,7 @@
                             
                             <!-- Wolf Silhouette -->
                             <Path Grid.Row="0"
+                                  x:Name="PublisherProfileIcon"
                                   Data="M50,65 C48,55 45,50 50,45 C55,50 52,55 50,65 M40,75 C38,55 42,40 50,30 C58,40 62,55 60,75 C55,70 45,70 40,75" 
                                   Fill="Black" 
                                   Opacity="0.6"
@@ -144,6 +174,7 @@
                             
                             <!-- Publisher Name -->
                             <TextBlock Grid.Row="1" 
+                                       x:Name="PublisherNameTextBlock"
                                        Text="Milan E." 
                                        FontSize="18" 
                                        FontWeight="SemiBold" 
@@ -152,6 +183,7 @@
                             
                             <!-- Publisher Info -->
                             <TextBlock Grid.Row="2" 
+                                       x:Name="PublisherInfoTextBlock"
                                        Text="Gender: Male · Age: 21 · Country: Private" 
                                        FontSize="12" 
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
@@ -209,7 +241,8 @@
                                         HorizontalAlignment="Center" 
                                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                                         BorderThickness="0,0,0.5,0">
-                                <TextBlock Text="172" 
+                                <TextBlock x:Name="UploadsTextBlock"
+                                           Text="172" 
                                            FontSize="20" 
                                            FontWeight="SemiBold" 
                                            HorizontalAlignment="Center"/>
@@ -225,7 +258,8 @@
                                         HorizontalAlignment="Center"
                                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                                         BorderThickness="0,0,0.5,0">
-                                <TextBlock Text="21587" 
+                                <TextBlock x:Name="LikesTextBlock"
+                                           Text="21587" 
                                            FontSize="20" 
                                            FontWeight="SemiBold" 
                                            HorizontalAlignment="Center"/>
@@ -239,7 +273,8 @@
                             <StackPanel Grid.Column="2" 
                                         Padding="10,15,10,15" 
                                         HorizontalAlignment="Center">
-                                <TextBlock Text="64" 
+                                <TextBlock x:Name="FollowersTextBlock"
+                                           Text="64" 
                                            FontSize="20" 
                                            FontWeight="SemiBold" 
                                            HorizontalAlignment="Center"/>
