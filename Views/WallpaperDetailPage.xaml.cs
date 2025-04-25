@@ -45,8 +45,6 @@ namespace Wall_You_Need_Next_Gen.Views
                     WallpaperImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
                 }
 
-                AITagBorder.Visibility = wallpaper.IsAI ? Visibility.Visible : Visibility.Collapsed;
-                
                 if (!string.IsNullOrEmpty(wallpaper.QualityTag) && (wallpaper.QualityTag == "4K" || wallpaper.QualityTag == "8K"))
                 {
                     QualityTagBorder.Visibility = Visibility.Visible;
@@ -77,7 +75,6 @@ namespace Wall_You_Need_Next_Gen.Views
             {
                 TitleTextBlock.Text = "Error Loading Wallpaper";
                 WallpaperImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
-                AITagBorder.Visibility = Visibility.Collapsed;
                 QualityTagBorder.Visibility = Visibility.Collapsed;
             }
         }

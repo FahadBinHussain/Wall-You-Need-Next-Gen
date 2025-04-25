@@ -10,11 +10,13 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <!-- Remove the dedicated row for the title -->
+            <!-- <RowDefinition Height="Auto"/> --> 
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Wallpaper Title at the top -->
+        <!-- Remove TitleTextBlock from here -->
+        <!-- 
         <TextBlock x:Name="TitleTextBlock" 
                    Grid.Row="0"
                    Text="Wallpaper Title" 
@@ -23,12 +25,23 @@
                    TextWrapping="Wrap"
                    HorizontalAlignment="Center"
                    Margin="10,10,10,0"/>
+        -->
         
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <!-- ScrollViewer is now in Grid.Row=0 -->
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="20">
                 
+                <!-- Move TitleTextBlock here, ABOVE the image -->
+                <TextBlock x:Name="TitleTextBlock" 
+                           Text="Wallpaper Title" 
+                           FontSize="24" 
+                           FontWeight="Bold" 
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,10"/> <!-- Adjust bottom margin -->
+                
                 <!-- Wallpaper Image -->
-                <Border Background="#f0f0f0" CornerRadius="8" HorizontalAlignment="Center">
+                <Border Background="#f0f0f0" CornerRadius="8" HorizontalAlignment="Center" Margin="0,0,0,10"> 
                     <Image x:Name="WallpaperImage" 
                            Stretch="Uniform" 
                            Source="ms-appx:///Assets/placeholder-wallpaper-1000.jpg" 
@@ -37,14 +50,16 @@
                 </Border>
 
                 <!-- Metadata (Tags only) Section -->
-                <Grid Margin="0,20,0,0" HorizontalAlignment="Center">
+                <Grid Margin="0,10,0,0" HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                        <!-- AI Tag -->
+                        <!-- Remove AI Tag Border -->
+                        <!-- 
                         <Border x:Name="AITagBorder" Background="#FF5733" CornerRadius="4" Padding="6,2" Visibility="Collapsed">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Image x:Name="AIImage" Width="16" Height="16" Source="ms-appx:///Assets/aigenerated-icon.png"/>
                             </StackPanel>
                         </Border>
+                        -->
                         <!-- Quality Tag (e.g., 4K, 8K) -->
                          <Border x:Name="QualityTagBorder" Background="#50C878" CornerRadius="4" Padding="6,2" Visibility="Collapsed">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
