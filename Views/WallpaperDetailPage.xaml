@@ -61,15 +61,14 @@
                             
                     <!-- Tag Overlays -->
                     <Grid Margin="0" Padding="0">
-                        <!-- Quality Tag - Bottom Right (Changed from Top Left) -->
+                        <!-- Quality Tag - Top Left -->
                         <Border x:Name="QualityTagBorder" 
-                                HorizontalAlignment="Right" 
-                                VerticalAlignment="Bottom"
-                                Margin="0,0,140,8"
+                                HorizontalAlignment="Left" 
+                                VerticalAlignment="Top"
+                                Margin="0"
                                 Padding="0"
                                 Visibility="Collapsed">
-                            <!-- Note: Need x:Name for QualityImage if code-behind sets it -->
-                            <Image x:Name="QualityImage" Width="40" Height="40" Margin="0" HorizontalAlignment="Left"/> 
+                            <Image x:Name="QualityImage" Width="90" Height="54" Margin="0" HorizontalAlignment="Left"/>
                         </Border>
                                 
                         <!-- AI Tag - Top Right -->
@@ -79,12 +78,7 @@
                                 Margin="0,0,8,0"
                                 Padding="0"
                                 Visibility="Collapsed">
-                            <!-- Note: Need x:Name for AIImage if code-behind sets it -->
-                            <Image x:Name="AIImage" 
-                                   Source="ms-appx:///Assets/aigenerated-icon.png"
-                                   Width="40" 
-                                   Height="40" 
-                                   Margin="0"/>
+                            <Image x:Name="AIImage" Width="40" Height="40" Margin="0"/>
                         </Border>
                                 
                         <!-- Stats Container has been removed as requested -->

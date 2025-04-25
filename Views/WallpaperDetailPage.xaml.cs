@@ -60,38 +60,38 @@ namespace Wall_You_Need_Next_Gen.Views
                     Debug.WriteLine("FullPhotoUrl is empty - using placeholder image");
                 }
 
-                // Set AI tag visibility based on IsAI property
-                Debug.WriteLine($"IsAI: {wallpaper.IsAI}");
+                // Handle AI tag exactly as in LatestWallpapersPage.SetItemMetadata
                 AITagBorder.Visibility = wallpaper.IsAI ? Visibility.Visible : Visibility.Collapsed;
-
-                // Set Quality tag visibility and image based on QualityTag property
-                string qualityTag = wallpaper.QualityTag?.ToUpper() ?? string.Empty;
-                Debug.WriteLine($"QualityTag: {qualityTag}");
-
-                // Construct the path to the quality logo - fix the naming convention
-                string qualityLogoPath = string.Empty;
-                if (qualityTag == "4K" || qualityTag == "5K" || qualityTag == "8K")
+                if (wallpaper.IsAI)
                 {
-                    // Update to use the correct file naming pattern
-                    qualityLogoPath = $"ms-appx:///Assets/{qualityTag.ToLower()}-icon.png";
-                    Debug.WriteLine($"Trying quality image: {qualityLogoPath}");
+                    AIImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/aigenerated-icon.png"));
                 }
-                
-                Debug.WriteLine($"QualityLogoPath: {qualityLogoPath}");
 
-                // Set the quality tag visibility and image source
-                if (!string.IsNullOrEmpty(qualityLogoPath))
+                // Handle quality tag exactly as in LatestWallpapersPage.SetItemMetadata
+                if (!string.IsNullOrEmpty(wallpaper.QualityTag))
                 {
-                    try
+                    QualityTagBorder.Visibility = Visibility.Visible;
+                    // Set the quality image source
+                    string qualityImagePath = wallpaper.QualityLogoPath;
+                    Debug.WriteLine($"QualityLogoPath from model: {qualityImagePath}");
+                    
+                    if (!string.IsNullOrEmpty(qualityImagePath))
                     {
-                        QualityImage.Source = new BitmapImage(new Uri(qualityLogoPath));
-                        QualityTagBorder.Visibility = Visibility.Visible;
-                        Debug.WriteLine("Quality tag should be visible now");
+                        try
+                        {
+                            QualityImage.Source = new BitmapImage(new Uri(qualityImagePath));
+                            Debug.WriteLine("Quality tag should be visible now");
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log error and keep the quality tag hidden
+                            Debug.WriteLine($"Error setting quality image: {ex.Message}");
+                            QualityTagBorder.Visibility = Visibility.Collapsed;
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        // Log error and keep the quality tag hidden
-                        Debug.WriteLine($"Error setting quality image: {ex.Message}");
+                        // No quality logo path available
                         QualityTagBorder.Visibility = Visibility.Collapsed;
                     }
                 }
