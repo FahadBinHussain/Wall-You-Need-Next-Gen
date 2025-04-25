@@ -202,100 +202,148 @@ namespace Wall_You_Need_Next_Gen
         {
             ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
             
-            // Save position
-            localSettings.Values["WindowPositionX"] = m_appWindow.Position.X;
-            localSettings.Values["WindowPositionY"] = m_appWindow.Position.Y;
-            
-            // Save size
-            localSettings.Values["WindowWidth"] = m_appWindow.Size.Width;
-            localSettings.Values["WindowHeight"] = m_appWindow.Size.Height;
+            // Get the presenter and save its state
+            var presenter = m_appWindow.Presenter as OverlappedPresenter;
+            if (presenter != null)
+            {
+                localSettings.Values["WindowState"] = (int)presenter.State; // Save state as integer
+
+                // Only save size if the window is in Restored state
+                if (presenter.State == OverlappedPresenterState.Restored)
+                {
+                    // Save position (always save position)
+                    localSettings.Values["WindowPositionX"] = m_appWindow.Position.X;
+                    localSettings.Values["WindowPositionY"] = m_appWindow.Position.Y;
+                    
+                    // Save size only when restored
+                    localSettings.Values["WindowWidth"] = m_appWindow.Size.Width;
+                    localSettings.Values["WindowHeight"] = m_appWindow.Size.Height;
+                }
+                else
+                {
+                    // If maximized or minimized, remove potentially stale size settings
+                    localSettings.Values.Remove("WindowWidth");
+                    localSettings.Values.Remove("WindowHeight");
+                    // Still save position, as it might be relevant when restoring from minimized
+                    localSettings.Values["WindowPositionX"] = m_appWindow.Position.X;
+                    localSettings.Values["WindowPositionY"] = m_appWindow.Position.Y;
+                }
+            }
+            else
+            {
+                 // If presenter is not OverlappedPresenter, fallback to old behavior (or handle differently)
+                 localSettings.Values["WindowPositionX"] = m_appWindow.Position.X;
+                 localSettings.Values["WindowPositionY"] = m_appWindow.Position.Y;
+                 localSettings.Values["WindowWidth"] = m_appWindow.Size.Width;
+                 localSettings.Values["WindowHeight"] = m_appWindow.Size.Height;
+                 localSettings.Values.Remove("WindowState"); // Ensure no stale state exists
+            }
         }
         
         private void RestoreWindowPositionAndSize()
         {
             ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-            
-            // Check if we have saved position and size
-            if (localSettings.Values.ContainsKey("WindowPositionX") &&
-                localSettings.Values.ContainsKey("WindowPositionY") &&
-                localSettings.Values.ContainsKey("WindowWidth") &&
-                localSettings.Values.ContainsKey("WindowHeight"))
+            bool settingsApplied = false;
+
+            try
             {
-                try
+                // Temporarily disable resize handling during restoration
+                isHandlingResize = true;
+                m_appWindow.Changed -= AppWindow_Changed; // Unsubscribe early
+
+                var presenter = m_appWindow.Presenter as OverlappedPresenter;
+                if (presenter == null)
                 {
-                    // Temporarily disable resize handling during restoration
-                    isHandlingResize = true;
-                    
-                    try
+                    // If not OverlappedPresenter, maybe log or handle differently
+                    // For now, fall back to default size setting below
+                    System.Diagnostics.Debug.WriteLine("Presenter is not OverlappedPresenter, cannot restore state.");
+                }
+                else if (localSettings.Values.TryGetValue("WindowState", out object stateObj) && stateObj is int stateInt)
+                {
+                    var savedState = (OverlappedPresenterState)stateInt;
+
+                    if (savedState == OverlappedPresenterState.Maximized)
                     {
-                        // Get display information to validate window position
-                        // For simplicity, we'll just ensure window is not positioned negatively
-                        
-                        // Restore position with validation
-                        int posX = (int)localSettings.Values["WindowPositionX"];
-                        int posY = (int)localSettings.Values["WindowPositionY"];
-                        
-                        // Ensure window is not positioned off-screen
-                        posX = Math.Max(posX, 0);
-                        posY = Math.Max(posY, 0);
-                        
-                        // Apply validated position
-                        m_appWindow.Move(new PointInt32(posX, posY));
-                        
-                        // Restore size with validation
-                        int width = (int)localSettings.Values["WindowWidth"];
-                        int height = (int)localSettings.Values["WindowHeight"];
-                        
-                        // Ensure window is not too small
-                        width = Math.Max(width, 800);
-                        height = Math.Max(height, 600);
-                        
-                        // Update last applied size
-                        lastAppliedSize = new SizeInt32(width, height);
-                        
-                        // Temporarily unsubscribe from resize events
-                        m_appWindow.Changed -= AppWindow_Changed;
-                        
-                        // Apply validated size
-                        m_appWindow.Resize(lastAppliedSize);
+                        presenter.Maximize();
+                        settingsApplied = true;
                     }
-                    finally
+                    else if (savedState == OverlappedPresenterState.Restored || savedState == OverlappedPresenterState.Minimized)
                     {
-                        // Resubscribe to resize events
-                        m_appWindow.Changed += AppWindow_Changed;
-                        isHandlingResize = false;
+                        // Restore to 'Restored' state for both Restored and Minimized
+                        if (localSettings.Values.TryGetValue("WindowPositionX", out object posXObj) && posXObj is int posX &&
+                            localSettings.Values.TryGetValue("WindowPositionY", out object posYObj) && posYObj is int posY &&
+                            localSettings.Values.TryGetValue("WindowWidth", out object widthObj) && widthObj is int width &&
+                            localSettings.Values.TryGetValue("WindowHeight", out object heightObj) && heightObj is int height)
+                        {
+                            // Apply position
+                            posX = Math.Max(posX, 0); // Basic validation
+                            posY = Math.Max(posY, 0);
+                            m_appWindow.Move(new PointInt32(posX, posY));
+
+                            // Apply size
+                            width = Math.Max(width, 800); // Enforce min size
+                            height = Math.Max(height, 600);
+                            lastAppliedSize = new SizeInt32(width, height);
+                            m_appWindow.Resize(lastAppliedSize);
+                            
+                            // Ensure the presenter is in the restored state (important if recovering from minimized)
+                            if(presenter.State != OverlappedPresenterState.Restored)
+                            {
+                                presenter.Restore();
+                            }
+                            settingsApplied = true;
+                        }
                     }
                 }
-                catch (Exception ex)
-                {
-                    // If restoration fails, set to default size
-                    try
+
+                // Fallback if no state was saved or if Restored state failed to apply size/pos
+                if (!settingsApplied)
+                {                    
+                    // Check if position and size are available (old format or Restored state with missing size)
+                    if (localSettings.Values.TryGetValue("WindowPositionX", out object posXObj) && posXObj is int posX &&
+                        localSettings.Values.TryGetValue("WindowPositionY", out object posYObj) && posYObj is int posY &&
+                        localSettings.Values.TryGetValue("WindowWidth", out object widthObj) && widthObj is int width &&
+                        localSettings.Values.TryGetValue("WindowHeight", out object heightObj) && heightObj is int height)
                     {
-                        lastAppliedSize = new SizeInt32(1024, 768);
-                        m_appWindow.Changed -= AppWindow_Changed;
+                         // Apply position
+                        posX = Math.Max(posX, 0);
+                        posY = Math.Max(posY, 0);
+                        m_appWindow.Move(new PointInt32(posX, posY));
+
+                        // Apply size
+                        width = Math.Max(width, 800);
+                        height = Math.Max(height, 600);
+                        lastAppliedSize = new SizeInt32(width, height);
                         m_appWindow.Resize(lastAppliedSize);
-                        m_appWindow.Changed += AppWindow_Changed;
+                        settingsApplied = true;
                     }
-                    catch
-                    {
-                        // Last resort - ignore if even this fails
+                    else
+                    {                       
+                         // Ultimate fallback: Use default size if no settings could be applied
+                        lastAppliedSize = new SizeInt32(1024, 768);
+                        m_appWindow.Resize(lastAppliedSize);
                     }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                // No saved settings, use default size
+                // Log error and apply default size as a final fallback
+                System.Diagnostics.Debug.WriteLine($"Error restoring window state/size/pos: {ex.Message}");
                 try
                 {
-                    lastAppliedSize = new SizeInt32(1024, 768);
-                    m_appWindow.Changed -= AppWindow_Changed;
-                    m_appWindow.Resize(lastAppliedSize);
-                    m_appWindow.Changed += AppWindow_Changed;
+                    if (!settingsApplied) // Only resize if no settings were successfully applied
+                    {
+                        lastAppliedSize = new SizeInt32(1024, 768);
+                        m_appWindow.Resize(lastAppliedSize);
+                    }
                 }
-                catch
-                {
-                    // Ignore errors
-                }
+                catch { /* Ignore final fallback error */ }
+            }
+            finally
+            {
+                // Always resubscribe and clear flag
+                m_appWindow.Changed += AppWindow_Changed;
+                isHandlingResize = false;
             }
         }
 
