@@ -87,41 +87,7 @@
                                    Margin="0"/>
                         </Border>
                                 
-                        <!-- Stats Container (Bottom Right) integrated with card -->
-                        <Border CornerRadius="0,0,12,0" 
-                                HorizontalAlignment="Right" 
-                                VerticalAlignment="Bottom"
-                                Margin="0"
-                                Background="#66000000" 
-                                Padding="10,6">
-                            <StackPanel Orientation="Horizontal" Spacing="12">
-                                <!-- Likes -->
-                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <TextBlock x:Name="LikesText" 
-                                                Text="0" 
-                                                Foreground="White" 
-                                                FontSize="14" 
-                                                FontWeight="SemiBold"/>
-                                    <FontIcon FontFamily="Segoe Fluent Icons" 
-                                                Glyph="&#xEB52;" 
-                                                FontSize="14" 
-                                                Foreground="White"/>
-                                </StackPanel>
-                                        
-                                <!-- Downloads -->
-                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <TextBlock x:Name="DownloadsText" 
-                                                Text="0" 
-                                                Foreground="White" 
-                                                FontSize="14" 
-                                                FontWeight="SemiBold"/>
-                                    <FontIcon FontFamily="Segoe Fluent Icons" 
-                                                Glyph="&#xE896;" 
-                                                FontSize="14" 
-                                                Foreground="White"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
+                        <!-- Stats Container has been removed as requested -->
                     </Grid>
                 </Grid>
             </StackPanel>

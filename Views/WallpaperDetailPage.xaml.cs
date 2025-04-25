@@ -102,19 +102,15 @@ namespace Wall_You_Need_Next_Gen.Views
                     Debug.WriteLine("No quality tag available, hiding the quality border");
                 }
 
-                // Likes/Downloads (Bottom Right)
-                LikesText.Text = wallpaper.Likes;
-                DownloadsText.Text = wallpaper.Downloads;
+                // Likes/Downloads have been removed from the UI
             }
             else
             {
                 TitleTextBlock.Text = "Error: Invalid wallpaper data";
                 WallpaperImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
-                // Ensure all overlays/stats are hidden/reset in error case
+                // Ensure all overlays are hidden/reset in error case
                 AITagBorder.Visibility = Visibility.Collapsed;
                 QualityTagBorder.Visibility = Visibility.Collapsed;
-                LikesText.Text = "0";
-                DownloadsText.Text = "0";
             }
         }
 
