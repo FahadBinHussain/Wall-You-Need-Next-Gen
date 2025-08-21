@@ -75,8 +75,15 @@ namespace Wall_You_Need_Next_Gen.Views
             if (e.Parameter is WallpaperItem wallpaper)
             {
                 _currentWallpaper = wallpaper;
+                // Initialize SourceUrl with a default value based on ID
+                if (string.IsNullOrEmpty(_currentWallpaper.SourceUrl) && !string.IsNullOrEmpty(_currentWallpaper.Id))
+                {
+                    _currentWallpaper.SourceUrl = $"https://backiee.com/wallpaper/{_currentWallpaper.Id}";
+                    Debug.WriteLine($"Set default SourceUrl in OnNavigatedTo: {_currentWallpaper.SourceUrl}");
+                }
                 Debug.WriteLine($"Received wallpaper: ID={wallpaper.Id}, Title={wallpaper.Title}");
                 Debug.WriteLine($"FullPhotoUrl={wallpaper.FullPhotoUrl}");
+                Debug.WriteLine($"SourceUrl={wallpaper.SourceUrl}");
 
                 // Set title at the top of the page
                 TitleTextBlock.Text = wallpaper.Title ?? "Error Loading Wallpaper";
