@@ -41,15 +41,161 @@ namespace Wall_You_Need_Next_Gen.Views
         private const int SPIF_UPDATEINIFILE = 0x01;
         private const int SPIF_SENDCHANGE = 0x02;
 
+        // Registry keys for wallpaper settings
+        private const string WALLPAPER_REG_KEY = @"Control Panel\Desktop";
+        private const string WALLPAPER_REG_VALUE = "Wallpaper";
+        private const string WALLPAPER_STYLE_REG_VALUE = "WallpaperStyle";
+        private const string WALLPAPER_TILE_REG_VALUE = "TileWallpaper";
+
+        // Registry keys for lock screen settings
+        private const string PERSONALIZE_REG_KEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\PersonalizationCSP";
+        private const string LOCKSCREEN_PATH_REG_VALUE = "LockScreenImagePath";
+        private const string LOCKSCREEN_STATUS_REG_VALUE = "LockScreenImageStatus";
+        private const string LOCKSCREEN_URL_REG_VALUE = "LockScreenImageUrl";
+
         public static bool SetWallpaper(string path)
         {
             try
             {
-                SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
-                return true;
+                // Method 1: Using SystemParametersInfo
+                bool success = false;
+                try
+                {
+                    Debug.WriteLine($"Setting wallpaper using SystemParametersInfo: {path}");
+                    int result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+                    success = result != 0;
+                    Debug.WriteLine($"SystemParametersInfo result: {result}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"SystemParametersInfo failed: {ex.Message}");
+                }
+
+                // Method 2: Using Registry if Method 1 failed
+                if (!success)
+                {
+                    try
+                    {
+                        Debug.WriteLine("Trying registry method for wallpaper...");
+                        using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(WALLPAPER_REG_KEY, true))
+                        {
+                            if (key != null)
+                            {
+                                // Set the wallpaper path
+                                key.SetValue(WALLPAPER_REG_VALUE, path);
+                                // Set the wallpaper style (2 = stretched)
+                                key.SetValue(WALLPAPER_STYLE_REG_VALUE, "2");
+                                // Set the wallpaper tile (0 = no tile)
+                                key.SetValue(WALLPAPER_TILE_REG_VALUE, "0");
+                                success = true;
+                                Debug.WriteLine("Registry method for wallpaper succeeded");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Registry method for wallpaper failed: {ex.Message}");
+                    }
+                }
+
+                return success;
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine($"SetWallpaper failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool SetLockScreen(string path)
+        {
+            try
+            {
+                Debug.WriteLine($"Setting lock screen using registry method: {path}");
+                bool success = false;
+                
+                // Method: Using Registry for lock screen with LocalMachine
+                try
+                {
+                    Debug.WriteLine("Trying LocalMachine registry for lock screen...");
+                    using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(PERSONALIZE_REG_KEY, true))
+                    {
+                        if (key == null)
+                        {
+                            // Try to create the key if it doesn't exist
+                            using (var newKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(PERSONALIZE_REG_KEY, true))
+                            {
+                                if (newKey != null)
+                                {
+                                    newKey.SetValue(LOCKSCREEN_PATH_REG_VALUE, path);
+                                    newKey.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
+                                    newKey.SetValue(LOCKSCREEN_URL_REG_VALUE, path);
+                                    success = true;
+                                    Debug.WriteLine("Registry method for lock screen succeeded (created key in LocalMachine)");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Key exists, set the values
+                            key.SetValue(LOCKSCREEN_PATH_REG_VALUE, path);
+                            key.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
+                            key.SetValue(LOCKSCREEN_URL_REG_VALUE, path);
+                            success = true;
+                            Debug.WriteLine("Registry method for lock screen succeeded (updated key in LocalMachine)");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"LocalMachine registry method for lock screen failed: {ex.Message}");
+                }
+                
+                // If LocalMachine failed, try with CurrentUser as fallback
+                if (!success)
+                {
+                    try
+                    {
+                        Debug.WriteLine("Trying CurrentUser registry for lock screen...");
+                        using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(PERSONALIZE_REG_KEY, true))
+                        {
+                            if (key == null)
+                            {
+                                // Try to create the key if it doesn't exist
+                                using (var newKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(PERSONALIZE_REG_KEY, true))
+                                {
+                                    if (newKey != null)
+                                    {
+                                        newKey.SetValue(LOCKSCREEN_PATH_REG_VALUE, path);
+                                        newKey.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
+                                        newKey.SetValue(LOCKSCREEN_URL_REG_VALUE, path);
+                                        success = true;
+                                        Debug.WriteLine("Registry method for lock screen succeeded (created key in CurrentUser)");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Key exists, set the values
+                                key.SetValue(LOCKSCREEN_PATH_REG_VALUE, path);
+                                key.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
+                                key.SetValue(LOCKSCREEN_URL_REG_VALUE, path);
+                                success = true;
+                                Debug.WriteLine("Registry method for lock screen succeeded (updated key in CurrentUser)");
+                            }
+                        }
+                    }
+                    catch (Exception innerEx)
+                    {
+                        Debug.WriteLine($"CurrentUser registry method for lock screen also failed: {innerEx.Message}");
+                    }
+                }
+                
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SetLockScreen failed: {ex.Message}");
                 return false;
             }
         }
@@ -415,43 +561,42 @@ namespace Wall_You_Need_Next_Gen.Views
                     
                     if (wallpaperType == WallpaperType.Desktop)
                     {
-                        // Set as desktop wallpaper
+                        // Try multiple methods to set desktop wallpaper
                         try
                         {
+                            // Method 1: WinRT API
                             Debug.WriteLine("Attempting to set desktop wallpaper using WinRT API...");
                             success = await userProfilePersonalizationSettings.TrySetWallpaperImageAsync(wallpaperFile);
                             Debug.WriteLine($"WinRT API result for desktop wallpaper: {success}");
-                            
-                            if (!success)
-                            {
-                                // If WinRT API returns false, try P/Invoke method
-                                Debug.WriteLine("WinRT API failed, trying P/Invoke method...");
-                                success = WallpaperHelper.SetWallpaper(wallpaperFile.Path);
-                                Debug.WriteLine($"P/Invoke method result: {success}");
-                            }
                         }
                         catch (Exception ex)
                         {
                             Debug.WriteLine($"WinRT API failed for desktop wallpaper: {ex.Message}");
                             errorMessage = ex.Message;
-                            // If WinRT API fails, try P/Invoke method
+                        }
+
+                        // If WinRT API fails, try our enhanced WallpaperHelper
+                        if (!success)
+                        {
                             try
                             {
+                                Debug.WriteLine("WinRT API failed or returned false, trying WallpaperHelper...");
                                 success = WallpaperHelper.SetWallpaper(wallpaperFile.Path);
-                                Debug.WriteLine($"P/Invoke method result: {success}");
+                                Debug.WriteLine($"WallpaperHelper result: {success}");
                             }
                             catch (Exception innerEx)
                             {
-                                Debug.WriteLine($"P/Invoke method also failed: {innerEx.Message}");
+                                Debug.WriteLine($"WallpaperHelper also failed: {innerEx.Message}");
                                 errorMessage += $" Fallback method also failed: {innerEx.Message}";
                             }
                         }
                     }
                     else // Lock Screen
                     {
-                        // Set as lock screen
+                        // Try multiple methods to set lock screen
                         try
                         {
+                            // Method 1: WinRT API
                             Debug.WriteLine("Attempting to set lock screen using WinRT API...");
                             success = await userProfilePersonalizationSettings.TrySetLockScreenImageAsync(wallpaperFile);
                             Debug.WriteLine($"WinRT API result for lock screen: {success}");
@@ -460,7 +605,22 @@ namespace Wall_You_Need_Next_Gen.Views
                         {
                             Debug.WriteLine($"WinRT API failed for lock screen: {ex.Message}");
                             errorMessage = ex.Message;
-                            // No fallback for lock screen
+                        }
+
+                        // If WinRT API fails, try our enhanced WallpaperHelper
+                        if (!success)
+                        {
+                            try
+                            {
+                                Debug.WriteLine("WinRT API failed or returned false, trying WallpaperHelper for lock screen...");
+                                success = WallpaperHelper.SetLockScreen(wallpaperFile.Path);
+                                Debug.WriteLine($"WallpaperHelper lock screen result: {success}");
+                            }
+                            catch (Exception innerEx)
+                            {
+                                Debug.WriteLine($"WallpaperHelper for lock screen also failed: {innerEx.Message}");
+                                errorMessage += $" Fallback method also failed: {innerEx.Message}";
+                            }
                         }
                     }
                 }
