@@ -39,78 +39,120 @@
                            TextWrapping="Wrap"
                            HorizontalAlignment="Center"/>
                 
-                <!-- Copied and adapted structure from LatestWallpapersPage DataTemplate -->
-                 <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                       CornerRadius="12"
-                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                       BorderThickness="0.5"
-                       Margin="0"
-                       Padding="0"
-                       HorizontalAlignment="Center" 
-                       VerticalAlignment="Top"> 
-                            
-                    <!-- Wallpaper Image Container -->
-                    <Image x:Name="WallpaperImage" 
-                           Source="ms-appx:///Assets/placeholder-wallpaper-1000.jpg"
-                           Stretch="Uniform" 
-                           CacheMode="BitmapCache"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           MaxHeight="800" 
-                           MaxWidth="1200"/>
-                            
-                    <!-- Tag Overlays -->
-                    <Grid Margin="0" Padding="0">
-                        <!-- Quality Tag - Top Left -->
-                        <Border x:Name="QualityTagBorder" 
-                                HorizontalAlignment="Left" 
-                                VerticalAlignment="Top"
-                                Margin="0"
-                                Padding="0"
-                                Visibility="Collapsed">
-                            <Image x:Name="QualityImage" Width="90" Height="54" Margin="0" HorizontalAlignment="Left"/>
-                        </Border>
-                                
-                        <!-- AI Tag - Top Right -->
-                        <Border x:Name="AITagBorder"
-                                HorizontalAlignment="Right" 
-                                VerticalAlignment="Top"
-                                Margin="0,0,8,0"
-                                Padding="0"
-                                Visibility="Collapsed">
-                            <Image x:Name="AIImage" 
-                                   Source="ms-appx:///Assets/aigenerated-icon.png"
-                                   Width="40" Height="40" Margin="0"/>
-                        </Border>
-                    </Grid>
-                </Grid>
+                <!-- This section is now replaced by the Wallpaper Image Container with Overlay Buttons below -->
                 
-                <!-- Action Buttons -->
-                <StackPanel Orientation="Horizontal" 
-                            HorizontalAlignment="Center" 
-                            Margin="0,15,0,20" 
-                            Spacing="15">
+                <!-- Wallpaper Image Container with Buttons Below -->
+                <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                      CornerRadius="12"
+                      BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                      BorderThickness="0.5"
+                      Margin="0"
+                      Padding="0"
+                      HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
                     
-                    <!-- Set As Wallpaper Button -->
-                    <Button x:Name="SetAsWallpaperButton"
-                            Style="{StaticResource AccentButtonStyle}"
-                            Click="SetAsWallpaperButton_Click">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE136;" FontSize="14"/>
-                            <TextBlock Text="Set as Wallpaper" FontSize="14" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
+                    <!-- Image Container with Tags -->
+                    <Grid Grid.Row="0">
+                        <!-- Wallpaper Image -->
+                        <Image x:Name="WallpaperImage" 
+                               Source="ms-appx:///Assets/placeholder-wallpaper-1000.jpg"
+                               Stretch="Uniform" 
+                               CacheMode="BitmapCache"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               MaxHeight="800" 
+                               MaxWidth="1200"/>
+                                
+                        <!-- Tag Overlays -->
+                        <Grid Margin="0" Padding="0">
+                            <!-- Quality Tag - Top Left -->
+                            <Border x:Name="QualityTagBorder" 
+                                    HorizontalAlignment="Left" 
+                                    VerticalAlignment="Top"
+                                    Margin="0"
+                                    Padding="0"
+                                    Visibility="Collapsed">
+                                <Image x:Name="QualityImage" Width="90" Height="54" Margin="0" HorizontalAlignment="Left"/>
+                            </Border>
+                                    
+                            <!-- AI Tag - Top Right -->
+                            <Border x:Name="AITagBorder"
+                                    HorizontalAlignment="Right" 
+                                    VerticalAlignment="Top"
+                                    Margin="0,0,8,0"
+                                    Padding="0"
+                                    Visibility="Collapsed">
+                                <Image x:Name="AIImage" 
+                                       Source="ms-appx:///Assets/aigenerated-icon.png"
+                                       Width="40" Height="40" Margin="0"/>
+                            </Border>
+                        </Grid>
+                    </Grid>
                     
-                    <!-- Download Button -->
-                    <Button x:Name="DownloadButton"
-                            Style="{StaticResource AccentButtonStyle}"
-                            Click="DownloadButton_Click">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE118;" FontSize="14"/>
-                            <TextBlock Text="Download" FontSize="14" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
+                    <!-- Action Buttons Below Image -->
+                    <Grid Grid.Row="1" 
+                          Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                          BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                          BorderThickness="0,0.5,0,0"
+                          Padding="10">
+                        <StackPanel Orientation="Horizontal" 
+                                    HorizontalAlignment="Right" 
+                                    Margin="0" 
+                                    Spacing="15">
+                                    
+                                    <!-- Set As Wallpaper Button -->
+                                    <Button x:Name="SetAsWallpaperButton"
+                                            Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            Click="SetAsWallpaperButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE136;" FontSize="14" Foreground="Black"/>
+                                            <TextBlock Text="Set" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <!-- Save Button -->
+                                    <Button Background="Transparent" BorderBrush="Transparent">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE74E;" FontSize="14" Foreground="Black"/>
+                                            <TextBlock Text="Save" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <!-- Like Button -->
+                                    <Button Background="Transparent" BorderBrush="Transparent">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE19F;" FontSize="14" Foreground="Black"/>
+                                            <TextBlock Text="Like" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <!-- Share Button -->
+                                    <Button Background="Transparent" BorderBrush="Transparent">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE72D;" FontSize="14" Foreground="Black"/>
+                                            <TextBlock Text="Share" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <!-- Add to favorites Button -->
+                                    <Button Background="Transparent" BorderBrush="Transparent">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE734;" FontSize="14" Foreground="Black"/>
+                                            <TextBlock Text="Add to favorites" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <!-- Menu Button -->
+                                    <Button Background="Transparent" BorderBrush="Transparent">
+                                        <FontIcon Glyph="&#xE712;" FontSize="14" Foreground="Black"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
                 
                 <!-- Publisher Card -->
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -290,4 +332,4 @@
             </StackPanel>
         </ScrollViewer>
     </Grid>
-</Page> 
+</Page>
