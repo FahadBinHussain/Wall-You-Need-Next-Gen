@@ -328,30 +328,59 @@ namespace Wall_You_Need_Next_Gen.Views
             }
         }
 
-        private async void SetAsWallpaperButton_Click(object sender, RoutedEventArgs e)
+        private async void SetAsDesktopWallpaperItem_Click(object sender, RoutedEventArgs e)
+        {
+            await SetWallpaperAsync(WallpaperType.Desktop);
+        }
+
+        private async void SetAsLockScreenItem_Click(object sender, RoutedEventArgs e)
+        {
+            await SetWallpaperAsync(WallpaperType.LockScreen);
+        }
+
+        private enum WallpaperType
+        {
+            Desktop,
+            LockScreen
+        }
+
+        private async Task SetWallpaperAsync(WallpaperType wallpaperType)
         {
             if (_currentWallpaper == null || string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
             {
-                await ShowErrorDialogAsync("Failed to set wallpaper. No wallpaper image available.");
+                await ShowErrorDialogAsync($"Failed to set {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}. No wallpaper image available.");
                 return;
             }
 
             try
             {
+                // Check if app has permission to access Pictures library
+                try
+                {
+                    var picturesFolder = KnownFolders.PicturesLibrary;
+                    // Just accessing this will throw an exception if we don't have permission
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    await ShowErrorDialogAsync($"This app doesn't have permission to access your Pictures library. Please grant this permission in Settings.");
+                    return;
+                }
+
                 // Show loading dialog
                 var loadingDialog = new ContentDialog
                 {
-                    Title = "Setting Wallpaper",
-                    Content = "Please wait while we set your wallpaper...",
+                    Title = $"Setting {(wallpaperType == WallpaperType.Desktop ? "Desktop Wallpaper" : "Lock Screen")}",
+                    Content = $"Please wait while we set your {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}...",
                     CloseButtonText = "Cancel",
                     XamlRoot = this.XamlRoot
                 };
-
+                
                 // Show the dialog
                 var dialogTask = loadingDialog.ShowAsync();
 
                 // Start the background task to set wallpaper
                 bool success = false;
+                string errorMessage = string.Empty;
                 try
                 {
                     // Get Pictures folder
@@ -372,25 +401,73 @@ namespace Wall_You_Need_Next_Gen.Views
                         await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
                     }
 
-                    // Try first method (WinRT API)
-                    try 
+                    // Verify the file exists and has content
+                    var fileProperties = await wallpaperFile.GetBasicPropertiesAsync();
+                    if (fileProperties.Size == 0)
                     {
-                        success = await UserProfilePersonalizationSettings.Current.TrySetWallpaperImageAsync(wallpaperFile);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"WinRT API failed: {ex.Message}");
+                        throw new Exception("Failed to save wallpaper image properly.");
                     }
 
-                    // If WinRT API fails, try P/Invoke method
-                    if (!success)
+                    Debug.WriteLine($"Wallpaper saved to: {wallpaperFile.Path}");
+
+                    // Try to set the wallpaper or lock screen using WinRT API
+                    var userProfilePersonalizationSettings = UserProfilePersonalizationSettings.Current;
+                    
+                    if (wallpaperType == WallpaperType.Desktop)
                     {
-                        success = WallpaperHelper.SetWallpaper(wallpaperFile.Path);
+                        // Set as desktop wallpaper
+                        try
+                        {
+                            Debug.WriteLine("Attempting to set desktop wallpaper using WinRT API...");
+                            success = await userProfilePersonalizationSettings.TrySetWallpaperImageAsync(wallpaperFile);
+                            Debug.WriteLine($"WinRT API result for desktop wallpaper: {success}");
+                            
+                            if (!success)
+                            {
+                                // If WinRT API returns false, try P/Invoke method
+                                Debug.WriteLine("WinRT API failed, trying P/Invoke method...");
+                                success = WallpaperHelper.SetWallpaper(wallpaperFile.Path);
+                                Debug.WriteLine($"P/Invoke method result: {success}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"WinRT API failed for desktop wallpaper: {ex.Message}");
+                            errorMessage = ex.Message;
+                            // If WinRT API fails, try P/Invoke method
+                            try
+                            {
+                                success = WallpaperHelper.SetWallpaper(wallpaperFile.Path);
+                                Debug.WriteLine($"P/Invoke method result: {success}");
+                            }
+                            catch (Exception innerEx)
+                            {
+                                Debug.WriteLine($"P/Invoke method also failed: {innerEx.Message}");
+                                errorMessage += $" Fallback method also failed: {innerEx.Message}";
+                            }
+                        }
+                    }
+                    else // Lock Screen
+                    {
+                        // Set as lock screen
+                        try
+                        {
+                            Debug.WriteLine("Attempting to set lock screen using WinRT API...");
+                            success = await userProfilePersonalizationSettings.TrySetLockScreenImageAsync(wallpaperFile);
+                            Debug.WriteLine($"WinRT API result for lock screen: {success}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"WinRT API failed for lock screen: {ex.Message}");
+                            errorMessage = ex.Message;
+                            // No fallback for lock screen
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error setting wallpaper: {ex.Message}");
+                    Debug.WriteLine($"Error setting {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}: {ex.Message}");
+                    errorMessage = ex.Message;
                 }
 
                 // Hide the loading dialog
@@ -399,16 +476,25 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Show result to user
                 if (success)
                 {
-                    await ShowSuccessDialogAsync("Wallpaper set successfully!");
+                    await ShowSuccessDialogAsync($"{(wallpaperType == WallpaperType.Desktop ? "Desktop wallpaper" : "Lock screen")} set successfully!");
                 }
                 else
                 {
-                    await ShowErrorDialogAsync("Failed to set wallpaper. Please try again later.");
+                    string message = $"Failed to set {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}. ";
+                    if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        message += $"Error: {errorMessage}";
+                    }
+                    else
+                    {
+                        message += "This may be due to system restrictions or permissions. Please try again later.";
+                    }
+                    await ShowErrorDialogAsync(message);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error in SetAsWallpaperButton_Click: {ex.Message}");
+                Debug.WriteLine($"Error in Set{(wallpaperType == WallpaperType.Desktop ? "Desktop" : "LockScreen")}: {ex.Message}");
                 await ShowErrorDialogAsync($"An error occurred: {ex.Message}");
             }
         }

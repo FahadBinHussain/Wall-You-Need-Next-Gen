@@ -50,5 +50,6 @@
     <uap:Capability Name="picturesLibrary" />
     <uap:Capability Name="userAccountInformation" />
     <uap:Capability Name="removableStorage" />
+    <rescap:Capability Name="personalizedWallpaper" />
   </Capabilities>
 </Package>
