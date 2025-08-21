@@ -178,9 +178,25 @@ namespace Wall_You_Need_Next_Gen.Views
 
                     using JsonDocument document = JsonDocument.Parse(jsonResponse);
                     
-                    // Extract publisher data
+                    // Extract publisher data and wallpaper source URL
                     if (document.RootElement.TryGetProperty("WallpaperPublisher", out JsonElement publisherElement))
                     {
+                        // Check if there's a source URL in the response
+                        if (document.RootElement.TryGetProperty("SourceUrl", out JsonElement sourceUrlElement) && 
+                            !string.IsNullOrEmpty(sourceUrlElement.GetString()))
+                        {
+                            string sourceUrl = sourceUrlElement.GetString();
+                            // Update the SourceUrl property of the current wallpaper
+                            _currentWallpaper.SourceUrl = sourceUrl;
+                            Debug.WriteLine($"Set SourceUrl to: {sourceUrl}");
+                        }
+                        else
+                        {
+                            // If no source URL in API, create one based on wallpaper ID
+                            _currentWallpaper.SourceUrl = $"https://backiee.com/wallpaper/{wallpaperId}";
+                            Debug.WriteLine($"Created fallback SourceUrl: {_currentWallpaper.SourceUrl}");
+                        }
+                        
                         // Update UI with publisher information on the UI thread
                         DispatcherQueue.TryEnqueue(() => 
                         {
@@ -387,6 +403,33 @@ namespace Wall_You_Need_Next_Gen.Views
             {
                 Debug.WriteLine($"Error in SetAsWallpaperButton_Click: {ex.Message}");
                 await ShowErrorDialogAsync($"An error occurred: {ex.Message}");
+            }
+        }
+
+        private async void ViewOnWebButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentWallpaper == null || string.IsNullOrEmpty(_currentWallpaper.SourceUrl))
+            {
+                // Show error message
+                await ShowErrorDialogAsync("Cannot view on web: Source URL is missing");
+                return;
+            }
+
+            try
+            {
+                // Launch the default browser with the wallpaper's source URL
+                Uri sourceUri = new Uri(_currentWallpaper.SourceUrl);
+                bool success = await Windows.System.Launcher.LaunchUriAsync(sourceUri);
+                
+                if (!success)
+                {
+                    await ShowErrorDialogAsync("Failed to open browser");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error opening source URL: {ex.Message}");
+                await ShowErrorDialogAsync("Error opening source URL");
             }
         }
 

@@ -112,8 +112,7 @@
                                             <FontIcon Glyph="&#xE136;" FontSize="14" Foreground="Black"/>
                                             <TextBlock Text="Set" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
                                         </StackPanel>
-                                    </Button>
-                                    
+                                    </Button>                                    
                                     <!-- Download Button -->
                                     <Button x:Name="DownloadButton"
                                             Background="Transparent" 
@@ -125,34 +124,18 @@
                                         </StackPanel>
                                     </Button>
                                     
-                                    <!-- Like Button -->
-                                    <Button Background="Transparent" BorderBrush="Transparent">
+                                    <!-- View on Web Button -->
+                                    <Button x:Name="ViewOnWebButton"
+                                            Background="Transparent" 
+                                            BorderBrush="Transparent"
+                                            Click="ViewOnWebButton_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <FontIcon Glyph="&#xE19F;" FontSize="14" Foreground="Black"/>
-                                            <TextBlock Text="Like" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
+                                            <FontIcon Glyph="&#xE774;" FontSize="14" Foreground="Black"/>
+                                            <TextBlock Text="View on Web" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
                                         </StackPanel>
                                     </Button>
                                     
-                                    <!-- Share Button -->
-                                    <Button Background="Transparent" BorderBrush="Transparent">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <FontIcon Glyph="&#xE72D;" FontSize="14" Foreground="Black"/>
-                                            <TextBlock Text="Share" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
-                                        </StackPanel>
-                                    </Button>
-                                    
-                                    <!-- Add to favorites Button -->
-                                    <Button Background="Transparent" BorderBrush="Transparent">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <FontIcon Glyph="&#xE734;" FontSize="14" Foreground="Black"/>
-                                            <TextBlock Text="Add to favorites" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
-                                        </StackPanel>
-                                    </Button>
-                                    
-                                    <!-- Menu Button -->
-                                    <Button Background="Transparent" BorderBrush="Transparent">
-                                        <FontIcon Glyph="&#xE712;" FontSize="14" Foreground="Black"/>
-                                    </Button>
+                                    <!-- Buttons removed as requested -->
                                 </StackPanel>
                             </Grid>
                         </Grid>

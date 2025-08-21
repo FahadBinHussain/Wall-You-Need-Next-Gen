@@ -13,6 +13,7 @@ namespace Wall_You_Need_Next_Gen.Models
         public string Description { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty; // URL for the thumbnail
         public string FullPhotoUrl { get; set; } = string.Empty; // URL for the full size image
+        public string SourceUrl { get; set; } = string.Empty; // URL for the source webpage
         public BitmapImage ImageSource { get; set; } // The loaded image source for the thumbnail
         public string Resolution { get; set; } = string.Empty;
         
@@ -121,4 +122,4 @@ namespace Wall_You_Need_Next_Gen.Models
         
         public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
-} 
+}
