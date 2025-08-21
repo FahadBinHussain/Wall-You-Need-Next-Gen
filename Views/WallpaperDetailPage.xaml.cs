@@ -8,16 +8,17 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Shapes; // for Ellipse
+using Microsoft.UI.Xaml.Shapes; // for Ellipse and Path shape
 using Microsoft.UI.Xaml.Media; // for ImageBrush and Stretch
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
+using Windows.Storage.AccessCache; // For KnownFolders and KnownFolderId
 using System.IO;
 using WinRT.Interop;
 using Microsoft.UI.Windowing;
 using System.Collections.Generic;
-using Path = Microsoft.UI.Xaml.Shapes.Path; // Resolve ambiguous reference
+using IOPath = System.IO.Path; // Use System.IO.Path for file operations with alias
 using System.Linq;
 using System.Reflection; // For reflection functionality
 using Windows.System.UserProfile; // For wallpaper functionality
@@ -285,7 +286,7 @@ namespace Wall_You_Need_Next_Gen.Views
                         }
 
                         // Hide the wolf silhouette if we have a profile image
-                        var wolfPath = FindName("PublisherProfileIcon") as Path;
+                        var wolfPath = FindName("PublisherProfileIcon") as Microsoft.UI.Xaml.Shapes.Path;
                         if (wolfPath != null)
                         {
                             wolfPath.Visibility = Visibility.Collapsed;
@@ -399,87 +400,55 @@ namespace Wall_You_Need_Next_Gen.Views
 
             try
             {
-                // Show information dialog
-                var dialog = new ContentDialog
+                // Show progress dialog
+                var progressDialog = new ContentDialog
                 {
-                    Title = "Download Wallpaper",
-                    Content = "Would you like to save this wallpaper to your device?",
-                    PrimaryButtonText = "Yes",
+                    Title = "Downloading Wallpaper",
+                    Content = "Please wait while your wallpaper downloads...",
                     CloseButtonText = "Cancel",
                     XamlRoot = this.XamlRoot
                 };
-
-                var result = await dialog.ShowAsync();
                 
-                if (result == ContentDialogResult.Primary)
+                // Show the dialog
+                var dialogTask = progressDialog.ShowAsync();
+                
+                try
                 {
-                    // First download to temp folder
-                    try
+                    // Get Downloads folder using StorageFolder.GetFolderFromPathAsync
+                    string downloadsPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads";
+                    var downloadsFolder = await StorageFolder.GetFolderFromPathAsync(downloadsPath);
+                    
+                    // Create a subfolder for our app if it doesn't exist
+                    var appFolder = await downloadsFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
+                    
+                    // Create a unique filename based on wallpaper title and ID
+                    string safeFileName = _currentWallpaper.Title.Replace(" ", "_");
+                    safeFileName = string.Join("_", safeFileName.Split(IOPath.GetInvalidFileNameChars()));
+                    var fileName = $"{safeFileName}_{_currentWallpaper.Id}.jpg";
+                    
+                    // Create the file in the downloads folder
+                    var downloadFile = await appFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+                    
+                    // Download directly to the file
+                    var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
+                    using (var stream = await downloadFile.OpenStreamForWriteAsync())
                     {
-                        // Show progress dialog
-                        var progressDialog = new ContentDialog
-                        {
-                            Title = "Downloading Wallpaper",
-                            Content = "Please wait while your wallpaper downloads...",
-                            CloseButtonText = "Cancel",
-                            XamlRoot = this.XamlRoot
-                        };
-                        
-                        // Show the dialog
-                        var dialogTask = progressDialog.ShowAsync();
-                        
-                        // Get temp folder for initial download
-                        var tempFolder = ApplicationData.Current.TemporaryFolder;
-                        var tempFileName = $"wallpaper-{_currentWallpaper.Id}.jpg";
-                        var tempFile = await tempFolder.CreateFileAsync(tempFileName, CreationCollisionOption.ReplaceExisting);
-                        
-                        // Download to temp file
-                        var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
-                        using (var stream = await tempFile.OpenStreamForWriteAsync())
-                        {
-                            await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
-                        }
-                        
-                        // Hide progress dialog
-                        progressDialog.Hide();
-                        
-                        // Now let user pick where to save it
-                        var savePicker = new FileSavePicker();
-                        savePicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-                        savePicker.FileTypeChoices.Add("JPEG Image", new List<string>() { ".jpg" });
-                        savePicker.SuggestedFileName = $"{_currentWallpaper.Title.Replace(" ", "_")}.jpg";
-                        
-                        // Try to get window handle - this is a WinUI 3 issue that requires reflection
-                        try
-                        {
-                            // Get a window handle via reflection
-                            var window = GetCurrentWindowViaReflection();
-                            if (window != null)
-                            {
-                                var hwnd = WindowNative.GetWindowHandle(window);
-                                InitializeWithWindow.Initialize(savePicker, hwnd);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Failed to initialize file picker: {ex.Message}");
-                            await ShowErrorDialogAsync("Cannot open file picker. Please try again later.");
-                            return;
-                        }
-                        
-                        StorageFile file = await savePicker.PickSaveFileAsync();
-                        if (file != null)
-                        {
-                            // Copy the temp file to the selected location
-                            await tempFile.CopyAndReplaceAsync(file);
-                            await ShowSuccessDialogAsync($"Wallpaper saved successfully!");
-                        }
+                        await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
                     }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error downloading file: {ex.Message}");
-                        await ShowErrorDialogAsync($"Error downloading wallpaper: {ex.Message}");
-                    }
+                    
+                    // Hide progress dialog
+                    progressDialog.Hide();
+                    
+                    // Show success message with the path
+                    await ShowSuccessDialogAsync($"Wallpaper downloaded to:\n{downloadFile.Path}");
+                }
+                catch (Exception ex)
+                {
+                    // Hide progress dialog
+                    progressDialog.Hide();
+                    
+                    Debug.WriteLine($"Error downloading file: {ex.Message}");
+                    await ShowErrorDialogAsync($"Error downloading wallpaper: {ex.Message}");
                 }
             }
             catch (Exception ex)

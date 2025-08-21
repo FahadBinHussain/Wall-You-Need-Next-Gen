@@ -114,11 +114,14 @@
                                         </StackPanel>
                                     </Button>
                                     
-                                    <!-- Save Button -->
-                                    <Button Background="Transparent" BorderBrush="Transparent">
+                                    <!-- Download Button -->
+                                    <Button x:Name="DownloadButton"
+                                            Background="Transparent" 
+                                            BorderBrush="Transparent"
+                                            Click="DownloadButton_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <FontIcon Glyph="&#xE74E;" FontSize="14" Foreground="Black"/>
-                                            <TextBlock Text="Save" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
+                                            <TextBlock Text="Download" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
                                         </StackPanel>
                                     </Button>
                                     
