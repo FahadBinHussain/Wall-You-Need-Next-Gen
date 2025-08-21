@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using Path = Microsoft.UI.Xaml.Shapes.Path; // Resolve ambiguous reference
 using System.Linq;
 using System.Reflection; // For reflection functionality
+using Windows.System.UserProfile; // For wallpaper functionality
+using System.Runtime.InteropServices; // For P/Invoke
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -29,6 +31,28 @@ namespace Wall_You_Need_Next_Gen.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
+    public static class WallpaperHelper
+    {
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+
+        private const int SPI_SETDESKWALLPAPER = 0x0014;
+        private const int SPIF_UPDATEINIFILE = 0x01;
+        private const int SPIF_SENDCHANGE = 0x02;
+
+        public static bool SetWallpaper(string path)
+        {
+            try
+            {
+                SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
     public sealed partial class WallpaperDetailPage : Page
     {
         private readonly HttpClient _httpClient = new HttpClient();
@@ -306,26 +330,39 @@ namespace Wall_You_Need_Next_Gen.Views
                 bool success = false;
                 try
                 {
-                    // Get temporary folder
-                    var tempFolder = ApplicationData.Current.TemporaryFolder;
+                    // Get Pictures folder
+                    var picturesFolder = KnownFolders.PicturesLibrary;
+                    var wallpapersFolder = await picturesFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
                     
                     // Download the image
                     var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
 
-                    // Create a temporary file
-                    var tempFile = await tempFolder.CreateFileAsync(
+                    // Create a file in Pictures folder
+                    var wallpaperFile = await wallpapersFolder.CreateFileAsync(
                         $"wallpaper-{_currentWallpaper.Id}.jpg",
                         CreationCollisionOption.ReplaceExisting);
 
                     // Write the image to the file
-                    using (var stream = await tempFile.OpenStreamForWriteAsync())
+                    using (var stream = await wallpaperFile.OpenStreamForWriteAsync())
                     {
                         await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
                     }
 
-                    // Set as wallpaper using WinRT API
-                    success = await Windows.System.UserProfile.UserProfilePersonalizationSettings
-                        .Current.TrySetWallpaperImageAsync(tempFile);
+                    // Try first method (WinRT API)
+                    try 
+                    {
+                        success = await UserProfilePersonalizationSettings.Current.TrySetWallpaperImageAsync(wallpaperFile);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"WinRT API failed: {ex.Message}");
+                    }
+
+                    // If WinRT API fails, try P/Invoke method
+                    if (!success)
+                    {
+                        success = WallpaperHelper.SetWallpaper(wallpaperFile.Path);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -513,4 +550,4 @@ namespace Wall_You_Need_Next_Gen.Views
             await dialog.ShowAsync();
         }
     }
-} 
+}
