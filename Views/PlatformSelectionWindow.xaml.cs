@@ -86,6 +86,13 @@ namespace Wall_You_Need_Next_Gen.Views
             {
                 // Create and show the main window
                 MainWindow mainWindow = new MainWindow();
+                
+                // Set the window to maximize
+                IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(mainWindow);
+                Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+                appWindow.Resize(new SizeInt32(1920, 1080)); // Set to a large size
+                
                 mainWindow.Activate();
 
                 // Close this window
