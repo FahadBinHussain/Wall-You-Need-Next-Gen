@@ -30,40 +30,40 @@ namespace Wall_You_Need_Next_Gen.Views
             Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             m_appWindow = AppWindow.GetFromWindowId(windowId);
 
-            // Set window size
-            m_appWindow.Resize(new SizeInt32(800, 600));
+            // Set window to fullscreen size
+            m_appWindow.Resize(new SizeInt32(1920, 1080));
 
             // Initialize platforms list
             List<string> platforms = new List<string>
             {
-                "Backiee",
                 "Alpha Coders",
-                "Artstation",
-                "DeviantArt",
-                "Behance",
-                "Pixiv",
-                "Dribbble",
-                "CGSociety",
-                "Artgram",
-                "NewGrounds",
                 "ArtFol",
-                "Cara",
-                "CharacterDesignReferences",
-                "Wallhaven",
-                "DesktopNexus",
-                "HDwallpapers",
-                "Simple Desktops",
-                "Wallpaper Cave",
+                "Artgram",
+                "Artstation",
+                "Backiee",
+                "Behance",
                 "Bing Wallpaper Archive",
-                "Vladstudio",
+                "Cara",
+                "CGSociety",
+                "CharacterDesignReferences",
+                "DesktopNexus",
+                "DeviantArt",
                 "Digital Blasphemy",
-                "Wallpaper Engine",
+                "Dribbble",
+                "HDwallpapers",
                 "Kuvva",
-                "Unsplash",
-                "Pexels",
+                "NewGrounds",
                 "Peakpx",
-                "WallpaperHub",
-                "Pixabay"
+                "Pexels",
+                "Pixabay",
+                "Pixiv",
+                "Simple Desktops",
+                "Unsplash",
+                "Vladstudio",
+                "Wallhaven",
+                "Wallpaper Cave",
+                "Wallpaper Engine",
+                "WallpaperHub"
             };
 
             // Set the ItemsSource for the ItemsRepeater
