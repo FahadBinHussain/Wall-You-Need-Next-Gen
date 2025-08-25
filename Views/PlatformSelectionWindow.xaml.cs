@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Windowing;
 using WinRT.Interop;
 using Windows.Graphics;
@@ -66,21 +68,17 @@ namespace Wall_You_Need_Next_Gen.Views
 
             // Set the ItemsSource for the ItemsRepeater
             PlatformsRepeater.ItemsSource = platforms;
+            
+            // Register for ElementPrepared event to attach hover events
+            PlatformsRepeater.ElementPrepared += PlatformsRepeater_ElementPrepared;
         }
 
         private void PlatformButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Content is StackPanel stackPanel)
+            if (sender is Button button)
             {
-                // Find the TextBlock in the StackPanel
-                foreach (var child in stackPanel.Children)
-                {
-                    if (child is TextBlock textBlock)
-                    {
-                        selectedPlatform = textBlock.Text;
-                        break;
-                    }
-                }
+                // Get the platform name directly from the DataContext
+                selectedPlatform = button.DataContext?.ToString();
             }
 
             // Special handling for Backiee platform
@@ -97,6 +95,50 @@ namespace Wall_You_Need_Next_Gen.Views
             {
                 // For other platforms, show a message that they're not implemented yet
                 ShowNotImplementedMessage();
+            }
+        }
+
+        private void PlatformsRepeater_ElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+        {
+            if (args.Element is Button button)
+            {
+                // Add hover events to the button
+                button.PointerEntered += Button_PointerEntered;
+                button.PointerExited += Button_PointerExited;
+            }
+        }
+
+        private void Button_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            // We'll use a simpler approach without animations for now
+            if (sender is Button button && button.Content is Grid grid)
+            {
+                // Find the HoverOverlay border in the grid
+                for (int i = 0; i < grid.Children.Count; i++)
+                {
+                    if (grid.Children[i] is Border border && border.Name == "HoverOverlay")
+                    {
+                        border.Opacity = 0.2;
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void Button_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            // We'll use a simpler approach without animations for now
+            if (sender is Button button && button.Content is Grid grid)
+            {
+                // Find the HoverOverlay border in the grid
+                for (int i = 0; i < grid.Children.Count; i++)
+                {
+                    if (grid.Children[i] is Border border && border.Name == "HoverOverlay")
+                    {
+                        border.Opacity = 0;
+                        break;
+                    }
+                }
             }
         }
 

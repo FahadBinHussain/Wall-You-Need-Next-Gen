@@ -7,53 +7,119 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="Select Wallpaper Platform">
+    Title="Wall-You-Need | Select Platform">
 
     <Window.SystemBackdrop>
         <MicaBackdrop Kind="Base"/>
     </Window.SystemBackdrop>
 
-    <Grid Margin="20">
+    <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Title Bar -->
-        <Grid x:Name="CustomTitleBar" Grid.Row="0" Height="32" VerticalAlignment="Top">
-            <TextBlock Text="Select Wallpaper Platform" 
-                       FontSize="16" 
+        <Grid x:Name="CustomTitleBar" Grid.Row="0" Height="48" VerticalAlignment="Top">
+            <TextBlock Text="WALL-YOU-NEED" 
+                       FontSize="18" 
                        FontWeight="SemiBold" 
                        VerticalAlignment="Center"
-                       HorizontalAlignment="Center"/>
+                       Margin="24,0,0,0"/>
         </Grid>
 
+        <!-- Header -->
+        <StackPanel Grid.Row="1" Margin="24,12,24,24">
+            <TextBlock Text="Select Your Wallpaper Source" 
+                       FontSize="28" 
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,8"/>
+            <TextBlock Text="Choose a platform to discover stunning wallpapers for your device" 
+                       FontSize="16" 
+                       Opacity="0.8"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
         <!-- Content -->
-        <ScrollViewer Grid.Row="1" Margin="0,20,0,0" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="2" Margin="24,0,24,24" VerticalScrollBarVisibility="Auto">
             <ItemsRepeater x:Name="PlatformsRepeater">
                 <ItemsRepeater.Layout>
-                    <UniformGridLayout MinItemWidth="180" MinItemHeight="180" MinRowSpacing="16" MinColumnSpacing="16"/>
+                    <UniformGridLayout MinItemWidth="200" MinItemHeight="200" MinRowSpacing="16" MinColumnSpacing="16"/>
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
                         <Button Click="PlatformButton_Click" 
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
-                                Padding="12"
-                                MinWidth="180"
-                                MinHeight="180"
-                                CornerRadius="8">
-                            <StackPanel>
-                                <FontIcon Glyph="&#xE8B7;" FontSize="32" Margin="0,0,0,12"/>
-                                <TextBlock Text="{Binding}" 
-                                           TextWrapping="Wrap"
-                                           HorizontalAlignment="Center"
-                                           FontSize="16"/>
-                            </StackPanel>
+                                Padding="0"
+                                MinWidth="200"
+                                MinHeight="200"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Platform Icon -->
+                                <Grid Grid.Row="0" Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="12,12,0,0">
+                                    <FontIcon Glyph="&#xE91B;" FontSize="48" Opacity="0.9" Margin="0,24,0,24"/>
+                                </Grid>
+                                
+                                <!-- Platform Name -->
+                                <StackPanel Grid.Row="1" Padding="16,12">
+                                    <TextBlock Text="{Binding}" 
+                                               TextWrapping="Wrap"
+                                               FontWeight="SemiBold"
+                                               HorizontalAlignment="Left"
+                                               FontSize="16"/>
+                                    <TextBlock Text="Wallpaper Collection" 
+                                               TextWrapping="Wrap"
+                                               Opacity="0.7"
+                                               Margin="0,4,0,0"
+                                               FontSize="12"/>
+                                </StackPanel>
+                                
+                                <!-- Hover Effect Overlay -->
+                                <Border x:Name="HoverOverlay" Grid.RowSpan="2" Background="{ThemeResource SystemAccentColor}" Opacity="0" CornerRadius="12">
+                                    <TextBlock Text="Select" 
+                                               FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"
+                                               FontSize="18"/>
+                                </Border>
+                            </Grid>
+                            <Button.Resources>
+                                <ResourceDictionary>
+                                    <Storyboard x:Name="HoverOn">
+                                        <DoubleAnimation Storyboard.TargetName="HoverOverlay" 
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0.2" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                    <Storyboard x:Name="HoverOff">
+                                        <DoubleAnimation Storyboard.TargetName="HoverOverlay" 
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </ResourceDictionary>
+                            </Button.Resources>
                         </Button>
                     </DataTemplate>
                 </ItemsRepeater.ItemTemplate>
             </ItemsRepeater>
         </ScrollViewer>
+        
+        <!-- Footer with version info -->
+        <Border Grid.Row="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" 
+                Margin="0,0,24,12" Padding="12,6" CornerRadius="16" 
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                BorderThickness="1">
+            <TextBlock Text="Next Gen Edition" FontSize="12" Opacity="0.7"/>
+        </Border>
     </Grid>
 </Window>
