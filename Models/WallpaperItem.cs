@@ -6,6 +6,8 @@ using Windows.Storage.Streams;
 using System.Runtime.InteropServices.WindowsRuntime; // For AsStreamForWrite extension method
 using System.IO; // For MemoryStream
 using Windows.Storage.Streams; // For InMemoryRandomAccessStream
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace Wall_You_Need_Next_Gen.Models
 {
@@ -42,13 +44,11 @@ namespace Wall_You_Need_Next_Gen.Models
             }
         }
 
-        // Async method to load the actual image when needed
+        // Async method to load the actual image when needed with WebP support
         public async Task<BitmapImage> LoadImageAsync()
         {
-            // Important: log the URL we're trying to load
             System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Starting to load image from URL: {ImageUrl}");
 
-            // For remote images, use HttpClient to download the image data first
             using (var httpClient = new System.Net.Http.HttpClient())
             {
                 // Add browser-like headers
@@ -61,43 +61,50 @@ namespace Wall_You_Need_Next_Gen.Models
 
                 // Download the image data
                 var imageBytes = await httpClient.GetByteArrayAsync(ImageUrl);
-
                 System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Downloaded {imageBytes.Length} bytes for {ImageUrl}");
 
-                // Create a memory stream from the downloaded data
-                using (var memStream = new System.IO.MemoryStream(imageBytes))
+                // Convert WebP to PNG using ImageSharp
+                using (var inputStream = new MemoryStream(imageBytes))
                 {
-                    System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Creating BitmapImage for {ImageUrl}");
+                    System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Converting image format for {ImageUrl}");
 
-                    // Create a bitmap image
-                    var bitmap = new BitmapImage();
-                    bitmap.DecodePixelWidth = 500; // Adjust based on your UI needs
+                    // Load the image using ImageSharp (supports WebP)
+                    using (var image = await Image.LoadAsync(inputStream))
+                    {
+                        using (var outputStream = new MemoryStream())
+                        {
+                            // Convert to PNG
+                            await image.SaveAsPngAsync(outputStream);
+                            outputStream.Position = 0;
 
-                    // Convert MemoryStream to IRandomAccessStream
-                    var randomAccessStream = new InMemoryRandomAccessStream();
-                    var outputStream = randomAccessStream.GetOutputStreamAt(0);
-                    await memStream.CopyToAsync(outputStream.AsStreamForWrite());
-                    await outputStream.FlushAsync();
+                            System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Converted to PNG, size: {outputStream.Length} bytes");
 
-                    System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Setting bitmap source for {ImageUrl}");
+                            // Create BitmapImage from PNG data
+                            var bitmap = new BitmapImage();
+                            bitmap.DecodePixelWidth = 500;
 
-                    // Set the source from the random access stream
-                    await bitmap.SetSourceAsync(randomAccessStream);
+                            // Convert to IRandomAccessStream
+                            var randomAccessStream = new InMemoryRandomAccessStream();
+                            var raOutputStream = randomAccessStream.GetOutputStreamAt(0);
+                            await outputStream.CopyToAsync(raOutputStream.AsStreamForWrite());
+                            await raOutputStream.FlushAsync();
 
-                    System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Successfully created bitmap for {ImageUrl}");
+                            // Set bitmap source
+                            await bitmap.SetSourceAsync(randomAccessStream);
+                            System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Successfully created bitmap for {ImageUrl}");
 
-                    return bitmap;
+                            return bitmap;
+                        }
+                    }
                 }
             }
         }
 
-        // Method to load the full image
+        // Method to load the full image with WebP support
         public async Task<BitmapImage> LoadFullImageAsync()
         {
-            // Important: log the URL we're trying to load
             System.Diagnostics.Debug.WriteLine($"Loading full image from URL: {FullPhotoUrl}");
 
-            // For remote images, use HttpClient to download the image data first
             using (var httpClient = new System.Net.Http.HttpClient())
             {
                 // Add browser-like headers
@@ -109,22 +116,33 @@ namespace Wall_You_Need_Next_Gen.Models
                 // Download the image data
                 var imageBytes = await httpClient.GetByteArrayAsync(FullPhotoUrl);
 
-                // Create a memory stream from the downloaded data
-                using (var memStream = new System.IO.MemoryStream(imageBytes))
+                // Convert WebP to PNG using ImageSharp
+                using (var inputStream = new MemoryStream(imageBytes))
                 {
-                    // Create a bitmap image
-                    var bitmap = new BitmapImage();
+                    // Load the image using ImageSharp (supports WebP)
+                    using (var image = await Image.LoadAsync(inputStream))
+                    {
+                        using (var outputStream = new MemoryStream())
+                        {
+                            // Convert to PNG
+                            await image.SaveAsPngAsync(outputStream);
+                            outputStream.Position = 0;
 
-                    // Convert MemoryStream to IRandomAccessStream
-                    var randomAccessStream = new InMemoryRandomAccessStream();
-                    var outputStream = randomAccessStream.GetOutputStreamAt(0);
-                    await memStream.CopyToAsync(outputStream.AsStreamForWrite());
-                    await outputStream.FlushAsync();
+                            // Create BitmapImage from PNG data
+                            var bitmap = new BitmapImage();
 
-                    // Set the source from the random access stream
-                    await bitmap.SetSourceAsync(randomAccessStream);
+                            // Convert to IRandomAccessStream
+                            var randomAccessStream = new InMemoryRandomAccessStream();
+                            var raOutputStream = randomAccessStream.GetOutputStreamAt(0);
+                            await outputStream.CopyToAsync(raOutputStream.AsStreamForWrite());
+                            await raOutputStream.FlushAsync();
 
-                    return bitmap;
+                            // Set bitmap source
+                            await bitmap.SetSourceAsync(randomAccessStream);
+
+                            return bitmap;
+                        }
+                    }
                 }
             }
         }

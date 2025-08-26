@@ -74,10 +74,35 @@ namespace Wall_You_Need_Next_Gen.Services
                 var pageWallpapers = _cachedWallpapers.GetRange(startIndex, endIndex - startIndex);
                 LogDebug($"GetLatestWallpapersAsync: Returning {pageWallpapers.Count} wallpapers for page {page}");
 
-                // Log wallpaper URLs for debugging
+                // Load images for the wallpapers with WebP support
                 foreach (var wallpaper in pageWallpapers)
                 {
-                    LogDebug($"Processing wallpaper {wallpaper.Id} - ImageUrl: {wallpaper.ImageUrl}");
+                    try
+                    {
+                        LogDebug($"Processing wallpaper {wallpaper.Id} - ImageUrl: {wallpaper.ImageUrl}");
+                        if (wallpaper.ImageSource == null)
+                        {
+                            LogDebug($"Loading image for wallpaper {wallpaper.Id}...");
+                            wallpaper.ImageSource = await wallpaper.LoadImageAsync();
+                            if (wallpaper.ImageSource != null)
+                            {
+                                LogDebug($"Successfully loaded image for wallpaper {wallpaper.Id}");
+                            }
+                            else
+                            {
+                                LogDebug($"Failed to load image for wallpaper {wallpaper.Id} - ImageSource is null");
+                            }
+                        }
+                        else
+                        {
+                            LogDebug($"Image already loaded for wallpaper {wallpaper.Id}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogDebug($"Error loading image for wallpaper {wallpaper.Id}: {ex.Message}");
+                        LogDebug($"Stack trace: {ex.StackTrace}");
+                    }
                 }
 
                 return pageWallpapers;

@@ -131,7 +131,7 @@
                                   BorderThickness="0.5">
 
                                 <!-- Wallpaper Image -->
-                                <Image Source="{x:Bind ImageUrl, Mode=OneWay}"
+                                <Image Source="{x:Bind ImageSource, Mode=OneWay}"
                                        Stretch="UniformToFill"
                                        CacheMode="BitmapCache"
                                        HorizontalAlignment="Center"
