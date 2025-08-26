@@ -24,25 +24,61 @@
 
         <!-- Top bar with title and debug button -->
         <Grid Grid.Row="0" Margin="24,24,24,12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0"
+            <TextBlock Grid.Row="0" Grid.Column="0"
                        Text="Alpha Coders Wallpapers"
                        Style="{StaticResource TitleTextBlockStyle}"
                        VerticalAlignment="Center"/>
 
-            <Button x:Name="DebugButton"
-                    Grid.Column="1"
-                    Content="Debug Scraper"
-                    Background="#FF5733"
-                    Foreground="White"
-                    Padding="15,8"
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                <Button x:Name="ToggleDebugButton"
+                        Content="Show Debug"
+                        Background="#17a2b8"
+                        Foreground="White"
+                        Padding="15,8"
+                        CornerRadius="4"
+                        Click="ToggleDebugButton_Click"
+                        VerticalAlignment="Center"/>
+
+                <Button x:Name="DebugButton"
+                        Content="Test Scraper"
+                        Background="#FF5733"
+                        Foreground="White"
+                        Padding="15,8"
+                        CornerRadius="4"
+                        Click="DebugButton_Click"
+                        VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Debug Panel -->
+            <Border x:Name="DebugPanel"
+                    Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    Background="#f8f9fa"
+                    BorderBrush="#dee2e6"
+                    BorderThickness="1"
                     CornerRadius="4"
-                    Click="DebugButton_Click"
-                    VerticalAlignment="Center"/>
+                    Margin="0,10,0,0"
+                    Visibility="Collapsed"
+                    MaxHeight="200">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBlock x:Name="DebugTextBlock"
+                              Padding="15"
+                              FontFamily="Consolas"
+                              FontSize="11"
+                              Text="Debug logs will appear here..."
+                              Foreground="#495057"
+                              TextWrapping="Wrap"/>
+                </ScrollViewer>
+            </Border>
         </Grid>
 
         <!-- Wallpaper grid with adaptive layout -->
@@ -95,7 +131,7 @@
                                   BorderThickness="0.5">
 
                                 <!-- Wallpaper Image -->
-                                <Image Source="{x:Bind ImageSource, Mode=OneWay}"
+                                <Image Source="{x:Bind ImageUrl, Mode=OneWay}"
                                        Stretch="UniformToFill"
                                        CacheMode="BitmapCache"
                                        HorizontalAlignment="Center"

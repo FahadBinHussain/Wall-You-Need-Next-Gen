@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Wall_You_Need_Next_Gen.Models;
 using Wall_You_Need_Next_Gen.Services;
+using System.Text;
 
 namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
 {
@@ -18,12 +19,19 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
         private int _currentPage = 1;
         private bool _isLoading = false;
         private bool _hasMoreWallpapers = true;
+        private StringBuilder _debugLog = new StringBuilder();
+        private bool _debugVisible = false;
 
         public AlphaCodersGridPage()
         {
             this.InitializeComponent();
             _alphaCodersService = new AlphaCodersService();
             WallpapersGridView.ItemsSource = _wallpapers;
+
+            // Set up debug logging
+            AlphaCodersService.DebugLogger = AppendDebugLog;
+            AppendDebugLog("AlphaCodersGridPage initialized");
+
             LoadWallpapers();
         }
 
@@ -36,24 +44,30 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             {
                 _isLoading = true;
                 LoadingProgressBar.Visibility = Visibility.Visible;
+                AppendDebugLog($"Loading wallpapers - Page {_currentPage}");
 
                 var newWallpapers = await _alphaCodersService.GetLatestWallpapersAsync(_currentPage);
+                AppendDebugLog($"Received {newWallpapers.Count} wallpapers from service");
 
                 if (newWallpapers.Count == 0)
                 {
                     _hasMoreWallpapers = false;
+                    AppendDebugLog("No more wallpapers available");
                 }
                 else
                 {
                     foreach (var wallpaper in newWallpapers)
                     {
                         _wallpapers.Add(wallpaper);
+                        AppendDebugLog($"Added wallpaper: {wallpaper.Id} - {wallpaper.ImageUrl}");
                     }
                     _currentPage++;
+                    AppendDebugLog($"Added {newWallpapers.Count} wallpapers, current page: {_currentPage}");
                 }
             }
             catch (Exception ex)
             {
+                AppendDebugLog($"Error loading wallpapers: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Error loading wallpapers: {ex.Message}");
             }
             finally
@@ -83,50 +97,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
 
         private void WallpapersGridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
-            if (args.InRecycleQueue)
-                return;
-
-            if (args.ItemIndex >= 0 && args.Item is WallpaperItem wallpaper)
-            {
-                // If the image source is already set (from our service), we don't need to do anything
-                if (wallpaper.ImageSource != null)
-                    return;
-
-                // Otherwise, load the image asynchronously
-                args.RegisterUpdateCallback(async (s, e) =>
-                {
-                    if (e.Item is WallpaperItem w && w.ImageSource == null)
-                    {
-                        try
-                        {
-                            // For placeholder images, create a BitmapImage directly
-                            if (w.ImageUrl.StartsWith("ms-appx:"))
-                            {
-                                var bitmap = new BitmapImage(new Uri(w.ImageUrl));
-                                w.ImageSource = bitmap;
-                            }
-                            else
-                            {
-                                // For remote images, load asynchronously
-                                w.ImageSource = await w.LoadImageAsync();
-                            }
-
-                            // Force UI update
-                            var container = (GridViewItem)WallpapersGridView.ContainerFromItem(w);
-                            if (container != null)
-                            {
-                                container.UpdateLayout();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error loading image: {ex.Message}");
-                            // Fallback to placeholder if loading fails
-                            w.ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
-                        }
-                    }
-                });
-            }
+            // Removed all fallback logic - let the direct binding handle image display
         }
 
         private void WallpapersWrapGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -148,6 +119,22 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             panel.ItemHeight = itemWidth * 9 / 16;
         }
 
+        private void ToggleDebugButton_Click(object sender, RoutedEventArgs e)
+        {
+            _debugVisible = !_debugVisible;
+            DebugPanel.Visibility = _debugVisible ? Visibility.Visible : Visibility.Collapsed;
+            ToggleDebugButton.Content = _debugVisible ? "Hide Debug" : "Show Debug";
+        }
+
+        private void AppendDebugLog(string message)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                _debugLog.AppendLine($"[{DateTime.Now:HH:mm:ss}] {message}");
+                DebugTextBlock.Text = _debugLog.ToString();
+            });
+        }
+
         private async void DebugButton_Click(object sender, RoutedEventArgs e)
         {
             // Navigate to debug page or show debug info in a popup
@@ -165,5 +152,28 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
 
             await debugWindow.ShowAsync();
         }
+    }
+
+    // Custom TextWriter to capture debug output
+    public class DebugWriter : System.IO.TextWriter
+    {
+        private readonly Action<string> _writeAction;
+
+        public DebugWriter(Action<string> writeAction)
+        {
+            _writeAction = writeAction;
+        }
+
+        public override void WriteLine(string value)
+        {
+            _writeAction?.Invoke(value);
+        }
+
+        public override void Write(string value)
+        {
+            _writeAction?.Invoke(value);
+        }
+
+        public override System.Text.Encoding Encoding => System.Text.Encoding.UTF8;
     }
 }

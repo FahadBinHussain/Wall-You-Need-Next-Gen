@@ -20,15 +20,15 @@ namespace Wall_You_Need_Next_Gen.Models
         public string SourceUrl { get; set; } = string.Empty; // URL for the source webpage
         public BitmapImage ImageSource { get; set; } // The loaded image source for the thumbnail
         public string Resolution { get; set; } = string.Empty;
-        
+
         // Properties for the tags
         public string QualityTag { get; set; } = string.Empty; // e.g., 4K, 8K, UltraHD
         public bool IsAI { get; set; }
         public string Likes { get; set; } = "0";
         public string Downloads { get; set; } = "0";
-        
+
         public ICommand DownloadCommand { get; set; }
-        
+
         // Get the appropriate logo path based on the quality tag
         public string QualityLogoPath
         {
@@ -41,154 +41,123 @@ namespace Wall_You_Need_Next_Gen.Models
                 return string.Empty;
             }
         }
-        
+
         // Async method to load the actual image when needed
         public async Task<BitmapImage> LoadImageAsync()
         {
-            if (string.IsNullOrEmpty(ImageUrl))
-                return new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
-                
-            try
+            // Important: log the URL we're trying to load
+            System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Starting to load image from URL: {ImageUrl}");
+
+            // For remote images, use HttpClient to download the image data first
+            using (var httpClient = new System.Net.Http.HttpClient())
             {
-                // For local images, create a BitmapImage directly
-                if (ImageUrl.StartsWith("ms-appx:"))
+                // Add browser-like headers
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+                httpClient.DefaultRequestHeaders.Add("Accept", "image/webp,image/apng,image/*,*/*;q=0.8");
+                httpClient.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
+                httpClient.DefaultRequestHeaders.Add("Referer", "https://wall.alphacoders.com/");
+
+                System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Making HTTP request to {ImageUrl}");
+
+                // Download the image data
+                var imageBytes = await httpClient.GetByteArrayAsync(ImageUrl);
+
+                System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Downloaded {imageBytes.Length} bytes for {ImageUrl}");
+
+                // Create a memory stream from the downloaded data
+                using (var memStream = new System.IO.MemoryStream(imageBytes))
                 {
-                    var bitmap = new BitmapImage(new Uri(ImageUrl));
-                    // Set DecodePixelWidth to reduce memory usage and improve performance
+                    System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Creating BitmapImage for {ImageUrl}");
+
+                    // Create a bitmap image
+                    var bitmap = new BitmapImage();
                     bitmap.DecodePixelWidth = 500; // Adjust based on your UI needs
+
+                    // Convert MemoryStream to IRandomAccessStream
+                    var randomAccessStream = new InMemoryRandomAccessStream();
+                    var outputStream = randomAccessStream.GetOutputStreamAt(0);
+                    await memStream.CopyToAsync(outputStream.AsStreamForWrite());
+                    await outputStream.FlushAsync();
+
+                    System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Setting bitmap source for {ImageUrl}");
+
+                    // Set the source from the random access stream
+                    await bitmap.SetSourceAsync(randomAccessStream);
+
+                    System.Diagnostics.Debug.WriteLine($"LoadImageAsync: Successfully created bitmap for {ImageUrl}");
+
                     return bitmap;
                 }
-                
-                // Important: log the URL we're trying to load
-                System.Diagnostics.Debug.WriteLine($"Loading image from URL: {ImageUrl}");
-                System.Diagnostics.Debug.WriteLine($"Image URL type: {(ImageUrl.StartsWith("http") ? "Remote URL" : "Local URL")}");
-                
-                // For remote images, use HttpClient to download the image data first
-                using (var httpClient = new System.Net.Http.HttpClient())
-                {
-                    // Add browser-like headers
-                    httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-                    httpClient.DefaultRequestHeaders.Add("Accept", "image/webp,image/apng,image/*,*/*;q=0.8");
-                    httpClient.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
-                    httpClient.DefaultRequestHeaders.Add("Referer", "https://wall.alphacoders.com/");
-                    
-                    // Download the image data
-                    var imageBytes = await httpClient.GetByteArrayAsync(ImageUrl);
-                    
-                    // Create a memory stream from the downloaded data
-                    using (var memStream = new System.IO.MemoryStream(imageBytes))
-                    {
-                        // Create a bitmap image
-                        var bitmap = new BitmapImage();
-                        bitmap.DecodePixelWidth = 500; // Adjust based on your UI needs
-                        
-                        // Convert MemoryStream to IRandomAccessStream
-                        var randomAccessStream = new InMemoryRandomAccessStream();
-                        var outputStream = randomAccessStream.GetOutputStreamAt(0);
-                        await memStream.CopyToAsync(outputStream.AsStreamForWrite());
-                        await outputStream.FlushAsync();
-                        
-                        // Set the source from the random access stream
-                        await bitmap.SetSourceAsync(randomAccessStream);
-                        
-                        return bitmap;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading image: {ex.Message}");
-                // Return placeholder image on error
-                return new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
             }
         }
-        
+
         // Method to load the full image
         public async Task<BitmapImage> LoadFullImageAsync()
         {
-            if (string.IsNullOrEmpty(FullPhotoUrl))
-                return new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
+            // Important: log the URL we're trying to load
+            System.Diagnostics.Debug.WriteLine($"Loading full image from URL: {FullPhotoUrl}");
 
-            try
+            // For remote images, use HttpClient to download the image data first
+            using (var httpClient = new System.Net.Http.HttpClient())
             {
-                // For local images, create a BitmapImage directly
-                if (FullPhotoUrl.StartsWith("ms-appx:"))
+                // Add browser-like headers
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+                httpClient.DefaultRequestHeaders.Add("Accept", "image/webp,image/apng,image/*,*/*;q=0.8");
+                httpClient.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
+                httpClient.DefaultRequestHeaders.Add("Referer", "https://wall.alphacoders.com/");
+
+                // Download the image data
+                var imageBytes = await httpClient.GetByteArrayAsync(FullPhotoUrl);
+
+                // Create a memory stream from the downloaded data
+                using (var memStream = new System.IO.MemoryStream(imageBytes))
                 {
-                    var bitmap = new BitmapImage(new Uri(FullPhotoUrl));
+                    // Create a bitmap image
+                    var bitmap = new BitmapImage();
+
+                    // Convert MemoryStream to IRandomAccessStream
+                    var randomAccessStream = new InMemoryRandomAccessStream();
+                    var outputStream = randomAccessStream.GetOutputStreamAt(0);
+                    await memStream.CopyToAsync(outputStream.AsStreamForWrite());
+                    await outputStream.FlushAsync();
+
+                    // Set the source from the random access stream
+                    await bitmap.SetSourceAsync(randomAccessStream);
+
                     return bitmap;
                 }
-                
-                // Important: log the URL we're trying to load
-                System.Diagnostics.Debug.WriteLine($"Loading full image from URL: {FullPhotoUrl}");
-                System.Diagnostics.Debug.WriteLine($"Full image URL type: {(FullPhotoUrl.StartsWith("http") ? "Remote URL" : "Local URL")}");
-                
-                // For remote images, use HttpClient to download the image data first
-                using (var httpClient = new System.Net.Http.HttpClient())
-                {
-                    // Add browser-like headers
-                    httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-                    httpClient.DefaultRequestHeaders.Add("Accept", "image/webp,image/apng,image/*,*/*;q=0.8");
-                    httpClient.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
-                    httpClient.DefaultRequestHeaders.Add("Referer", "https://wall.alphacoders.com/");
-                    
-                    // Download the image data
-                    var imageBytes = await httpClient.GetByteArrayAsync(FullPhotoUrl);
-                    
-                    // Create a memory stream from the downloaded data
-                    using (var memStream = new System.IO.MemoryStream(imageBytes))
-                    {
-                        // Create a bitmap image
-                        var bitmap = new BitmapImage();
-                        
-                        // Convert MemoryStream to IRandomAccessStream
-                        var randomAccessStream = new InMemoryRandomAccessStream();
-                        var outputStream = randomAccessStream.GetOutputStreamAt(0);
-                        await memStream.CopyToAsync(outputStream.AsStreamForWrite());
-                        await outputStream.FlushAsync();
-                        
-                        // Set the source from the random access stream
-                        await bitmap.SetSourceAsync(randomAccessStream);
-                        
-                        return bitmap;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading full image from URL {FullPhotoUrl}: {ex.Message}");
-                return new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
             }
         }
-        
+
         public WallpaperItem()
         {
             // Initialize the download command
-            DownloadCommand = new RelayCommand(_ => 
+            DownloadCommand = new RelayCommand(_ =>
             {
                 // This would download the wallpaper
                 // Not implemented in this placeholder version
             });
         }
     }
-    
+
     // Simple RelayCommand implementation for the DownloadCommand
     public class RelayCommand : ICommand
     {
         private readonly Action<object> _execute;
         private readonly Func<object, bool> _canExecute;
-        
+
         public event EventHandler CanExecuteChanged;
-        
+
         public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
         }
-        
+
         public bool CanExecute(object parameter) => _canExecute == null || _canExecute(parameter);
-        
+
         public void Execute(object parameter) => _execute(parameter);
-        
+
         public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

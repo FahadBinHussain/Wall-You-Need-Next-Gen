@@ -18,6 +18,15 @@ namespace Wall_You_Need_Next_Gen.Services
         private static List<WallpaperItem> _cachedWallpapers = new List<WallpaperItem>();
         private static bool _isInitialized = false;
 
+        // Static debug logger that can be set by the UI
+        public static Action<string> DebugLogger { get; set; }
+
+        private static void LogDebug(string message)
+        {
+            System.Diagnostics.Debug.WriteLine(message);
+            DebugLogger?.Invoke(message);
+        }
+
         public AlphaCodersService()
         {
             _httpClient = new HttpClient();
@@ -37,38 +46,38 @@ namespace Wall_You_Need_Next_Gen.Services
                 // Initialize scraper if not done yet
                 if (!_isInitialized)
                 {
-                    System.Diagnostics.Debug.WriteLine("Initializing Alpha Coders scraper...");
+                    LogDebug("GetLatestWallpapersAsync: Initializing Alpha Coders scraper...");
                     _cachedWallpapers = await _scraperService.ScrapeWallpapersAsync(1, 3);
                     _isInitialized = true;
-                    System.Diagnostics.Debug.WriteLine($"Scraper initialized with {_cachedWallpapers.Count} wallpapers");
+                    LogDebug($"GetLatestWallpapersAsync: Scraper initialized with {_cachedWallpapers.Count} wallpapers");
+
+                    // Log first few wallpapers for debugging
+                    for (int i = 0; i < Math.Min(3, _cachedWallpapers.Count); i++)
+                    {
+                        var wp = _cachedWallpapers[i];
+                        LogDebug($"GetLatestWallpapersAsync: Wallpaper {i+1} - ID: {wp.Id}, ImageUrl: {wp.ImageUrl}");
+                    }
                 }
 
                 // Calculate pagination
                 int startIndex = (page - 1) * count;
                 int endIndex = Math.Min(startIndex + count, _cachedWallpapers.Count);
 
+                LogDebug($"GetLatestWallpapersAsync: Page {page}, StartIndex: {startIndex}, EndIndex: {endIndex}, Total cached: {_cachedWallpapers.Count}");
+
                 if (startIndex >= _cachedWallpapers.Count)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Page {page} exceeds available wallpapers");
+                    LogDebug($"GetLatestWallpapersAsync: Page {page} exceeds available wallpapers, returning empty list");
                     return new List<WallpaperItem>();
                 }
 
                 var pageWallpapers = _cachedWallpapers.GetRange(startIndex, endIndex - startIndex);
+                LogDebug($"GetLatestWallpapersAsync: Returning {pageWallpapers.Count} wallpapers for page {page}");
 
-                // Load images for the wallpapers
+                // Log wallpaper URLs for debugging
                 foreach (var wallpaper in pageWallpapers)
                 {
-                    try
-                    {
-                        if (wallpaper.ImageSource == null)
-                        {
-                            wallpaper.ImageSource = await wallpaper.LoadImageAsync();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error loading image for wallpaper {wallpaper.Id}: {ex.Message}");
-                    }
+                    LogDebug($"Processing wallpaper {wallpaper.Id} - ImageUrl: {wallpaper.ImageUrl}");
                 }
 
                 return pageWallpapers;
@@ -76,8 +85,9 @@ namespace Wall_You_Need_Next_Gen.Services
             catch (Exception ex)
             {
                 // Log the exception
-                System.Diagnostics.Debug.WriteLine($"Error fetching wallpapers: {ex.Message}");
-                return GeneratePlaceholderWallpapers(count);
+                LogDebug($"GetLatestWallpapersAsync: Error fetching wallpapers: {ex.Message}");
+                LogDebug($"GetLatestWallpapersAsync: Stack trace: {ex.StackTrace}");
+                return new List<WallpaperItem>();
             }
         }
 
