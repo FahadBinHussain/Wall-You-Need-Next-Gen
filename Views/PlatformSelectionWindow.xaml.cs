@@ -9,6 +9,7 @@ using Microsoft.UI.Windowing;
 using WinRT.Interop;
 using Windows.Graphics;
 using Windows.UI;
+using Wall_You_Need_Next_Gen.Views.AlphaCoders;
 
 namespace Wall_You_Need_Next_Gen.Views
 {
@@ -81,19 +82,36 @@ namespace Wall_You_Need_Next_Gen.Views
                 selectedPlatform = button.DataContext?.ToString();
             }
 
-            // Special handling for Backiee platform
-            if (selectedPlatform == "Backiee")
+            // Special handling for Backiee and Alpha Coders platforms
+            if (selectedPlatform == "Backiee" || selectedPlatform == "Alpha Coders")
             {
-                // Create and show the main window
-                MainWindow mainWindow = new MainWindow();
-                
-                // Set the window to maximize
-                IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(mainWindow);
-                Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                appWindow.Resize(new SizeInt32(1920, 1080)); // Set to a large size
-                
-                mainWindow.Activate();
+                if (selectedPlatform == "Alpha Coders")
+                {
+                    // Create and show the Alpha Coders grid page
+                    Window alphaCodersWindow = new Window();
+                    alphaCodersWindow.Content = new AlphaCoders.AlphaCodersGridPage();
+                    
+                    // Set the window to maximize
+                    IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(alphaCodersWindow);
+                    Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                    AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+                    appWindow.Resize(new SizeInt32(1920, 1080)); // Set to a large size
+                    
+                    alphaCodersWindow.Activate();
+                }
+                else // Backiee
+                {
+                    // Create and show the main window
+                    MainWindow mainWindow = new MainWindow();
+                    
+                    // Set the window to maximize
+                    IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(mainWindow);
+                    Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                    AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+                    appWindow.Resize(new SizeInt32(1920, 1080)); // Set to a large size
+                    
+                    mainWindow.Activate();
+                }
 
                 // Close this window
                 this.Close();

@@ -1,0 +1,175 @@
+<Page
+    x:Class="Wall_You_Need_Next_Gen.Views.AlphaCoders.AlphaCodersDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Wall_You_Need_Next_Gen.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="20" Spacing="10"> 
+                
+                <!-- TitleTextBlock -->
+                <TextBlock x:Name="TitleTextBlock" 
+                           Text="Wallpaper Title" 
+                           FontSize="24" 
+                           FontWeight="Bold" 
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"/>
+                
+                <!-- Wallpaper Image Container with Buttons Below -->
+                <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                      CornerRadius="12"
+                      BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                      BorderThickness="0.5"
+                      Margin="0"
+                      Padding="0"
+                      HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Image Container with Tags -->
+                    <Grid Grid.Row="0">
+                        <!-- Wallpaper Image -->
+                        <Image x:Name="WallpaperImage" 
+                               Source="ms-appx:///Assets/placeholder-wallpaper-1000.jpg"
+                               Stretch="Uniform" 
+                               CacheMode="BitmapCache"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               MaxHeight="800" 
+                               MaxWidth="1200"/>
+                                
+                        <!-- Tag Overlays -->
+                        <Grid Margin="0" Padding="0">
+                            <!-- Quality Tag - Top Left -->
+                            <Border x:Name="QualityTagBorder" 
+                                    HorizontalAlignment="Left" 
+                                    VerticalAlignment="Top"
+                                    Margin="0"
+                                    Padding="0"
+                                    Visibility="Collapsed">
+                                <Image x:Name="QualityImage" Width="90" Height="54" Margin="0" HorizontalAlignment="Left"/>
+                            </Border>
+                                    
+                            <!-- AI Tag - Top Right -->
+                            <Border x:Name="AITagBorder"
+                                    HorizontalAlignment="Right" 
+                                    VerticalAlignment="Top"
+                                    Margin="0,0,8,0"
+                                    Padding="0"
+                                    Visibility="Collapsed">
+                                <Image x:Name="AIImage" 
+                                       Source="ms-appx:///Assets/aigenerated-icon.png"
+                                       Width="40" Height="40" Margin="0"/>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                    
+                    <!-- Action Buttons Below Image -->
+                    <Grid Grid.Row="1" 
+                          Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                          BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                          BorderThickness="0,0.5,0,0"
+                          Padding="10">
+                        <StackPanel Orientation="Horizontal" 
+                                    HorizontalAlignment="Center" 
+                                    Spacing="10">
+                            
+                            <!-- Set as Desktop Button -->
+                            <Button x:Name="SetAsDesktopButton"
+                                    Click="SetAsDesktopButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE2B1;" />
+                                    <TextBlock Text="Set as Desktop"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Set as Lock Screen Button -->
+                            <Button x:Name="SetAsLockScreenButton"
+                                    Click="SetAsLockScreenButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72E;" />
+                                    <TextBlock Text="Set as Lock Screen"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Download Button -->
+                            <Button x:Name="DownloadButton"
+                                    Click="DownloadButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE118;" />
+                                    <TextBlock Text="Download"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+                
+                <!-- Wallpaper Info -->
+                <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                      CornerRadius="12"
+                      BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                      BorderThickness="0.5"
+                      Padding="16">
+                    <StackPanel Spacing="8">
+                        <!-- Resolution -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Resolution:" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="ResolutionTextBlock" Text="3840x2160"/>
+                        </StackPanel>
+                        
+                        <!-- Likes -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Likes:" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="LikesTextBlock" Text="1,234"/>
+                        </StackPanel>
+                        
+                        <!-- Downloads -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Downloads:" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="DownloadsTextBlock" Text="5,678"/>
+                        </StackPanel>
+                        
+                        <!-- Source Link -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Source:" FontWeight="SemiBold"/>
+                            <HyperlinkButton x:Name="SourceLinkButton" 
+                                             Content="View on Alpha Coders"
+                                             Click="SourceLinkButton_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- Back Button -->
+                <Button x:Name="BackButton"
+                        HorizontalAlignment="Center"
+                        Margin="0,20,0,0"
+                        Click="BackButton_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;" />
+                        <TextBlock Text="Back to Gallery"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Loading Indicator -->
+        <ProgressRing x:Name="LoadingRing"
+                      IsActive="True"
+                      Width="50"
+                      Height="50"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Center"
+                      Visibility="Collapsed"/>
+    </Grid>
+</Page>

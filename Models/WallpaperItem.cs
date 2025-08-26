@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Windows.Input;
 using System.Threading.Tasks;
+using Windows.Storage.Streams;
 
 namespace Wall_You_Need_Next_Gen.Models
 {
@@ -46,22 +47,21 @@ namespace Wall_You_Need_Next_Gen.Models
                 
             try
             {
-                // Create a simple BitmapImage - the simpler approach often works better
-                var bitmap = new BitmapImage();
+                // For local images, create a BitmapImage directly
+                if (ImageUrl.StartsWith("ms-appx:"))
+                {
+                    return new BitmapImage(new Uri(ImageUrl));
+                }
                 
-                // Set bitmap properties
-                bitmap.CreateOptions = BitmapCreateOptions.None;
+                // For remote images, create a BitmapImage from the URL
+                var bitmap = new BitmapImage(new Uri(ImageUrl));
                 
                 // Important: log the URL we're trying to load
                 System.Diagnostics.Debug.WriteLine($"Loading image from URL: {ImageUrl}");
                 
-                // Set URI source directly without the complex TaskCompletionSource
-                bitmap.UriSource = new Uri(ImageUrl);
+                // Add a small delay to ensure the image loads properly
+                await Task.Delay(10);
                 
-                // Use a simple timeout to give the image a chance to load
-                await Task.Delay(100); // Small delay to allow the loading to start
-                
-                // Return the bitmap - the image will continue loading asynchronously
                 return bitmap;
             }
             catch (Exception ex)
@@ -79,9 +79,21 @@ namespace Wall_You_Need_Next_Gen.Models
 
             try
             {
-                var bitmap = new BitmapImage();
-                bitmap.UriSource = new Uri(FullPhotoUrl);
-                // Optionally add caching or other loading options here
+                // For local images, create a BitmapImage directly
+                if (FullPhotoUrl.StartsWith("ms-appx:"))
+                {
+                    return new BitmapImage(new Uri(FullPhotoUrl));
+                }
+                
+                // For remote images, create a BitmapImage from the URL
+                var bitmap = new BitmapImage(new Uri(FullPhotoUrl));
+                
+                // Important: log the URL we're trying to load
+                System.Diagnostics.Debug.WriteLine($"Loading full image from URL: {FullPhotoUrl}");
+                
+                // Add a small delay to ensure the image loads properly
+                await Task.Delay(10);
+                
                 return bitmap;
             }
             catch (Exception ex)
