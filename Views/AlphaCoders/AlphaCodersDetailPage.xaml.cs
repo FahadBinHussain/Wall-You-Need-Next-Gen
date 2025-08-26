@@ -249,9 +249,10 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
 
         private async void SourceLinkButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentWallpaper != null && !string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
+            if (_currentWallpaper != null && !string.IsNullOrEmpty(_currentWallpaper.Id))
             {
-                await Launcher.LaunchUriAsync(new Uri(_currentWallpaper.FullPhotoUrl));
+                var alphaCodersUrl = $"https://wall.alphacoders.com/big.php?i={_currentWallpaper.Id}";
+                await Launcher.LaunchUriAsync(new Uri(alphaCodersUrl));
             }
         }
 
