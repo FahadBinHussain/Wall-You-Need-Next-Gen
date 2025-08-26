@@ -17,6 +17,7 @@ namespace Wall_You_Need_Next_Gen.Services
         private readonly AlphaCodersScraperService _scraperService;
         private static List<WallpaperItem> _cachedWallpapers = new List<WallpaperItem>();
         private static bool _isInitialized = false;
+        private static int _lastScrapedPage = 0;
 
         // Static debug logger that can be set by the UI
         public static Action<string> DebugLogger { get; set; }
@@ -47,7 +48,8 @@ namespace Wall_You_Need_Next_Gen.Services
                 if (!_isInitialized)
                 {
                     LogDebug("GetLatestWallpapersAsync: Initializing Alpha Coders scraper...");
-                    _cachedWallpapers = await _scraperService.ScrapeWallpapersAsync(1, 3);
+                    _cachedWallpapers = await _scraperService.ScrapeWallpapersAsync(1, 2);
+                    _lastScrapedPage = 1;
                     _isInitialized = true;
                     LogDebug($"GetLatestWallpapersAsync: Scraper initialized with {_cachedWallpapers.Count} wallpapers");
 
@@ -73,6 +75,12 @@ namespace Wall_You_Need_Next_Gen.Services
 
                 var pageWallpapers = _cachedWallpapers.GetRange(startIndex, endIndex - startIndex);
                 LogDebug($"GetLatestWallpapersAsync: Returning {pageWallpapers.Count} wallpapers for page {page}");
+
+                // If we're running low on cached wallpapers, load more
+                if (endIndex >= _cachedWallpapers.Count - 10) // Load more when we have less than 10 wallpapers left
+                {
+                    await LoadMoreWallpapersAsync();
+                }
 
                 // Load images for the wallpapers with WebP support
                 foreach (var wallpaper in pageWallpapers)
@@ -113,6 +121,30 @@ namespace Wall_You_Need_Next_Gen.Services
                 LogDebug($"GetLatestWallpapersAsync: Error fetching wallpapers: {ex.Message}");
                 LogDebug($"GetLatestWallpapersAsync: Stack trace: {ex.StackTrace}");
                 return new List<WallpaperItem>();
+            }
+        }
+
+        private async Task LoadMoreWallpapersAsync()
+        {
+            try
+            {
+                LogDebug($"LoadMoreWallpapersAsync: Loading page {_lastScrapedPage + 1}");
+                var newWallpapers = await _scraperService.ScrapeWallpapersAsync(_lastScrapedPage + 1, _lastScrapedPage + 2);
+
+                if (newWallpapers.Count > 0)
+                {
+                    _cachedWallpapers.AddRange(newWallpapers);
+                    _lastScrapedPage++;
+                    LogDebug($"LoadMoreWallpapersAsync: Added {newWallpapers.Count} wallpapers, total: {_cachedWallpapers.Count}");
+                }
+                else
+                {
+                    LogDebug("LoadMoreWallpapersAsync: No more wallpapers found");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebug($"LoadMoreWallpapersAsync: Error loading more wallpapers: {ex.Message}");
             }
         }
 
