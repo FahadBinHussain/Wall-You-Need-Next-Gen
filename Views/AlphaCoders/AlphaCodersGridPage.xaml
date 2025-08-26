@@ -22,22 +22,38 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Top bar with title -->
+        <!-- Top bar with title and debug button -->
         <Grid Grid.Row="0" Margin="24,24,24,12">
-            <TextBlock Text="Alpha Coders Wallpapers" 
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="Alpha Coders Wallpapers"
                        Style="{StaticResource TitleTextBlockStyle}"
                        VerticalAlignment="Center"/>
+
+            <Button x:Name="DebugButton"
+                    Grid.Column="1"
+                    Content="Debug Scraper"
+                    Background="#FF5733"
+                    Foreground="White"
+                    Padding="15,8"
+                    CornerRadius="4"
+                    Click="DebugButton_Click"
+                    VerticalAlignment="Center"/>
         </Grid>
 
         <!-- Wallpaper grid with adaptive layout -->
-        <ScrollViewer x:Name="MainScrollViewer" 
-                      Grid.Row="1" 
-                      VerticalScrollBarVisibility="Auto" 
+        <ScrollViewer x:Name="MainScrollViewer"
+                      Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       ViewChanged="MainScrollViewer_ViewChanged"
                       Padding="0"
                       Margin="0">
-            
+
             <GridView x:Name="WallpapersGridView"
                      Margin="12,8,12,12"
                      SelectionMode="None"
@@ -57,7 +73,7 @@
                         <Setter Property="BorderThickness" Value="0"/>
                     </Style>
                 </GridView.ItemContainerStyle>
-                
+
                 <GridView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <ItemsWrapGrid x:Name="WallpapersWrapGrid"
@@ -68,7 +84,7 @@
                                      SizeChanged="WallpapersWrapGrid_SizeChanged"/>
                     </ItemsPanelTemplate>
                 </GridView.ItemsPanel>
-                
+
                 <GridView.ItemTemplate>
                     <DataTemplate x:DataType="models:WallpaperItem">
                         <Grid>
@@ -77,59 +93,59 @@
                                   CornerRadius="8"
                                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                   BorderThickness="0.5">
-                                
+
                                 <!-- Wallpaper Image -->
-                                <Image Source="{x:Bind ImageSource, Mode=OneWay}" 
+                                <Image Source="{x:Bind ImageSource, Mode=OneWay}"
                                        Stretch="UniformToFill"
                                        CacheMode="BitmapCache"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
-                                
+
                                 <!-- Tag Overlays -->
                                 <Grid>
                                     <!-- Quality Tag - Top Left -->
-                                    <Border HorizontalAlignment="Left" 
+                                    <Border HorizontalAlignment="Left"
                                             VerticalAlignment="Top"
                                             Margin="8,8,0,0"
                                             Visibility="{x:Bind QualityTag, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}">
-                                        <Image Source="{x:Bind QualityLogoPath, Mode=OneWay}" 
+                                        <Image Source="{x:Bind QualityLogoPath, Mode=OneWay}"
                                                Width="60" Height="36"/>
                                     </Border>
-                                    
+
                                     <!-- AI Tag - Top Right -->
-                                    <Border HorizontalAlignment="Right" 
+                                    <Border HorizontalAlignment="Right"
                                             VerticalAlignment="Top"
                                             Margin="0,8,8,0"
                                             Visibility="{x:Bind IsAI, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                        <Image Source="ms-appx:///Assets/aigenerated-icon.png" 
+                                        <Image Source="ms-appx:///Assets/aigenerated-icon.png"
                                                Width="24" Height="24"/>
                                     </Border>
-                                    
+
                                     <!-- Stats Overlay - Bottom -->
-                                    <Border HorizontalAlignment="Stretch" 
+                                    <Border HorizontalAlignment="Stretch"
                                             VerticalAlignment="Bottom"
                                             Background="#66000000"
                                             Padding="8,4">
                                         <StackPanel Orientation="Horizontal" Spacing="12">
                                             <!-- Likes -->
                                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <FontIcon FontFamily="Segoe Fluent Icons" 
-                                                          Glyph="&#xE00B;" 
+                                                <FontIcon FontFamily="Segoe Fluent Icons"
+                                                          Glyph="&#xE00B;"
                                                           FontSize="12"
                                                           Foreground="White"/>
-                                                <TextBlock Text="{x:Bind Likes, Mode=OneWay}" 
-                                                           Foreground="White" 
+                                                <TextBlock Text="{x:Bind Likes, Mode=OneWay}"
+                                                           Foreground="White"
                                                            FontSize="12"/>
                                             </StackPanel>
-                                            
+
                                             <!-- Downloads -->
                                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <FontIcon FontFamily="Segoe Fluent Icons" 
-                                                          Glyph="&#xE118;" 
+                                                <FontIcon FontFamily="Segoe Fluent Icons"
+                                                          Glyph="&#xE118;"
                                                           FontSize="12"
                                                           Foreground="White"/>
-                                                <TextBlock Text="{x:Bind Downloads, Mode=OneWay}" 
-                                                           Foreground="White" 
+                                                <TextBlock Text="{x:Bind Downloads, Mode=OneWay}"
+                                                           Foreground="White"
                                                            FontSize="12"/>
                                             </StackPanel>
                                         </StackPanel>
@@ -141,12 +157,12 @@
                 </GridView.ItemTemplate>
             </GridView>
         </ScrollViewer>
-        
+
         <!-- Loading indicator -->
-        <ProgressBar x:Name="LoadingProgressBar" 
-                     Grid.Row="1" 
-                     VerticalAlignment="Bottom" 
-                     IsIndeterminate="True" 
+        <ProgressBar x:Name="LoadingProgressBar"
+                     Grid.Row="1"
+                     VerticalAlignment="Bottom"
+                     IsIndeterminate="True"
                      Visibility="Collapsed"/>
     </Grid>
 </Page>

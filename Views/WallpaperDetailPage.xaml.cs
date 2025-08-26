@@ -61,14 +61,14 @@ namespace Wall_You_Need_Next_Gen.Views
                 bool success = false;
                 try
                 {
-                    Debug.WriteLine($"Setting wallpaper using SystemParametersInfo: {path}");
+                    System.Diagnostics.Debug.WriteLine($"Setting wallpaper using SystemParametersInfo: {path}");
                     int result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
                     success = result != 0;
-                    Debug.WriteLine($"SystemParametersInfo result: {result}");
+                    System.Diagnostics.Debug.WriteLine($"SystemParametersInfo result: {result}");
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"SystemParametersInfo failed: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"SystemParametersInfo failed: {ex.Message}");
                 }
 
                 // Method 2: Using Registry if Method 1 failed
@@ -76,7 +76,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 {
                     try
                     {
-                        Debug.WriteLine("Trying registry method for wallpaper...");
+                        System.Diagnostics.Debug.WriteLine("Trying registry method for wallpaper...");
                         using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(WALLPAPER_REG_KEY, true))
                         {
                             if (key != null)
@@ -88,13 +88,13 @@ namespace Wall_You_Need_Next_Gen.Views
                                 // Set the wallpaper tile (0 = no tile)
                                 key.SetValue(WALLPAPER_TILE_REG_VALUE, "0");
                                 success = true;
-                                Debug.WriteLine("Registry method for wallpaper succeeded");
+                                System.Diagnostics.Debug.WriteLine("Registry method for wallpaper succeeded");
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Registry method for wallpaper failed: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Registry method for wallpaper failed: {ex.Message}");
                     }
                 }
 
@@ -102,7 +102,7 @@ namespace Wall_You_Need_Next_Gen.Views
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SetWallpaper failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"SetWallpaper failed: {ex.Message}");
                 return false;
             }
         }
@@ -111,13 +111,13 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             try
             {
-                Debug.WriteLine($"Setting lock screen using registry method: {path}");
+                System.Diagnostics.Debug.WriteLine($"Setting lock screen using registry method: {path}");
                 bool success = false;
-                
+
                 // Method: Using Registry for lock screen with LocalMachine
                 try
                 {
-                    Debug.WriteLine("Trying LocalMachine registry for lock screen...");
+                    System.Diagnostics.Debug.WriteLine("Trying LocalMachine registry for lock screen...");
                     using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(PERSONALIZE_REG_KEY, true))
                     {
                         if (key == null)
@@ -131,7 +131,7 @@ namespace Wall_You_Need_Next_Gen.Views
                                     newKey.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
                                     newKey.SetValue(LOCKSCREEN_URL_REG_VALUE, path);
                                     success = true;
-                                    Debug.WriteLine("Registry method for lock screen succeeded (created key in LocalMachine)");
+                                    System.Diagnostics.Debug.WriteLine("Registry method for lock screen succeeded (created key in LocalMachine)");
                                 }
                             }
                         }
@@ -142,21 +142,21 @@ namespace Wall_You_Need_Next_Gen.Views
                             key.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
                             key.SetValue(LOCKSCREEN_URL_REG_VALUE, path);
                             success = true;
-                            Debug.WriteLine("Registry method for lock screen succeeded (updated key in LocalMachine)");
+                            System.Diagnostics.Debug.WriteLine("Registry method for lock screen succeeded (updated key in LocalMachine)");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"LocalMachine registry method for lock screen failed: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"LocalMachine registry method for lock screen failed: {ex.Message}");
                 }
-                
+
                 // If LocalMachine failed, try with CurrentUser as fallback
                 if (!success)
                 {
                     try
                     {
-                        Debug.WriteLine("Trying CurrentUser registry for lock screen...");
+                        System.Diagnostics.Debug.WriteLine("Trying CurrentUser registry for lock screen...");
                         using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(PERSONALIZE_REG_KEY, true))
                         {
                             if (key == null)
@@ -170,7 +170,7 @@ namespace Wall_You_Need_Next_Gen.Views
                                         newKey.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
                                         newKey.SetValue(LOCKSCREEN_URL_REG_VALUE, path);
                                         success = true;
-                                        Debug.WriteLine("Registry method for lock screen succeeded (created key in CurrentUser)");
+                                        System.Diagnostics.Debug.WriteLine("Registry method for lock screen succeeded (created key in CurrentUser)");
                                     }
                                 }
                             }
@@ -181,21 +181,21 @@ namespace Wall_You_Need_Next_Gen.Views
                                 key.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
                                 key.SetValue(LOCKSCREEN_URL_REG_VALUE, path);
                                 success = true;
-                                Debug.WriteLine("Registry method for lock screen succeeded (updated key in CurrentUser)");
+                                System.Diagnostics.Debug.WriteLine("Registry method for lock screen succeeded (updated key in CurrentUser)");
                             }
                         }
                     }
                     catch (Exception innerEx)
                     {
-                        Debug.WriteLine($"CurrentUser registry method for lock screen also failed: {innerEx.Message}");
+                        System.Diagnostics.Debug.WriteLine($"CurrentUser registry method for lock screen also failed: {innerEx.Message}");
                     }
                 }
-                
+
                 return success;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SetLockScreen failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"SetLockScreen failed: {ex.Message}");
                 return false;
             }
         }
@@ -216,7 +216,7 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             base.OnNavigatedTo(e);
 
-            Debug.WriteLine("WallpaperDetailPage.OnNavigatedTo called");
+            System.Diagnostics.Debug.WriteLine("WallpaperDetailPage.OnNavigatedTo called");
 
             if (e.Parameter is WallpaperItem wallpaper)
             {
@@ -225,11 +225,11 @@ namespace Wall_You_Need_Next_Gen.Views
                 if (string.IsNullOrEmpty(_currentWallpaper.SourceUrl) && !string.IsNullOrEmpty(_currentWallpaper.Id))
                 {
                     _currentWallpaper.SourceUrl = $"https://backiee.com/wallpaper/{_currentWallpaper.Id}";
-                    Debug.WriteLine($"Set default SourceUrl in OnNavigatedTo: {_currentWallpaper.SourceUrl}");
+                    System.Diagnostics.Debug.WriteLine($"Set default SourceUrl in OnNavigatedTo: {_currentWallpaper.SourceUrl}");
                 }
-                Debug.WriteLine($"Received wallpaper: ID={wallpaper.Id}, Title={wallpaper.Title}");
-                Debug.WriteLine($"FullPhotoUrl={wallpaper.FullPhotoUrl}");
-                Debug.WriteLine($"SourceUrl={wallpaper.SourceUrl}");
+                System.Diagnostics.Debug.WriteLine($"Received wallpaper: ID={wallpaper.Id}, Title={wallpaper.Title}");
+                System.Diagnostics.Debug.WriteLine($"FullPhotoUrl={wallpaper.FullPhotoUrl}");
+                System.Diagnostics.Debug.WriteLine($"SourceUrl={wallpaper.SourceUrl}");
 
                 // Set title at the top of the page
                 TitleTextBlock.Text = wallpaper.Title ?? "Error Loading Wallpaper";
@@ -239,18 +239,18 @@ namespace Wall_You_Need_Next_Gen.Views
                 {
                     try
                     {
-                        Debug.WriteLine($"Setting WallpaperImage.Source to {wallpaper.FullPhotoUrl}");
+                        System.Diagnostics.Debug.WriteLine($"Setting WallpaperImage.Source to {wallpaper.FullPhotoUrl}");
                         WallpaperImage.Source = new BitmapImage(new Uri(wallpaper.FullPhotoUrl));
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Error setting wallpaper image: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Error setting wallpaper image: {ex.Message}");
                         // Keep using the placeholder image (already set in XAML)
                     }
                 }
                 else
                 {
-                    Debug.WriteLine("FullPhotoUrl is empty - using placeholder image");
+                    System.Diagnostics.Debug.WriteLine("FullPhotoUrl is empty - using placeholder image");
                 }
 
                 // Handle AI tag exactly as in LatestWallpapersPage.SetItemMetadata
@@ -266,19 +266,19 @@ namespace Wall_You_Need_Next_Gen.Views
                     QualityTagBorder.Visibility = Visibility.Visible;
                     // Set the quality image source
                     string qualityImagePath = wallpaper.QualityLogoPath;
-                    Debug.WriteLine($"QualityLogoPath from model: {qualityImagePath}");
-                    
+                    System.Diagnostics.Debug.WriteLine($"QualityLogoPath from model: {qualityImagePath}");
+
                     if (!string.IsNullOrEmpty(qualityImagePath))
                     {
                         try
                         {
                             QualityImage.Source = new BitmapImage(new Uri(qualityImagePath));
-                            Debug.WriteLine("Quality tag should be visible now");
+                            System.Diagnostics.Debug.WriteLine("Quality tag should be visible now");
                         }
                         catch (Exception ex)
                         {
                             // Log error and keep the quality tag hidden
-                            Debug.WriteLine($"Error setting quality image: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"Error setting quality image: {ex.Message}");
                             QualityTagBorder.Visibility = Visibility.Collapsed;
                         }
                     }
@@ -292,7 +292,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 {
                     // No quality tag available
                     QualityTagBorder.Visibility = Visibility.Collapsed;
-                    Debug.WriteLine("No quality tag available, hiding the quality border");
+                    System.Diagnostics.Debug.WriteLine("No quality tag available, hiding the quality border");
                 }
 
                 // Fetch and display the publisher details
@@ -302,7 +302,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 }
                 else
                 {
-                    Debug.WriteLine($"Failed to parse wallpaper ID: {wallpaper.Id}");
+                    System.Diagnostics.Debug.WriteLine($"Failed to parse wallpaper ID: {wallpaper.Id}");
                 }
             }
             else
@@ -320,55 +320,55 @@ namespace Wall_You_Need_Next_Gen.Views
             try
             {
                 string apiUrl = $"{DetailApiBaseUrl}{wallpaperId}";
-                Debug.WriteLine($"Fetching publisher details from: {apiUrl}");
+                System.Diagnostics.Debug.WriteLine($"Fetching publisher details from: {apiUrl}");
 
                 HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
-                
+
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"Publisher API Response: {jsonResponse}");
+                    System.Diagnostics.Debug.WriteLine($"Publisher API Response: {jsonResponse}");
 
                     using JsonDocument document = JsonDocument.Parse(jsonResponse);
-                    
+
                     // Extract publisher data and wallpaper source URL
                     if (document.RootElement.TryGetProperty("WallpaperPublisher", out JsonElement publisherElement))
                     {
                         // Check if there's a source URL in the response
-                        if (document.RootElement.TryGetProperty("SourceUrl", out JsonElement sourceUrlElement) && 
+                        if (document.RootElement.TryGetProperty("SourceUrl", out JsonElement sourceUrlElement) &&
                             !string.IsNullOrEmpty(sourceUrlElement.GetString()))
                         {
                             string sourceUrl = sourceUrlElement.GetString();
                             // Update the SourceUrl property of the current wallpaper
                             _currentWallpaper.SourceUrl = sourceUrl;
-                            Debug.WriteLine($"Set SourceUrl to: {sourceUrl}");
+                            System.Diagnostics.Debug.WriteLine($"Set SourceUrl to: {sourceUrl}");
                         }
                         else
                         {
                             // If no source URL in API, create one based on wallpaper ID
                             _currentWallpaper.SourceUrl = $"https://backiee.com/wallpaper/{wallpaperId}";
-                            Debug.WriteLine($"Created fallback SourceUrl: {_currentWallpaper.SourceUrl}");
+                            System.Diagnostics.Debug.WriteLine($"Created fallback SourceUrl: {_currentWallpaper.SourceUrl}");
                         }
-                        
+
                         // Update UI with publisher information on the UI thread
-                        DispatcherQueue.TryEnqueue(() => 
+                        DispatcherQueue.TryEnqueue(() =>
                         {
                             UpdatePublisherUI(publisherElement);
                         });
                     }
                     else
                     {
-                        Debug.WriteLine("Publisher info not found in API response");
+                        System.Diagnostics.Debug.WriteLine("Publisher info not found in API response");
                     }
                 }
                 else
                 {
-                    Debug.WriteLine($"Error fetching publisher details: {response.StatusCode}");
+                    System.Diagnostics.Debug.WriteLine($"Error fetching publisher details: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception while loading publisher details: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Exception while loading publisher details: {ex.Message}");
             }
         }
 
@@ -377,30 +377,30 @@ namespace Wall_You_Need_Next_Gen.Views
             try
             {
                 // Extract publisher details
-                string publisherName = publisherElement.TryGetProperty("Name", out JsonElement nameElement) 
+                string publisherName = publisherElement.TryGetProperty("Name", out JsonElement nameElement)
                     ? nameElement.GetString() : "Unknown Publisher";
-                
-                string gender = publisherElement.TryGetProperty("Gender", out JsonElement genderElement) 
+
+                string gender = publisherElement.TryGetProperty("Gender", out JsonElement genderElement)
                     ? genderElement.GetString() : "Private";
-                
-                string age = publisherElement.TryGetProperty("Age", out JsonElement ageElement) 
+
+                string age = publisherElement.TryGetProperty("Age", out JsonElement ageElement)
                     ? ageElement.GetString() : "Private";
-                
-                string country = publisherElement.TryGetProperty("Country", out JsonElement countryElement) 
+
+                string country = publisherElement.TryGetProperty("Country", out JsonElement countryElement)
                     ? countryElement.GetString() : "Private";
-                
+
                 // Publisher profile picture
-                string profileImageUrl = publisherElement.TryGetProperty("ProfileImage", out JsonElement profileImageElement) 
+                string profileImageUrl = publisherElement.TryGetProperty("ProfileImage", out JsonElement profileImageElement)
                     ? profileImageElement.GetString() : "";
 
                 // Statistics
-                string uploads = publisherElement.TryGetProperty("Uploads", out JsonElement uploadsElement) 
+                string uploads = publisherElement.TryGetProperty("Uploads", out JsonElement uploadsElement)
                     ? uploadsElement.GetString() : "0";
-                
-                string likes = publisherElement.TryGetProperty("Likes", out JsonElement likesElement) 
+
+                string likes = publisherElement.TryGetProperty("Likes", out JsonElement likesElement)
                     ? likesElement.GetString() : "0";
-                
-                string followers = publisherElement.TryGetProperty("Followers", out JsonElement followersElement) 
+
+                string followers = publisherElement.TryGetProperty("Followers", out JsonElement followersElement)
                     ? followersElement.GetString() : "0";
 
                 // Update UI elements with publisher information
@@ -463,14 +463,14 @@ namespace Wall_You_Need_Next_Gen.Views
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Error setting publisher profile image: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Error setting publisher profile image: {ex.Message}");
                         // Keep the default gradient and silhouette
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error updating publisher UI: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error updating publisher UI: {ex.Message}");
             }
         }
 
@@ -520,7 +520,7 @@ namespace Wall_You_Need_Next_Gen.Views
                     CloseButtonText = "Cancel",
                     XamlRoot = this.XamlRoot
                 };
-                
+
                 // Show the dialog
                 var dialogTask = loadingDialog.ShowAsync();
 
@@ -532,7 +532,7 @@ namespace Wall_You_Need_Next_Gen.Views
                     // Get Pictures folder
                     var picturesFolder = KnownFolders.PicturesLibrary;
                     var wallpapersFolder = await picturesFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
-                    
+
                     // Download the image
                     var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
 
@@ -554,24 +554,24 @@ namespace Wall_You_Need_Next_Gen.Views
                         throw new Exception("Failed to save wallpaper image properly.");
                     }
 
-                    Debug.WriteLine($"Wallpaper saved to: {wallpaperFile.Path}");
+                    System.Diagnostics.Debug.WriteLine($"Wallpaper saved to: {wallpaperFile.Path}");
 
                     // Try to set the wallpaper or lock screen using WinRT API
                     var userProfilePersonalizationSettings = UserProfilePersonalizationSettings.Current;
-                    
+
                     if (wallpaperType == WallpaperType.Desktop)
                     {
                         // Try multiple methods to set desktop wallpaper
                         try
                         {
                             // Method 1: WinRT API
-                            Debug.WriteLine("Attempting to set desktop wallpaper using WinRT API...");
+                            System.Diagnostics.Debug.WriteLine("Attempting to set desktop wallpaper using WinRT API...");
                             success = await userProfilePersonalizationSettings.TrySetWallpaperImageAsync(wallpaperFile);
-                            Debug.WriteLine($"WinRT API result for desktop wallpaper: {success}");
+                            System.Diagnostics.Debug.WriteLine($"WinRT API result for desktop wallpaper: {success}");
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"WinRT API failed for desktop wallpaper: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"WinRT API failed for desktop wallpaper: {ex.Message}");
                             errorMessage = ex.Message;
                         }
 
@@ -580,13 +580,13 @@ namespace Wall_You_Need_Next_Gen.Views
                         {
                             try
                             {
-                                Debug.WriteLine("WinRT API failed or returned false, trying WallpaperHelper...");
+                                System.Diagnostics.Debug.WriteLine("WinRT API failed or returned false, trying WallpaperHelper...");
                                 success = WallpaperHelper.SetWallpaper(wallpaperFile.Path);
-                                Debug.WriteLine($"WallpaperHelper result: {success}");
+                                System.Diagnostics.Debug.WriteLine($"WallpaperHelper result: {success}");
                             }
                             catch (Exception innerEx)
                             {
-                                Debug.WriteLine($"WallpaperHelper also failed: {innerEx.Message}");
+                                System.Diagnostics.Debug.WriteLine($"WallpaperHelper also failed: {innerEx.Message}");
                                 errorMessage += $" Fallback method also failed: {innerEx.Message}";
                             }
                         }
@@ -597,13 +597,13 @@ namespace Wall_You_Need_Next_Gen.Views
                         try
                         {
                             // Method 1: WinRT API
-                            Debug.WriteLine("Attempting to set lock screen using WinRT API...");
+                            System.Diagnostics.Debug.WriteLine("Attempting to set lock screen using WinRT API...");
                             success = await userProfilePersonalizationSettings.TrySetLockScreenImageAsync(wallpaperFile);
-                            Debug.WriteLine($"WinRT API result for lock screen: {success}");
+                            System.Diagnostics.Debug.WriteLine($"WinRT API result for lock screen: {success}");
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"WinRT API failed for lock screen: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"WinRT API failed for lock screen: {ex.Message}");
                             errorMessage = ex.Message;
                         }
 
@@ -612,13 +612,13 @@ namespace Wall_You_Need_Next_Gen.Views
                         {
                             try
                             {
-                                Debug.WriteLine("WinRT API failed or returned false, trying WallpaperHelper for lock screen...");
+                                System.Diagnostics.Debug.WriteLine("WinRT API failed or returned false, trying WallpaperHelper for lock screen...");
                                 success = WallpaperHelper.SetLockScreen(wallpaperFile.Path);
-                                Debug.WriteLine($"WallpaperHelper lock screen result: {success}");
+                                System.Diagnostics.Debug.WriteLine($"WallpaperHelper lock screen result: {success}");
                             }
                             catch (Exception innerEx)
                             {
-                                Debug.WriteLine($"WallpaperHelper for lock screen also failed: {innerEx.Message}");
+                                System.Diagnostics.Debug.WriteLine($"WallpaperHelper for lock screen also failed: {innerEx.Message}");
                                 errorMessage += $" Fallback method also failed: {innerEx.Message}";
                             }
                         }
@@ -626,7 +626,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error setting {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Error setting {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}: {ex.Message}");
                     errorMessage = ex.Message;
                 }
 
@@ -654,7 +654,7 @@ namespace Wall_You_Need_Next_Gen.Views
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error in Set{(wallpaperType == WallpaperType.Desktop ? "Desktop" : "LockScreen")}: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error in Set{(wallpaperType == WallpaperType.Desktop ? "Desktop" : "LockScreen")}: {ex.Message}");
                 await ShowErrorDialogAsync($"An error occurred: {ex.Message}");
             }
         }
@@ -673,7 +673,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Launch the default browser with the wallpaper's source URL
                 Uri sourceUri = new Uri(_currentWallpaper.SourceUrl);
                 bool success = await Windows.System.Launcher.LaunchUriAsync(sourceUri);
-                
+
                 if (!success)
                 {
                     await ShowErrorDialogAsync("Failed to open browser");
@@ -681,7 +681,7 @@ namespace Wall_You_Need_Next_Gen.Views
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error opening source URL: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error opening browser: {ex.Message}");
                 await ShowErrorDialogAsync("Error opening source URL");
             }
         }
@@ -704,37 +704,37 @@ namespace Wall_You_Need_Next_Gen.Views
                     CloseButtonText = "Cancel",
                     XamlRoot = this.XamlRoot
                 };
-                
+
                 // Show the dialog
                 var dialogTask = progressDialog.ShowAsync();
-                
+
                 try
                 {
                     // Get Downloads folder using StorageFolder.GetFolderFromPathAsync
                     string downloadsPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads";
                     var downloadsFolder = await StorageFolder.GetFolderFromPathAsync(downloadsPath);
-                    
+
                     // Create a subfolder for our app if it doesn't exist
                     var appFolder = await downloadsFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
-                    
+
                     // Create a unique filename based on wallpaper title and ID
                     string safeFileName = _currentWallpaper.Title.Replace(" ", "_");
                     safeFileName = string.Join("_", safeFileName.Split(IOPath.GetInvalidFileNameChars()));
                     var fileName = $"{safeFileName}_{_currentWallpaper.Id}.jpg";
-                    
+
                     // Create the file in the downloads folder
                     var downloadFile = await appFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
-                    
+
                     // Download directly to the file
                     var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
                     using (var stream = await downloadFile.OpenStreamForWriteAsync())
                     {
                         await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
                     }
-                    
+
                     // Hide progress dialog
                     progressDialog.Hide();
-                    
+
                     // Show success message with the path
                     await ShowSuccessDialogAsync($"Wallpaper downloaded to:\n{downloadFile.Path}");
                 }
@@ -742,14 +742,14 @@ namespace Wall_You_Need_Next_Gen.Views
                 {
                     // Hide progress dialog
                     progressDialog.Hide();
-                    
-                    Debug.WriteLine($"Error downloading file: {ex.Message}");
+
+                    System.Diagnostics.Debug.WriteLine($"Error downloading file: {ex.Message}");
                     await ShowErrorDialogAsync($"Error downloading wallpaper: {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error in DownloadButton_Click: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error in DownloadWallpaper: {ex.Message}");
                 await ShowErrorDialogAsync($"An error occurred: {ex.Message}");
             }
         }
@@ -764,15 +764,15 @@ namespace Wall_You_Need_Next_Gen.Views
                 if (app != null)
                 {
                     // Try via m_window field (private in App class)
-                    var windowField = app.GetType().GetField("m_window", 
-                        System.Reflection.BindingFlags.Instance | 
+                    var windowField = app.GetType().GetField("m_window",
+                        System.Reflection.BindingFlags.Instance |
                         System.Reflection.BindingFlags.NonPublic);
-                    
+
                     if (windowField != null)
                     {
                         return windowField.GetValue(app) as Window;
                     }
-                    
+
                     // Alternatively try MainWindow property
                     var mainWindowProperty = app.GetType().GetProperty("MainWindow");
                     if (mainWindowProperty != null)
@@ -783,9 +783,9 @@ namespace Wall_You_Need_Next_Gen.Views
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error getting window via reflection: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error getting window via reflection: {ex.Message}");
             }
-            
+
             return null;
         }
 

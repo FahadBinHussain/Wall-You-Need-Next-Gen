@@ -18,14 +18,14 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <Grid.Resources>
             <!-- Define color resources -->
             <SolidColorBrush x:Key="NavbarSelectedBgBrush" Color="#00000000"/> <!-- Completely transparent -->
             <SolidColorBrush x:Key="NavbarAccentBrush" Color="#FF5733"/> <!-- Orange accent -->
             <SolidColorBrush x:Key="NavbarTextBrush" Color="#808080"/> <!-- Gray text -->
             <SolidColorBrush x:Key="NavbarSelectedTextBrush" Color="#191919"/> <!-- Dark gray text for selected items -->
-            
+
             <!-- Define styles -->
             <Style x:Key="NavButtonStyle" TargetType="Button">
                 <Setter Property="Width" Value="76"/>
@@ -53,12 +53,12 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            
+
             <!-- Footer specific button style with reduced height -->
             <Style x:Key="FooterNavButtonStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
                 <Setter Property="Height" Value="60"/>
             </Style>
-            
+
             <Style x:Key="NavItemBorderStyle" TargetType="Border">
                 <Setter Property="Width" Value="76"/>
                 <Setter Property="Height" Value="76"/>
@@ -67,35 +67,35 @@
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="HorizontalAlignment" Value="Stretch"/>
             </Style>
-            
+
             <!-- Footer specific border style with reduced height -->
             <Style x:Key="FooterNavItemBorderStyle" TargetType="Border" BasedOn="{StaticResource NavItemBorderStyle}">
                 <Setter Property="Height" Value="60"/>
             </Style>
-            
+
             <Style x:Key="NavItemActiveBorderStyle" TargetType="Border" BasedOn="{StaticResource NavItemBorderStyle}">
                 <Setter Property="Background" Value="{StaticResource NavbarSelectedBgBrush}"/>
                 <Setter Property="BorderThickness" Value="0"/>
             </Style>
-            
+
             <!-- Footer specific active border style with reduced height -->
             <Style x:Key="FooterNavItemActiveBorderStyle" TargetType="Border" BasedOn="{StaticResource NavItemActiveBorderStyle}">
                 <Setter Property="Height" Value="60"/>
             </Style>
-            
+
             <Style x:Key="NavIconStyle" TargetType="Image">
                 <Setter Property="Width" Value="28"/>
                 <Setter Property="Height" Value="28"/>
                 <Setter Property="Margin" Value="0,0,0,4"/>
             </Style>
-            
+
             <Style x:Key="NavTextStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="10"/>
                 <Setter Property="HorizontalAlignment" Value="Center"/>
                 <Setter Property="Foreground" Value="{StaticResource NavbarTextBrush}"/>
             </Style>
         </Grid.Resources>
-        
+
         <!-- Custom TitleBar with transparent background -->
         <Grid x:Name="CustomTitleBar" Grid.Row="0" Height="48" Background="Transparent">
             <Grid.ColumnDefinitions>
@@ -174,16 +174,16 @@
             <Grid Grid.Column="1">
                 <!-- Optional: Add column definitions if needed for fine-grained control -->
                 <!-- <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" /> 
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions> -->
-                <AutoSuggestBox Grid.Column="0" PlaceholderText="Search..." 
-                                Margin="10,8" 
+                <AutoSuggestBox Grid.Column="0" PlaceholderText="Search..."
+                                Margin="10,8"
                                 Width="Auto"
                                 MinWidth="200"
                                 MaxWidth="400"
-                                HorizontalAlignment="Center" 
+                                HorizontalAlignment="Center"
                                 QueryIcon="Find">
                     <AutoSuggestBox.CacheMode>
                         <BitmapCache />
@@ -196,17 +196,17 @@
                 </AutoSuggestBox>
             </Grid>
         </Grid>
-        
+
         <Grid Grid.Row="1" Background="#f9f9f9">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="76" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-        
+
             <!-- Side Navigation with translucent background -->
             <Border x:Name="NavigationContainer"
-                    Grid.Column="0" 
-                    BorderBrush="Transparent" 
+                    Grid.Column="0"
+                    BorderBrush="Transparent"
                     BorderThickness="0,0,1,0"
                     Background="Transparent">
                 <Grid>
@@ -219,7 +219,7 @@
                     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel x:Name="NavPanel" Orientation="Vertical" Spacing="4">
                             <!-- Home Button -->
-                            <Button x:Name="HomeButton" 
+                            <Button x:Name="HomeButton"
                                     Click="NavButton_Click"
                                     Tag="Home"
                                     Style="{StaticResource NavButtonStyle}">
@@ -230,20 +230,20 @@
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
-                                        
+
                                         <!-- Orange indicator rectangle on the left -->
-                                        <Rectangle Width="4" 
-                                                   Fill="{StaticResource NavbarAccentBrush}" 
-                                                   HorizontalAlignment="Left" 
+                                        <Rectangle Width="4"
+                                                   Fill="{StaticResource NavbarAccentBrush}"
+                                                   HorizontalAlignment="Left"
                                                    VerticalAlignment="Stretch"/>
-                                        
+
                                         <!-- Content -->
-                                        <StackPanel Orientation="Vertical" 
-                                                  HorizontalAlignment="Center" 
+                                        <StackPanel Orientation="Vertical"
+                                                  HorizontalAlignment="Center"
                                                   VerticalAlignment="Center">
-                                            <Image Source="ms-appx:///Assets/home.png" 
+                                            <Image Source="ms-appx:///Assets/home.png"
                                                    Style="{StaticResource NavIconStyle}" />
-                                            <TextBlock Text="Home" 
+                                            <TextBlock Text="Home"
                                                        Style="{StaticResource NavTextStyle}"
                                                        Foreground="{StaticResource NavbarSelectedTextBrush}" />
                                         </StackPanel>
@@ -252,7 +252,7 @@
                             </Button>
 
                             <!-- Collections Button -->
-                            <Button x:Name="CollectionsButton" 
+                            <Button x:Name="CollectionsButton"
                                     Click="NavButton_Click"
                                     Tag="Collections"
                                     Style="{StaticResource NavButtonStyle}">
@@ -263,21 +263,21 @@
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
-                                        
+
                                         <!-- Orange indicator rectangle on the left - initially collapsed -->
-                                        <Rectangle Width="4" 
-                                                   Fill="{StaticResource NavbarAccentBrush}" 
-                                                   HorizontalAlignment="Left" 
+                                        <Rectangle Width="4"
+                                                   Fill="{StaticResource NavbarAccentBrush}"
+                                                   HorizontalAlignment="Left"
                                                    VerticalAlignment="Stretch"
                                                    Visibility="Collapsed"/>
-                                        
+
                                         <!-- Content -->
-                                        <StackPanel Orientation="Vertical" 
-                                                  HorizontalAlignment="Center" 
+                                        <StackPanel Orientation="Vertical"
+                                                  HorizontalAlignment="Center"
                                                   VerticalAlignment="Center">
-                                            <Image Source="ms-appx:///Assets/collections.png" 
+                                            <Image Source="ms-appx:///Assets/collections.png"
                                                    Style="{StaticResource NavIconStyle}" />
-                                            <TextBlock Text="Collections" 
+                                            <TextBlock Text="Collections"
                                                        Style="{StaticResource NavTextStyle}" />
                                         </StackPanel>
                                     </Grid>
@@ -285,7 +285,7 @@
                             </Button>
 
                             <!-- AI Generated Button -->
-                            <Button x:Name="AIGeneratedButton" 
+                            <Button x:Name="AIGeneratedButton"
                                     Click="NavButton_Click"
                                     Tag="AIGenerated"
                                     Style="{StaticResource NavButtonStyle}">
@@ -296,21 +296,21 @@
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
-                                        
+
                                         <!-- Orange indicator rectangle on the left - initially collapsed -->
-                                        <Rectangle Width="4" 
-                                                   Fill="{StaticResource NavbarAccentBrush}" 
-                                                   HorizontalAlignment="Left" 
+                                        <Rectangle Width="4"
+                                                   Fill="{StaticResource NavbarAccentBrush}"
+                                                   HorizontalAlignment="Left"
                                                    VerticalAlignment="Stretch"
                                                    Visibility="Collapsed"/>
-                                        
+
                                         <!-- Content -->
-                                        <StackPanel Orientation="Vertical" 
-                                                  HorizontalAlignment="Center" 
+                                        <StackPanel Orientation="Vertical"
+                                                  HorizontalAlignment="Center"
                                                   VerticalAlignment="Center">
-                                            <Image Source="ms-appx:///Assets/aigenerated.png" 
+                                            <Image Source="ms-appx:///Assets/aigenerated.png"
                                                    Style="{StaticResource NavIconStyle}" />
-                                            <TextBlock Text="AI generated" 
+                                            <TextBlock Text="AI generated"
                                                        Style="{StaticResource NavTextStyle}" />
                                         </StackPanel>
                                     </Grid>
@@ -318,7 +318,7 @@
                             </Button>
 
                             <!-- Personal Button -->
-                            <Button x:Name="PersonalButton" 
+                            <Button x:Name="PersonalButton"
                                     Click="NavButton_Click"
                                     Tag="Personal"
                                     Style="{StaticResource NavButtonStyle}">
@@ -329,21 +329,21 @@
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
-                                        
+
                                         <!-- Orange indicator rectangle on the left - initially collapsed -->
-                                        <Rectangle Width="4" 
-                                                   Fill="{StaticResource NavbarAccentBrush}" 
-                                                   HorizontalAlignment="Left" 
+                                        <Rectangle Width="4"
+                                                   Fill="{StaticResource NavbarAccentBrush}"
+                                                   HorizontalAlignment="Left"
                                                    VerticalAlignment="Stretch"
                                                    Visibility="Collapsed"/>
-                                        
+
                                         <!-- Content -->
-                                        <StackPanel Orientation="Vertical" 
-                                                  HorizontalAlignment="Center" 
+                                        <StackPanel Orientation="Vertical"
+                                                  HorizontalAlignment="Center"
                                                   VerticalAlignment="Center">
-                                            <Image Source="ms-appx:///Assets/personal.png" 
+                                            <Image Source="ms-appx:///Assets/personal.png"
                                                    Style="{StaticResource NavIconStyle}" />
-                                            <TextBlock Text="Personal" 
+                                            <TextBlock Text="Personal"
                                                        Style="{StaticResource NavTextStyle}" />
                                         </StackPanel>
                                     </Grid>
@@ -351,7 +351,7 @@
                             </Button>
 
                             <!-- Slideshow Button -->
-                            <Button x:Name="SlideshowButton" 
+                            <Button x:Name="SlideshowButton"
                                     Click="NavButton_Click"
                                     Tag="Slideshow"
                                     Style="{StaticResource NavButtonStyle}">
@@ -362,21 +362,21 @@
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
-                                        
+
                                         <!-- Orange indicator rectangle on the left - initially collapsed -->
-                                        <Rectangle Width="4" 
-                                                   Fill="{StaticResource NavbarAccentBrush}" 
-                                                   HorizontalAlignment="Left" 
+                                        <Rectangle Width="4"
+                                                   Fill="{StaticResource NavbarAccentBrush}"
+                                                   HorizontalAlignment="Left"
                                                    VerticalAlignment="Stretch"
                                                    Visibility="Collapsed"/>
-                                        
+
                                         <!-- Content -->
-                                        <StackPanel Orientation="Vertical" 
-                                                  HorizontalAlignment="Center" 
+                                        <StackPanel Orientation="Vertical"
+                                                  HorizontalAlignment="Center"
                                                   VerticalAlignment="Center">
-                                            <Image Source="ms-appx:///Assets/slideshow.png" 
+                                            <Image Source="ms-appx:///Assets/slideshow.png"
                                                    Style="{StaticResource NavIconStyle}" />
-                                            <TextBlock Text="Slideshow" 
+                                            <TextBlock Text="Slideshow"
                                                        Style="{StaticResource NavTextStyle}" />
                                         </StackPanel>
                                     </Grid>
@@ -384,7 +384,7 @@
                             </Button>
 
                             <!-- Interactive Slideshow Button -->
-                            <Button x:Name="InteractiveSlideshowButton" 
+                            <Button x:Name="InteractiveSlideshowButton"
                                     Click="NavButton_Click"
                                     Tag="InteractiveSlideshow"
                                     Style="{StaticResource NavButtonStyle}">
@@ -395,21 +395,21 @@
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
-                                        
+
                                         <!-- Orange indicator rectangle on the left - initially collapsed -->
-                                        <Rectangle Width="4" 
-                                                   Fill="{StaticResource NavbarAccentBrush}" 
-                                                   HorizontalAlignment="Left" 
+                                        <Rectangle Width="4"
+                                                   Fill="{StaticResource NavbarAccentBrush}"
+                                                   HorizontalAlignment="Left"
                                                    VerticalAlignment="Stretch"
                                                    Visibility="Collapsed"/>
-                                        
+
                                         <!-- Content -->
-                                        <StackPanel Orientation="Vertical" 
-                                                  HorizontalAlignment="Center" 
+                                        <StackPanel Orientation="Vertical"
+                                                  HorizontalAlignment="Center"
                                                   VerticalAlignment="Center">
-                                            <Image Source="ms-appx:///Assets/interactive.png" 
+                                            <Image Source="ms-appx:///Assets/interactive.png"
                                                    Style="{StaticResource NavIconStyle}" />
-                                            <TextBlock Text="Interactive slideshow" 
+                                            <TextBlock Text="Interactive slideshow"
                                                        Style="{StaticResource NavTextStyle}" />
                                         </StackPanel>
                                     </Grid>
@@ -417,7 +417,7 @@
                             </Button>
 
                             <!-- Widgets Button -->
-                            <Button x:Name="WidgetsButton" 
+                            <Button x:Name="WidgetsButton"
                                     Click="NavButton_Click"
                                     Tag="Widgets"
                                     Style="{StaticResource NavButtonStyle}">
@@ -428,21 +428,21 @@
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
-                                        
+
                                         <!-- Orange indicator rectangle on the left - initially collapsed -->
-                                        <Rectangle Width="4" 
-                                                   Fill="{StaticResource NavbarAccentBrush}" 
-                                                   HorizontalAlignment="Left" 
+                                        <Rectangle Width="4"
+                                                   Fill="{StaticResource NavbarAccentBrush}"
+                                                   HorizontalAlignment="Left"
                                                    VerticalAlignment="Stretch"
                                                    Visibility="Collapsed"/>
-                                        
+
                                         <!-- Content -->
-                                        <StackPanel Orientation="Vertical" 
-                                                  HorizontalAlignment="Center" 
+                                        <StackPanel Orientation="Vertical"
+                                                  HorizontalAlignment="Center"
                                                   VerticalAlignment="Center">
-                                            <Image Source="ms-appx:///Assets/widget.png" 
+                                            <Image Source="ms-appx:///Assets/widget.png"
                                                    Style="{StaticResource NavIconStyle}" />
-                                            <TextBlock Text="Widgets" 
+                                            <TextBlock Text="Widgets"
                                                        Style="{StaticResource NavTextStyle}" />
                                         </StackPanel>
                                     </Grid>
@@ -450,7 +450,7 @@
                             </Button>
 
                             <!-- Upload Wallpaper Button -->
-                            <Button x:Name="UploadWallpaperButton" 
+                            <Button x:Name="UploadWallpaperButton"
                                     Click="NavButton_Click"
                                     Tag="UploadWallpaper"
                                     Style="{StaticResource NavButtonStyle}">
@@ -461,21 +461,21 @@
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
-                                        
+
                                         <!-- Orange indicator rectangle on the left - initially collapsed -->
-                                        <Rectangle Width="4" 
-                                                   Fill="{StaticResource NavbarAccentBrush}" 
-                                                   HorizontalAlignment="Left" 
+                                        <Rectangle Width="4"
+                                                   Fill="{StaticResource NavbarAccentBrush}"
+                                                   HorizontalAlignment="Left"
                                                    VerticalAlignment="Stretch"
                                                    Visibility="Collapsed"/>
-                                        
+
                                         <!-- Content -->
-                                        <StackPanel Orientation="Vertical" 
-                                                  HorizontalAlignment="Center" 
+                                        <StackPanel Orientation="Vertical"
+                                                  HorizontalAlignment="Center"
                                                   VerticalAlignment="Center">
-                                            <Image Source="ms-appx:///Assets/upload.png" 
+                                            <Image Source="ms-appx:///Assets/upload.png"
                                                    Style="{StaticResource NavIconStyle}" />
-                                            <TextBlock Text="Upload wallpaper" 
+                                            <TextBlock Text="Upload wallpaper"
                                                        Style="{StaticResource NavTextStyle}" />
                                         </StackPanel>
                                     </Grid>
@@ -488,9 +488,9 @@
                     <StackPanel Grid.Row="1" x:Name="FooterNavPanel" Orientation="Vertical" Spacing="2" Margin="0,2,0,0">
                         <!-- Add a separator line -->
                         <Rectangle Height="1" Fill="Transparent" Margin="8,0,8,2"/>
-                        
+
                         <!-- My Account Button -->
-                        <Button x:Name="MyAccountButton" 
+                        <Button x:Name="MyAccountButton"
                                 Click="NavButton_Click"
                                 Tag="MyAccount"
                                 Style="{StaticResource FooterNavButtonStyle}">
@@ -501,21 +501,21 @@
                                             BorderThickness="0"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch"/>
-                                    
+
                                     <!-- Orange indicator rectangle on the left - initially collapsed -->
-                                    <Rectangle Width="4" 
-                                               Fill="{StaticResource NavbarAccentBrush}" 
-                                               HorizontalAlignment="Left" 
+                                    <Rectangle Width="4"
+                                               Fill="{StaticResource NavbarAccentBrush}"
+                                               HorizontalAlignment="Left"
                                                VerticalAlignment="Stretch"
                                                Visibility="Collapsed"/>
-                                    
+
                                     <!-- Content -->
-                                    <StackPanel Orientation="Vertical" 
-                                              HorizontalAlignment="Center" 
+                                    <StackPanel Orientation="Vertical"
+                                              HorizontalAlignment="Center"
                                               VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/account.png" 
+                                        <Image Source="ms-appx:///Assets/account.png"
                                                Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="My account" 
+                                        <TextBlock Text="My account"
                                                    Style="{StaticResource NavTextStyle}" />
                                     </StackPanel>
                                 </Grid>
@@ -523,7 +523,7 @@
                         </Button>
 
                         <!-- Settings Button -->
-                        <Button x:Name="SettingsButton" 
+                        <Button x:Name="SettingsButton"
                                 Click="NavButton_Click"
                                 Tag="Settings"
                                 Style="{StaticResource FooterNavButtonStyle}">
@@ -534,35 +534,38 @@
                                             BorderThickness="0"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch"/>
-                                    
+
                                     <!-- Orange indicator rectangle on the left - initially collapsed -->
-                                    <Rectangle Width="4" 
-                                               Fill="{StaticResource NavbarAccentBrush}" 
-                                               HorizontalAlignment="Left" 
+                                    <Rectangle Width="4"
+                                               Fill="{StaticResource NavbarAccentBrush}"
+                                               HorizontalAlignment="Left"
                                                VerticalAlignment="Stretch"
                                                Visibility="Collapsed"/>
-                                    
+
                                     <!-- Content -->
-                                    <StackPanel Orientation="Vertical" 
-                                              HorizontalAlignment="Center" 
+                                    <StackPanel Orientation="Vertical"
+                                              HorizontalAlignment="Center"
                                               VerticalAlignment="Center">
-                                        <Image Source="ms-appx:///Assets/settings.png" 
+                                        <Image Source="ms-appx:///Assets/settings.png"
                                                Style="{StaticResource NavIconStyle}" />
-                                        <TextBlock Text="Settings" 
+                                        <TextBlock Text="Settings"
                                                    Style="{StaticResource NavTextStyle}" />
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
                         </Button>
+
+
                     </StackPanel>
                 </Grid>
             </Border>
-            
+
             <!-- Content Frame with translucent background -->
-            <Frame x:Name="ContentFrame" 
-                   Grid.Column="1" 
-                   Padding="0" 
-                   Background="Transparent" />
+            <Frame x:Name="ContentFrame"
+                   Grid.Column="1"
+                   Padding="0"
+                   Background="Transparent">
+            </Frame>
         </Grid>
     </Grid>
 </Window>

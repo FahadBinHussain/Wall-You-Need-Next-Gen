@@ -38,7 +38,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                 LoadingProgressBar.Visibility = Visibility.Visible;
 
                 var newWallpapers = await _alphaCodersService.GetLatestWallpapersAsync(_currentPage);
-                
+
                 if (newWallpapers.Count == 0)
                 {
                     _hasMoreWallpapers = false;
@@ -54,7 +54,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading wallpapers: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading wallpapers: {ex.Message}");
             }
             finally
             {
@@ -91,7 +91,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                 // If the image source is already set (from our service), we don't need to do anything
                 if (wallpaper.ImageSource != null)
                     return;
-                    
+
                 // Otherwise, load the image asynchronously
                 args.RegisterUpdateCallback(async (s, e) =>
                 {
@@ -110,7 +110,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                                 // For remote images, load asynchronously
                                 w.ImageSource = await w.LoadImageAsync();
                             }
-                            
+
                             // Force UI update
                             var container = (GridViewItem)WallpapersGridView.ContainerFromItem(w);
                             if (container != null)
@@ -120,7 +120,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"Error loading image: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"Error loading image: {ex.Message}");
                             // Fallback to placeholder if loading fails
                             w.ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
                         }
@@ -146,6 +146,24 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             // Set the item width and height (maintain aspect ratio 16:9)
             panel.ItemWidth = itemWidth;
             panel.ItemHeight = itemWidth * 9 / 16;
+        }
+
+        private async void DebugButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Navigate to debug page or show debug info in a popup
+            var debugWindow = new ContentDialog()
+            {
+                Title = "Alpha Coders Scraper Debug",
+                CloseButtonText = "Close",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot
+            };
+
+            var debugFrame = new Frame();
+            debugFrame.Navigate(typeof(Wall_You_Need_Next_Gen.Views.Debug.DebugPage));
+            debugWindow.Content = debugFrame;
+
+            await debugWindow.ShowAsync();
         }
     }
 }

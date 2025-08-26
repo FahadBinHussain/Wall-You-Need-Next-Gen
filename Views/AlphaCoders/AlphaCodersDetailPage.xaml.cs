@@ -93,7 +93,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading wallpaper details: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading wallpaper details: {ex.Message}");
                 // Fallback to placeholder if loading fails
                 var fallbackImage = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
                 _currentWallpaper.ImageSource = fallbackImage;
@@ -124,7 +124,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error setting desktop wallpaper: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error setting desktop wallpaper: {ex.Message}");
 
                 var dialog = new ContentDialog
                 {
@@ -165,7 +165,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error setting lock screen wallpaper: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error setting wallpaper: {ex.Message}");
 
                 var dialog = new ContentDialog
                 {
@@ -194,7 +194,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                 {
                     // Get the download URL
                     string downloadUrl = await _alphaCodersService.GetWallpaperDownloadUrlAsync(_currentWallpaper.Id);
-                    
+
                     if (!string.IsNullOrEmpty(downloadUrl))
                     {
                         // For demo purposes, we'll just show the URL in a dialog
@@ -211,7 +211,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                         return;
                     }
                 }
-                
+
                 // If we couldn't get the download URL, show a generic success message
                 var successDialog = new ContentDialog
                 {
@@ -225,7 +225,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error downloading wallpaper: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading full image: {ex.Message}");
 
                 var dialog = new ContentDialog
                 {
