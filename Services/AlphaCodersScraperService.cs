@@ -176,7 +176,7 @@ namespace Wall_You_Need_Next_Gen.Services
             try
             {
                 // Get big image URL (without downloading)
-                var bigUrl = GetBigImageUrl(smallUrl);
+                var bigUrl = await GetBigImageUrlAsync(smallUrl);
                 if (!string.IsNullOrEmpty(bigUrl))
                 {
                     lock (_allBigUrls)
@@ -203,7 +203,7 @@ namespace Wall_You_Need_Next_Gen.Services
             }
         }
 
-        private string GetBigImageUrl(string smallUrl)
+        private async Task<string> GetBigImageUrlAsync(string smallUrl)
         {
             try
             {
@@ -212,14 +212,36 @@ namespace Wall_You_Need_Next_Gen.Services
                 var domain = uri.Host;
                 var folderNumber = uri.Segments[1].TrimEnd('/');
 
-                // Default to jpg extension for big images
-                var bigUrl = $"https://{domain}/{folderNumber}/thumb-1920-{imageId}.jpg";
-                Console.WriteLine($"Converting small URL: {smallUrl}");
-                Console.WriteLine($"  Image ID: {imageId}");
-                Console.WriteLine($"  Domain: {domain}");
-                Console.WriteLine($"  Folder: {folderNumber}");
-                Console.WriteLine($"  Big URL: {bigUrl}");
-                return bigUrl;
+                var baseBigUrl = $"https://{domain}/{folderNumber}/thumb-1920-{imageId}";
+
+                // Try different extensions like Python scraper
+                string[] extensions = { "jpeg", "jpg", "png" };
+
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+
+                    foreach (var ext in extensions)
+                    {
+                        var bigUrl = $"{baseBigUrl}.{ext}";
+                        try
+                        {
+                            var response = await httpClient.GetAsync(bigUrl);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                Console.WriteLine($"Found big image with extension {ext}: {bigUrl}");
+                                return bigUrl;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed {bigUrl}: {ex.Message}");
+                        }
+                    }
+                }
+
+                Console.WriteLine($"Big image not found for {smallUrl}");
+                return null;
             }
             catch (Exception ex)
             {
