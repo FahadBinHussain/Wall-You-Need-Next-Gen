@@ -275,26 +275,9 @@ namespace Wall_You_Need_Next_Gen.Views
                     {
                         System.Diagnostics.Debug.WriteLine($"Setting WallpaperImage.Source to {wallpaper.FullPhotoUrl}");
 
-                        // Check if this is an Alpha Coders wallpaper that needs WebP conversion
-                        if (!string.IsNullOrEmpty(_currentWallpaper.ImageUrl) && _currentWallpaper.ImageUrl.Contains("alphacoders.com"))
-                        {
-                            // Use the pre-loaded ImageSource from LoadFullImageAsync (with WebP conversion)
-                            if (wallpaper.ImageSource != null)
-                            {
-                                WallpaperImage.Source = wallpaper.ImageSource;
-                                System.Diagnostics.Debug.WriteLine("Using pre-loaded Alpha Coders image with WebP conversion");
-                            }
-                            else
-                            {
-                                // Load the image asynchronously with WebP conversion
-                                _ = LoadAlphaCodersImageAsync(wallpaper);
-                            }
-                        }
-                        else
-                        {
-                            // For non-Alpha Coders wallpapers, load directly from URL
-                            WallpaperImage.Source = new BitmapImage(new Uri(wallpaper.FullPhotoUrl));
-                        }
+                        // Alpha Coders big thumb images are already in standard formats (PNG/JPG), no WebP conversion needed
+                        System.Diagnostics.Debug.WriteLine("Loading wallpaper image directly from FullPhotoUrl");
+                        WallpaperImage.Source = new BitmapImage(new Uri(wallpaper.FullPhotoUrl));
                     }
                     catch (Exception ex)
                     {
