@@ -211,17 +211,24 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("Loading Alpha Coders image with WebP conversion");
-                var imageSource = await wallpaper.LoadFullImageAsync();
-                if (imageSource != null)
+                System.Diagnostics.Debug.WriteLine("Fetching big thumb URL for Alpha Coders wallpaper on-demand");
+
+                // First, fetch the big thumb URL dynamically
+                var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
+                var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(wallpaper.Id, wallpaper.ImageUrl);
+
+                if (!string.IsNullOrEmpty(bigThumbUrl))
                 {
-                    WallpaperImage.Source = imageSource;
-                    wallpaper.ImageSource = imageSource;
-                    System.Diagnostics.Debug.WriteLine("Successfully loaded Alpha Coders image");
+                    wallpaper.FullPhotoUrl = bigThumbUrl;
+                    System.Diagnostics.Debug.WriteLine($"Found big thumb URL: {bigThumbUrl}");
+
+                    // Load the big thumb directly (no WebP conversion needed)
+                    WallpaperImage.Source = new BitmapImage(new Uri(bigThumbUrl));
+                    System.Diagnostics.Debug.WriteLine("Successfully loaded Alpha Coders big thumb");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Failed to load Alpha Coders image");
+                    System.Diagnostics.Debug.WriteLine("Failed to find big thumb URL");
                 }
             }
             catch (Exception ex)
@@ -268,26 +275,29 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Set title at the top of the page
                 TitleTextBlock.Text = wallpaper.Title ?? "Error Loading Wallpaper";
 
-                // Set the full image using the FullPhotoUrl property
-                if (!string.IsNullOrEmpty(wallpaper.FullPhotoUrl))
+                // Check if this is an Alpha Coders wallpaper that needs on-demand big thumb fetching
+                if (!string.IsNullOrEmpty(_currentWallpaper.ImageUrl) && _currentWallpaper.ImageUrl.Contains("alphacoders.com"))
                 {
+                    System.Diagnostics.Debug.WriteLine("Detected Alpha Coders wallpaper - fetching big thumb on-demand");
+                    // Load the big thumb asynchronously
+                    _ = LoadAlphaCodersImageAsync(wallpaper);
+                }
+                else if (!string.IsNullOrEmpty(wallpaper.FullPhotoUrl))
+                {
+                    // For non-Alpha Coders wallpapers with FullPhotoUrl, load directly
                     try
                     {
                         System.Diagnostics.Debug.WriteLine($"Setting WallpaperImage.Source to {wallpaper.FullPhotoUrl}");
-
-                        // Alpha Coders big thumb images are already in standard formats (PNG/JPG), no WebP conversion needed
-                        System.Diagnostics.Debug.WriteLine("Loading wallpaper image directly from FullPhotoUrl");
                         WallpaperImage.Source = new BitmapImage(new Uri(wallpaper.FullPhotoUrl));
                     }
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"Error setting wallpaper image: {ex.Message}");
-                        // Keep using the placeholder image (already set in XAML)
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("FullPhotoUrl is empty - using placeholder image");
+                    System.Diagnostics.Debug.WriteLine("No FullPhotoUrl available - using placeholder image");
                 }
 
                 // Handle AI tag exactly as in LatestWallpapersPage.SetItemMetadata

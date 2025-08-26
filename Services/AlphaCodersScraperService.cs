@@ -46,7 +46,7 @@ namespace Wall_You_Need_Next_Gen.Services
 
             try
             {
-                // Part 1: Get small image URLs
+                // Part 1: Get small image URLs only
                 Console.WriteLine($"Starting to scrape pages {startPage} to {endPage - 1}...");
                 for (int page = startPage; page < endPage; page++)
                 {
@@ -64,35 +64,8 @@ namespace Wall_You_Need_Next_Gen.Services
                 }
                 Console.WriteLine($"Total small URLs collected: {_allSmallUrls.Count}");
 
-                // Part 2 & 3: Get big and original image URLs (without downloading)
-                Console.WriteLine("Processing URLs to get big and original variants...");
-                var semaphore = new SemaphoreSlim(10, 10); // Limit concurrent requests
-                var tasks = new List<Task>();
-
-                foreach (var smallUrl in _allSmallUrls)
-                {
-                    tasks.Add(GetImageUrlsAsync(smallUrl, semaphore));
-                }
-
-                await Task.WhenAll(tasks);
-
-                Console.WriteLine($"Extracted {_allBigUrls.Count} big URLs and {_allOriginalUrls.Count} original URLs");
-
-                // Log first few big and original URLs for debugging
-                Console.WriteLine("Sample big URLs:");
-                for (int i = 0; i < Math.Min(3, _allBigUrls.Count); i++)
-                {
-                    Console.WriteLine($"  Big URL {i + 1}: {_allBigUrls[i]}");
-                }
-
-                Console.WriteLine("Sample original URLs:");
-                for (int i = 0; i < Math.Min(3, _allOriginalUrls.Count); i++)
-                {
-                    Console.WriteLine($"  Original URL {i + 1}: {_allOriginalUrls[i]}");
-                }
-
-                // Create WallpaperItem objects
-                wallpapers = CreateWallpaperItems();
+                // Create WallpaperItem objects with only small thumbs
+                wallpapers = CreateWallpaperItemsFromSmallUrls();
 
                 return wallpapers;
             }
@@ -169,37 +142,50 @@ namespace Wall_You_Need_Next_Gen.Services
             }
         }
 
-        private async Task GetImageUrlsAsync(string smallUrl, SemaphoreSlim semaphore)
+        // Method to fetch big thumb URL on-demand when a wallpaper is clicked
+        public async Task<string> GetBigImageUrlForWallpaperAsync(string imageId, string smallUrl)
         {
-            await semaphore.WaitAsync();
-
             try
             {
-                // Get big image URL (without downloading)
-                var bigUrl = await GetBigImageUrlAsync(smallUrl);
-                if (!string.IsNullOrEmpty(bigUrl))
+                var uri = new Uri(smallUrl);
+                var domain = uri.Host;
+                var folderNumber = uri.Segments[1].TrimEnd('/');
+
+                var baseBigUrl = $"https://{domain}/{folderNumber}/thumb-1920-{imageId}";
+
+                // Try different extensions like Python scraper
+                string[] extensions = { "jpeg", "jpg", "png" };
+
+                using (var httpClient = new HttpClient())
                 {
-                    lock (_allBigUrls)
+                    httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+
+                    foreach (var ext in extensions)
                     {
-                        _allBigUrls.Add(bigUrl);
+                        var bigUrl = $"{baseBigUrl}.{ext}";
+                        try
+                        {
+                            var response = await httpClient.GetAsync(bigUrl);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                Console.WriteLine($"Found big image with extension {ext}: {bigUrl}");
+                                return bigUrl;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed {bigUrl}: {ex.Message}");
+                        }
                     }
-                    Console.WriteLine($"Generated big URL: {bigUrl}");
                 }
 
-                // Get original image URL (without downloading)
-                var originalUrl = GetOriginalImageUrl(smallUrl);
-                if (!string.IsNullOrEmpty(originalUrl))
-                {
-                    lock (_allOriginalUrls)
-                    {
-                        _allOriginalUrls.Add(originalUrl);
-                    }
-                    Console.WriteLine($"Generated original URL: {originalUrl}");
-                }
+                Console.WriteLine($"Big image not found for {smallUrl}");
+                return null;
             }
-            finally
+            catch (Exception ex)
             {
-                semaphore.Release();
+                Console.WriteLine($"Error getting big image URL for {smallUrl}: {ex.Message}");
+                return null;
             }
         }
 
@@ -277,7 +263,7 @@ namespace Wall_You_Need_Next_Gen.Services
 
 
 
-        private List<WallpaperItem> CreateWallpaperItems()
+        private List<WallpaperItem> CreateWallpaperItemsFromSmallUrls()
         {
             var wallpapers = new List<WallpaperItem>();
 
@@ -288,17 +274,13 @@ namespace Wall_You_Need_Next_Gen.Services
                     var smallUrl = _allSmallUrls[i];
                     var imageId = GetImageIdFromUrl(smallUrl);
 
-                    // Find corresponding big and original URLs
-                    var bigUrl = _allBigUrls.FirstOrDefault(url => url.Contains(imageId));
-                    var originalUrl = _allOriginalUrls.FirstOrDefault(url => url.Contains(imageId));
-
                     var wallpaper = new WallpaperItem
                     {
                         Id = imageId,
                         Title = $"Alpha Coders Wallpaper {imageId}",
                         ImageUrl = smallUrl, // Small thumb for grid
-                        FullPhotoUrl = bigUrl ?? smallUrl, // Big thumb for detail page
-                        SourceUrl = originalUrl ?? bigUrl ?? smallUrl, // Original for download
+                        FullPhotoUrl = "", // Will be fetched on-demand when clicked
+                        SourceUrl = "", // Will be set when clicked
                         Resolution = "3840x2160", // Default 4K
                         QualityTag = "4K",
                         Likes = new Random().Next(10, 1000).ToString(),
@@ -309,8 +291,6 @@ namespace Wall_You_Need_Next_Gen.Services
                     Console.WriteLine($"Created wallpaper item {i + 1}:");
                     Console.WriteLine($"  ID: {imageId}");
                     Console.WriteLine($"  Small URL: {smallUrl}");
-                    Console.WriteLine($"  Big URL: {bigUrl}");
-                    Console.WriteLine($"  Original URL: {originalUrl}");
 
                     wallpapers.Add(wallpaper);
                 }
