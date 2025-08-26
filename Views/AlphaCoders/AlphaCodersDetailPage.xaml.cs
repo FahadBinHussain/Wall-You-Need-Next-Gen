@@ -249,9 +249,9 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
 
         private async void SourceLinkButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentWallpaper != null && !string.IsNullOrEmpty(_currentWallpaper.SourceUrl))
+            if (_currentWallpaper != null && !string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
             {
-                await Launcher.LaunchUriAsync(new Uri(_currentWallpaper.SourceUrl));
+                await Launcher.LaunchUriAsync(new Uri(_currentWallpaper.FullPhotoUrl));
             }
         }
 
