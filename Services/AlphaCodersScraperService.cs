@@ -28,6 +28,15 @@ namespace Wall_You_Need_Next_Gen.Services
         private readonly List<string> _allBigUrls = new List<string>();
         private readonly List<string> _allOriginalUrls = new List<string>();
 
+        // Static debug logger that can be set by the UI
+        public static Action<string> DebugLogger { get; set; }
+
+        private static void LogDebug(string message)
+        {
+            System.Diagnostics.Debug.WriteLine(message);
+            DebugLogger?.Invoke(message);
+        }
+
         public AlphaCodersScraperService()
         {
             _httpClient = new HttpClient();
@@ -46,32 +55,34 @@ namespace Wall_You_Need_Next_Gen.Services
 
             try
             {
-                // Part 1: Get small image URLs only
-                Console.WriteLine($"Starting to scrape pages {startPage} to {endPage - 1}...");
-                for (int page = startPage; page < endPage; page++)
+                // Clear previous URLs for fresh scraping
+                var currentPageUrls = new List<string>();
+
+                LogDebug($"Starting to scrape pages {startPage} to {endPage}...");
+                for (int page = startPage; page <= endPage; page++)
                 {
-                    Console.WriteLine($"Scraping page {page}...");
+                    LogDebug($"Scraping page {page}...");
                     var smallUrls = await GetSmallImageUrlsAsync(page);
-                    Console.WriteLine($"Found {smallUrls.Count} small images on page {page}");
+                    LogDebug($"Found {smallUrls.Count} small images on page {page}");
 
                     // Log first few URLs for debugging
                     for (int i = 0; i < Math.Min(3, smallUrls.Count); i++)
                     {
-                        Console.WriteLine($"  Small URL {i + 1}: {smallUrls[i]}");
+                        LogDebug($"  Small URL {i + 1}: {smallUrls[i]}");
                     }
 
-                    _allSmallUrls.AddRange(smallUrls);
+                    currentPageUrls.AddRange(smallUrls);
                 }
-                Console.WriteLine($"Total small URLs collected: {_allSmallUrls.Count}");
+                LogDebug($"Total small URLs collected: {currentPageUrls.Count}");
 
-                // Create WallpaperItem objects with only small thumbs
-                wallpapers = CreateWallpaperItemsFromSmallUrls();
+                // Create WallpaperItem objects directly from current scrape
+                wallpapers = CreateWallpaperItemsFromUrls(currentPageUrls);
 
                 return wallpapers;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in ScrapeWallpapersAsync: {ex.Message}");
+                LogDebug($"Error in ScrapeWallpapersAsync: {ex.Message}");
                 return wallpapers;
             }
         }
@@ -83,16 +94,16 @@ namespace Wall_You_Need_Next_Gen.Services
             try
             {
                 var url = string.Format(_baseUrl, pageNumber);
-                Console.WriteLine($"Fetching URL: {url}");
+                LogDebug($"Fetching URL: {url}");
                 var response = await _httpClient.GetAsync(url);
                 var htmlContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Got HTML response, length: {htmlContent.Length} characters");
+                LogDebug($"Got HTML response, length: {htmlContent.Length} characters");
 
                 var doc = new HtmlDocument();
                 doc.LoadHtml(htmlContent);
 
                 var imgNodes = doc.DocumentNode.SelectNodes("//img[@src]");
-                Console.WriteLine($"Found {imgNodes?.Count ?? 0} img nodes");
+                LogDebug($"Found {imgNodes?.Count ?? 0} img nodes");
 
                 if (imgNodes != null)
                 {
@@ -105,7 +116,7 @@ namespace Wall_You_Need_Next_Gen.Services
                             if (src.Contains("thumbbig"))
                             {
                                 thumbbigCount++;
-                                Console.WriteLine($"Found thumbbig image: {src}");
+                                LogDebug($"Found thumbbig image: {src}");
                             }
 
                             if (src.Contains("thumbbig") && src.StartsWith("https://images"))
@@ -114,13 +125,13 @@ namespace Wall_You_Need_Next_Gen.Services
                             }
                         }
                     }
-                    Console.WriteLine($"Total thumbbig images found: {thumbbigCount}");
-                    Console.WriteLine($"Valid thumbbig images (starting with https://images): {imageUrls.Count}");
+                    LogDebug($"Total thumbbig images found: {thumbbigCount}");
+                    LogDebug($"Valid thumbbig images (starting with https://images): {imageUrls.Count}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting small image URLs from page {pageNumber}: {ex.Message}");
+                LogDebug($"Error getting small image URLs from page {pageNumber}: {ex.Message}");
             }
 
             return imageUrls;
@@ -263,15 +274,15 @@ namespace Wall_You_Need_Next_Gen.Services
 
 
 
-        private List<WallpaperItem> CreateWallpaperItemsFromSmallUrls()
+        private List<WallpaperItem> CreateWallpaperItemsFromUrls(List<string> urls)
         {
             var wallpapers = new List<WallpaperItem>();
 
             try
             {
-                for (int i = 0; i < _allSmallUrls.Count; i++)
+                for (int i = 0; i < urls.Count; i++)
                 {
-                    var smallUrl = _allSmallUrls[i];
+                    var smallUrl = urls[i];
                     var imageId = GetImageIdFromUrl(smallUrl);
 
                     var wallpaper = new WallpaperItem
@@ -288,21 +299,22 @@ namespace Wall_You_Need_Next_Gen.Services
                         IsAI = false
                     };
 
-                    Console.WriteLine($"Created wallpaper item {i + 1}:");
-                    Console.WriteLine($"  ID: {imageId}");
-                    Console.WriteLine($"  Small URL: {smallUrl}");
-
                     wallpapers.Add(wallpaper);
                 }
+
+                LogDebug($"Created {wallpapers.Count} wallpaper items from {urls.Count} URLs");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating wallpaper items: {ex.Message}");
-
-                Console.WriteLine($"Total wallpaper items created: {wallpapers.Count}");
+                LogDebug($"Error creating wallpaper items: {ex.Message}");
             }
 
             return wallpapers;
+        }
+
+        private List<WallpaperItem> CreateWallpaperItemsFromSmallUrls()
+        {
+            return CreateWallpaperItemsFromUrls(_allSmallUrls);
         }
 
         public void Dispose()

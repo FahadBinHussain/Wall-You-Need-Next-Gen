@@ -16,7 +16,6 @@ namespace Wall_You_Need_Next_Gen.Services
         private readonly string _wallBaseUrl = "https://wall.alphacoders.com";
         private readonly AlphaCodersScraperService _scraperService;
         private static List<WallpaperItem> _cachedWallpapers = new List<WallpaperItem>();
-        private static bool _isInitialized = false;
         private static int _lastScrapedPage = 0;
 
         // Static debug logger that can be set by the UI
@@ -33,6 +32,9 @@ namespace Wall_You_Need_Next_Gen.Services
             _httpClient = new HttpClient();
             _scraperService = new AlphaCodersScraperService();
 
+            // Set debug logger for scraper
+            AlphaCodersScraperService.DebugLogger = LogDebug;
+
             // Set default headers for all requests
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
             _httpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
@@ -40,101 +42,62 @@ namespace Wall_You_Need_Next_Gen.Services
             _httpClient.DefaultRequestHeaders.Add("Referer", "https://wall.alphacoders.com/");
         }
 
-        public async Task<List<WallpaperItem>> GetLatestWallpapersAsync(int page = 1, int count = 30)
+        public async Task<List<WallpaperItem>> GetLatestWallpapersAsync(int page = 1, int count = 15)
         {
             try
             {
-                // Initialize scraper if not done yet
-                if (!_isInitialized)
-                {
-                    LogDebug("GetLatestWallpapersAsync: Initializing Alpha Coders scraper...");
-                    _cachedWallpapers = await _scraperService.ScrapeWallpapersAsync(1, 2);
-                    _lastScrapedPage = 1;
-                    _isInitialized = true;
-                    LogDebug($"GetLatestWallpapersAsync: Scraper initialized with {_cachedWallpapers.Count} wallpapers");
+                LogDebug($"Requesting page {page} with {count} wallpapers");
 
-                    // Log first few wallpapers for debugging
-                    for (int i = 0; i < Math.Min(3, _cachedWallpapers.Count); i++)
+                // Load the requested page if we haven't loaded it yet
+                if (page > _lastScrapedPage)
+                {
+                    // Load only the pages we need, not all from 1 to current
+                    for (int p = _lastScrapedPage + 1; p <= page; p++)
                     {
-                        var wp = _cachedWallpapers[i];
-                        LogDebug($"GetLatestWallpapersAsync: Wallpaper {i+1} - ID: {wp.Id}, ImageUrl: {wp.ImageUrl}");
+                        LogDebug($"Loading page {p} from scraper...");
+                        var newWallpapers = await _scraperService.ScrapeWallpapersAsync(p, p);
+                        if (newWallpapers.Count > 0)
+                        {
+                            _cachedWallpapers.AddRange(newWallpapers);
+                            _lastScrapedPage = p;
+                            LogDebug($"Loaded {newWallpapers.Count} wallpapers from page {p}");
+                        }
+                        else
+                        {
+                            LogDebug($"No wallpapers found on page {p}");
+                            break; // Stop loading if we hit an empty page
+                        }
                     }
                 }
 
-                // Calculate pagination
+                // Calculate pagination based on cached wallpapers
                 int startIndex = (page - 1) * count;
                 int endIndex = Math.Min(startIndex + count, _cachedWallpapers.Count);
 
-                LogDebug($"GetLatestWallpapersAsync: Page {page}, StartIndex: {startIndex}, EndIndex: {endIndex}, Total cached: {_cachedWallpapers.Count}");
-
                 if (startIndex >= _cachedWallpapers.Count)
                 {
-                    LogDebug($"GetLatestWallpapersAsync: Page {page} exceeds available wallpapers, returning empty list");
+                    LogDebug($"No wallpapers available for page {page}");
                     return new List<WallpaperItem>();
                 }
 
-                var pageWallpapers = _cachedWallpapers.GetRange(startIndex, endIndex - startIndex);
-                LogDebug($"GetLatestWallpapersAsync: Returning {pageWallpapers.Count} wallpapers for page {page}");
-
-                // If we're running low on cached wallpapers, load more
-                if (endIndex >= _cachedWallpapers.Count - 10) // Load more when we have less than 10 wallpapers left
-                {
-                    await LoadMoreWallpapersAsync();
-                }
-
-                // Don't pre-load images - let UI load them individually as needed
-                foreach (var wallpaper in pageWallpapers)
-                {
-                    LogDebug($"Processing wallpaper {wallpaper.Id} - ImageUrl: {wallpaper.ImageUrl}");
-                }
+                var pageWallpapers = _cachedWallpapers.GetRange(startIndex, Math.Min(count, _cachedWallpapers.Count - startIndex));
+                LogDebug($"Returning {pageWallpapers.Count} wallpapers for page {page}");
 
                 return pageWallpapers;
             }
             catch (Exception ex)
             {
-                // Log the exception
-                LogDebug($"GetLatestWallpapersAsync: Error fetching wallpapers: {ex.Message}");
-                LogDebug($"GetLatestWallpapersAsync: Stack trace: {ex.StackTrace}");
+                LogDebug($"Error fetching wallpapers: {ex.Message}");
                 return new List<WallpaperItem>();
             }
         }
 
-        private async Task LoadMoreWallpapersAsync()
-        {
-            try
-            {
-                LogDebug($"LoadMoreWallpapersAsync: Loading page {_lastScrapedPage + 1}");
-                var newWallpapers = await _scraperService.ScrapeWallpapersAsync(_lastScrapedPage + 1, _lastScrapedPage + 2);
 
-                if (newWallpapers.Count > 0)
-                {
-                    _cachedWallpapers.AddRange(newWallpapers);
-                    _lastScrapedPage++;
-                    LogDebug($"LoadMoreWallpapersAsync: Added {newWallpapers.Count} wallpapers, total: {_cachedWallpapers.Count}");
-                }
-                else
-                {
-                    LogDebug("LoadMoreWallpapersAsync: No more wallpapers found");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogDebug($"LoadMoreWallpapersAsync: Error loading more wallpapers: {ex.Message}");
-            }
-        }
 
         public async Task<WallpaperItem> GetWallpaperDetailsAsync(string wallpaperId)
         {
             try
             {
-                // Initialize scraper if not done yet
-                if (!_isInitialized)
-                {
-                    System.Diagnostics.Debug.WriteLine("Initializing Alpha Coders scraper for details...");
-                    _cachedWallpapers = await _scraperService.ScrapeWallpapersAsync(1, 3);
-                    _isInitialized = true;
-                }
-
                 // Find the wallpaper in cached data first
                 var cachedWallpaper = _cachedWallpapers.FirstOrDefault(w => w.Id == wallpaperId);
                 if (cachedWallpaper != null)
@@ -184,7 +147,7 @@ namespace Wall_You_Need_Next_Gen.Services
             try
             {
                 // Try to find the original URL from scraped data first
-                if (_isInitialized)
+                if (_cachedWallpapers.Count > 0)
                 {
                     var cachedWallpaper = _cachedWallpapers.FirstOrDefault(w => w.Id == wallpaperId);
                     if (cachedWallpaper != null && !string.IsNullOrEmpty(cachedWallpaper.SourceUrl))

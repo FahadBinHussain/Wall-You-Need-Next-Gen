@@ -44,10 +44,10 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             {
                 _isLoading = true;
                 LoadingProgressBar.Visibility = Visibility.Visible;
-                AppendDebugLog($"Loading wallpapers - Page {_currentPage}");
+                AppendDebugLog($"Loading page {_currentPage}");
 
                 var newWallpapers = await _alphaCodersService.GetLatestWallpapersAsync(_currentPage);
-                AppendDebugLog($"Received {newWallpapers.Count} wallpapers from service");
+                AppendDebugLog($"Received {newWallpapers.Count} wallpapers");
 
                 if (newWallpapers.Count == 0)
                 {
@@ -59,10 +59,9 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                     foreach (var wallpaper in newWallpapers)
                     {
                         _wallpapers.Add(wallpaper);
-                        AppendDebugLog($"Added wallpaper: {wallpaper.Id} - {wallpaper.ImageUrl}");
                     }
                     _currentPage++;
-                    AppendDebugLog($"Added {newWallpapers.Count} wallpapers, current page: {_currentPage}");
+                    AppendDebugLog($"Added {newWallpapers.Count} wallpapers, page: {_currentPage}");
                 }
             }
             catch (Exception ex)
@@ -144,11 +143,9 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                     {
                         try
                         {
-                            AppendDebugLog($"Loading image for wallpaper {w.Id}...");
                             w.ImageSource = await w.LoadImageAsync();
                             if (w.ImageSource != null)
                             {
-                                AppendDebugLog($"Successfully loaded image for wallpaper {w.Id}");
                                 // Force UI update
                                 var container = (GridViewItem)WallpapersGridView.ContainerFromItem(w);
                                 container?.UpdateLayout();
@@ -160,7 +157,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                         }
                         catch (Exception ex)
                         {
-                            AppendDebugLog($"Error loading image for wallpaper {w.Id}: {ex.Message}");
+                            AppendDebugLog($"Error loading image {w.Id}: {ex.Message}");
                         }
                     }
                 });
