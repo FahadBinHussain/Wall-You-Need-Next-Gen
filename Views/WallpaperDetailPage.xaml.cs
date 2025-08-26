@@ -207,6 +207,29 @@ namespace Wall_You_Need_Next_Gen.Views
         private const string DetailApiBaseUrl = "https://backiee.com/api/wallpaper/list.php?action=detail_page_v2&wallpaper_id=";
         private WallpaperItem _currentWallpaper;
 
+        private async Task LoadAlphaCodersImageAsync(WallpaperItem wallpaper)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("Loading Alpha Coders image with WebP conversion");
+                var imageSource = await wallpaper.LoadFullImageAsync();
+                if (imageSource != null)
+                {
+                    WallpaperImage.Source = imageSource;
+                    wallpaper.ImageSource = imageSource;
+                    System.Diagnostics.Debug.WriteLine("Successfully loaded Alpha Coders image");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Failed to load Alpha Coders image");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading Alpha Coders image: {ex.Message}");
+            }
+        }
+
         public WallpaperDetailPage()
         {
             this.InitializeComponent();
@@ -221,12 +244,23 @@ namespace Wall_You_Need_Next_Gen.Views
             if (e.Parameter is WallpaperItem wallpaper)
             {
                 _currentWallpaper = wallpaper;
-                // Initialize SourceUrl with a default value based on ID
+                // Initialize SourceUrl with a default value based on ID and detect platform
                 if (string.IsNullOrEmpty(_currentWallpaper.SourceUrl) && !string.IsNullOrEmpty(_currentWallpaper.Id))
                 {
-                    _currentWallpaper.SourceUrl = $"https://backiee.com/wallpaper/{_currentWallpaper.Id}";
-                    System.Diagnostics.Debug.WriteLine($"Set default SourceUrl in OnNavigatedTo: {_currentWallpaper.SourceUrl}");
+                    // Check if this is an Alpha Coders wallpaper by looking at the ImageUrl
+                    if (!string.IsNullOrEmpty(_currentWallpaper.ImageUrl) && _currentWallpaper.ImageUrl.Contains("alphacoders.com"))
+                    {
+                        _currentWallpaper.SourceUrl = $"https://wall.alphacoders.com/big.php?i={_currentWallpaper.Id}";
+                        System.Diagnostics.Debug.WriteLine($"Set Alpha Coders SourceUrl: {_currentWallpaper.SourceUrl}");
+                    }
+                    else
+                    {
+                        _currentWallpaper.SourceUrl = $"https://backiee.com/wallpaper/{_currentWallpaper.Id}";
+                        System.Diagnostics.Debug.WriteLine($"Set default Backiee SourceUrl: {_currentWallpaper.SourceUrl}");
+                    }
                 }
+
+
                 System.Diagnostics.Debug.WriteLine($"Received wallpaper: ID={wallpaper.Id}, Title={wallpaper.Title}");
                 System.Diagnostics.Debug.WriteLine($"FullPhotoUrl={wallpaper.FullPhotoUrl}");
                 System.Diagnostics.Debug.WriteLine($"SourceUrl={wallpaper.SourceUrl}");
@@ -240,7 +274,27 @@ namespace Wall_You_Need_Next_Gen.Views
                     try
                     {
                         System.Diagnostics.Debug.WriteLine($"Setting WallpaperImage.Source to {wallpaper.FullPhotoUrl}");
-                        WallpaperImage.Source = new BitmapImage(new Uri(wallpaper.FullPhotoUrl));
+
+                        // Check if this is an Alpha Coders wallpaper that needs WebP conversion
+                        if (!string.IsNullOrEmpty(_currentWallpaper.ImageUrl) && _currentWallpaper.ImageUrl.Contains("alphacoders.com"))
+                        {
+                            // Use the pre-loaded ImageSource from LoadFullImageAsync (with WebP conversion)
+                            if (wallpaper.ImageSource != null)
+                            {
+                                WallpaperImage.Source = wallpaper.ImageSource;
+                                System.Diagnostics.Debug.WriteLine("Using pre-loaded Alpha Coders image with WebP conversion");
+                            }
+                            else
+                            {
+                                // Load the image asynchronously with WebP conversion
+                                _ = LoadAlphaCodersImageAsync(wallpaper);
+                            }
+                        }
+                        else
+                        {
+                            // For non-Alpha Coders wallpapers, load directly from URL
+                            WallpaperImage.Source = new BitmapImage(new Uri(wallpaper.FullPhotoUrl));
+                        }
                     }
                     catch (Exception ex)
                     {

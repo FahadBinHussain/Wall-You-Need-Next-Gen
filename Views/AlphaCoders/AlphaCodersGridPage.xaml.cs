@@ -105,8 +105,8 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
 
                     AppendDebugLog($"Navigating to detail page for wallpaper {wallpaper.Id}");
 
-                    // Navigate using the main window's NavigationFrame
-                    bool navigationResult = MainWindow.Instance.NavigationFrame.Navigate(typeof(AlphaCodersDetailPage), wallpaper);
+                    // Navigate using the main window's NavigationFrame to the general WallpaperDetailPage
+                    bool navigationResult = MainWindow.Instance.NavigationFrame.Navigate(typeof(WallpaperDetailPage), wallpaper);
 
                     if (!navigationResult)
                     {
