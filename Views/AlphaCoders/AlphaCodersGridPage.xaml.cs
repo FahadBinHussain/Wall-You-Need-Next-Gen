@@ -21,18 +21,37 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
         private bool _hasMoreWallpapers = true;
         private StringBuilder _debugLog = new StringBuilder();
         private bool _debugVisible = false;
+        private bool _isInitialized = false;
 
         public AlphaCodersGridPage()
         {
             this.InitializeComponent();
+
+            // Enable navigation caching to preserve page state
+            this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Required;
+
             _alphaCodersService = new AlphaCodersService();
             WallpapersGridView.ItemsSource = _wallpapers;
 
             // Set up debug logging
             AlphaCodersService.DebugLogger = AppendDebugLog;
             AppendDebugLog("AlphaCodersGridPage initialized");
+        }
 
-            LoadWallpapers();
+        protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            // Only load wallpapers if this is the first time navigating to this page
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
+                LoadWallpapers();
+            }
+            else
+            {
+                AppendDebugLog("Page already initialized, preserving state");
+            }
         }
 
         private async void LoadWallpapers()
