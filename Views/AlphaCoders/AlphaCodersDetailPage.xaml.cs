@@ -51,16 +51,25 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                 // Set the page title
                 TitleTextBlock.Text = _currentWallpaper.Title;
 
-                // Load the full image
-                if (_currentWallpaper.FullPhotoUrl.StartsWith("ms-appx:"))
+                // Check if ImageSource is already set from the service
+                if (_currentWallpaper.ImageSource != null)
+                {
+                    // Use the already loaded image
+                    WallpaperImage.Source = _currentWallpaper.ImageSource;
+                }
+                // Otherwise load based on URL
+                else if (_currentWallpaper.FullPhotoUrl.StartsWith("ms-appx:"))
                 {
                     // For local images
-                    WallpaperImage.Source = new BitmapImage(new Uri(_currentWallpaper.FullPhotoUrl));
+                    var bitmap = new BitmapImage(new Uri(_currentWallpaper.FullPhotoUrl));
+                    _currentWallpaper.ImageSource = bitmap;
+                    WallpaperImage.Source = bitmap;
                 }
                 else
                 {
                     // For remote images
-                    WallpaperImage.Source = await _currentWallpaper.LoadImageAsync();
+                    _currentWallpaper.ImageSource = await _currentWallpaper.LoadImageAsync();
+                    WallpaperImage.Source = _currentWallpaper.ImageSource;
                 }
 
                 // Set wallpaper info
@@ -85,6 +94,10 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading wallpaper details: {ex.Message}");
+                // Fallback to placeholder if loading fails
+                var fallbackImage = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
+                _currentWallpaper.ImageSource = fallbackImage;
+                WallpaperImage.Source = fallbackImage;
             }
         }
 
@@ -177,11 +190,30 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                 // Show loading indicator
                 LoadingRing.Visibility = Visibility.Visible;
 
-                // In a real implementation, you would download the image
-                // For demo purposes, we'll just show a success message
-                await Task.Delay(1000); // Simulate processing time
+                if (_currentWallpaper != null && !string.IsNullOrEmpty(_currentWallpaper.Id))
+                {
+                    // Get the download URL
+                    string downloadUrl = await _alphaCodersService.GetWallpaperDownloadUrlAsync(_currentWallpaper.Id);
+                    
+                    if (!string.IsNullOrEmpty(downloadUrl))
+                    {
+                        // For demo purposes, we'll just show the URL in a dialog
+                        // In a real implementation, you would download the image
+                        var dialog = new ContentDialog
+                        {
+                            Title = "Download URL",
+                            Content = $"Download URL: {downloadUrl}\n\nIn a real implementation, this would download the image.",
+                            CloseButtonText = "OK",
+                            XamlRoot = this.XamlRoot
+                        };
 
-                var dialog = new ContentDialog
+                        await dialog.ShowAsync();
+                        return;
+                    }
+                }
+                
+                // If we couldn't get the download URL, show a generic success message
+                var successDialog = new ContentDialog
                 {
                     Title = "Success",
                     Content = "Wallpaper downloaded successfully.",
@@ -189,7 +221,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                     XamlRoot = this.XamlRoot
                 };
 
-                await dialog.ShowAsync();
+                await successDialog.ShowAsync();
             }
             catch (Exception ex)
             {

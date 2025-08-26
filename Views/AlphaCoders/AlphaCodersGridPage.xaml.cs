@@ -88,34 +88,44 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
 
             if (args.ItemIndex >= 0 && args.Item is WallpaperItem wallpaper)
             {
-                // Load the image asynchronously
-                if (wallpaper.ImageSource == null)
+                // If the image source is already set (from our service), we don't need to do anything
+                if (wallpaper.ImageSource != null)
+                    return;
+                    
+                // Otherwise, load the image asynchronously
+                args.RegisterUpdateCallback(async (s, e) =>
                 {
-                    args.RegisterUpdateCallback(async (s, e) =>
+                    if (e.Item is WallpaperItem w && w.ImageSource == null)
                     {
-                        if (e.Item is WallpaperItem w && w.ImageSource == null)
+                        try
                         {
-                            try
+                            // For placeholder images, create a BitmapImage directly
+                            if (w.ImageUrl.StartsWith("ms-appx:"))
                             {
-                                // For placeholder images, create a BitmapImage directly
-                                if (w.ImageUrl.StartsWith("ms-appx:"))
-                                {
-                                    var bitmap = new BitmapImage(new Uri(w.ImageUrl));
-                                    w.ImageSource = bitmap;
-                                }
-                                else
-                                {
-                                    // For remote images, load asynchronously
-                                    w.ImageSource = await w.LoadImageAsync();
-                                }
+                                var bitmap = new BitmapImage(new Uri(w.ImageUrl));
+                                w.ImageSource = bitmap;
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                Debug.WriteLine($"Error loading image: {ex.Message}");
+                                // For remote images, load asynchronously
+                                w.ImageSource = await w.LoadImageAsync();
+                            }
+                            
+                            // Force UI update
+                            var container = (GridViewItem)WallpapersGridView.ContainerFromItem(w);
+                            if (container != null)
+                            {
+                                container.UpdateLayout();
                             }
                         }
-                    });
-                }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error loading image: {ex.Message}");
+                            // Fallback to placeholder if loading fails
+                            w.ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
+                        }
+                    }
+                });
             }
         }
 
