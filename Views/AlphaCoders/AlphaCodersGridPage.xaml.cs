@@ -132,7 +132,39 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
 
         private void WallpapersGridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
-            // Removed all fallback logic - let the direct binding handle image display
+            if (args.InRecycleQueue)
+                return;
+
+            if (args.ItemIndex >= 0 && args.Item is WallpaperItem wallpaper)
+            {
+                // Load image individually as soon as container is ready
+                args.RegisterUpdateCallback(async (s, e) =>
+                {
+                    if (e.Item is WallpaperItem w && w.ImageSource == null)
+                    {
+                        try
+                        {
+                            AppendDebugLog($"Loading image for wallpaper {w.Id}...");
+                            w.ImageSource = await w.LoadImageAsync();
+                            if (w.ImageSource != null)
+                            {
+                                AppendDebugLog($"Successfully loaded image for wallpaper {w.Id}");
+                                // Force UI update
+                                var container = (GridViewItem)WallpapersGridView.ContainerFromItem(w);
+                                container?.UpdateLayout();
+                            }
+                            else
+                            {
+                                AppendDebugLog($"Failed to load image for wallpaper {w.Id}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            AppendDebugLog($"Error loading image for wallpaper {w.Id}: {ex.Message}");
+                        }
+                    }
+                });
+            }
         }
 
         private void WallpapersWrapGrid_SizeChanged(object sender, SizeChangedEventArgs e)

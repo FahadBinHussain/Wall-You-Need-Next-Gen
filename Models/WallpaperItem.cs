@@ -8,19 +8,39 @@ using System.IO; // For MemoryStream
 using Windows.Storage.Streams; // For InMemoryRandomAccessStream
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Wall_You_Need_Next_Gen.Models
 {
     // Model for wallpaper items
-    public class WallpaperItem
+    public class WallpaperItem : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
         public string Id { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty; // URL for the thumbnail
         public string FullPhotoUrl { get; set; } = string.Empty; // URL for the full size image
         public string SourceUrl { get; set; } = string.Empty; // URL for the source webpage
-        public BitmapImage ImageSource { get; set; } // The loaded image source for the thumbnail
+        private BitmapImage _imageSource;
+        public BitmapImage ImageSource
+        {
+            get => _imageSource;
+            set
+            {
+                if (_imageSource != value)
+                {
+                    _imageSource = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public string Resolution { get; set; } = string.Empty;
 
         // Properties for the tags
