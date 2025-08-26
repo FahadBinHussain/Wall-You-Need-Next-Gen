@@ -69,7 +69,7 @@ namespace Wall_You_Need_Next_Gen.Views
 
             // Set the ItemsSource for the ItemsRepeater
             PlatformsRepeater.ItemsSource = platforms;
-            
+
             // Register for ElementPrepared event to attach hover events
             PlatformsRepeater.ElementPrepared += PlatformsRepeater_ElementPrepared;
         }
@@ -85,32 +85,22 @@ namespace Wall_You_Need_Next_Gen.Views
             // Special handling for Backiee and Alpha Coders platforms
             if (selectedPlatform == "Backiee" || selectedPlatform == "Alpha Coders")
             {
+                // Create and show the main window for both platforms
+                MainWindow mainWindow = new MainWindow();
+
+                // Set the window to maximize
+                IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(mainWindow);
+                Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+                appWindow.Resize(new SizeInt32(1920, 1080)); // Set to a large size
+
+                mainWindow.Activate();
+
+                // Navigate to the appropriate page after activation
                 if (selectedPlatform == "Alpha Coders")
                 {
-                    // Create and show the Alpha Coders grid page
-                    Window alphaCodersWindow = new Window();
-                    alphaCodersWindow.Content = new AlphaCoders.AlphaCodersGridPage();
-                    
-                    // Set the window to maximize
-                    IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(alphaCodersWindow);
-                    Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-                    AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                    appWindow.Resize(new SizeInt32(1920, 1080)); // Set to a large size
-                    
-                    alphaCodersWindow.Activate();
-                }
-                else // Backiee
-                {
-                    // Create and show the main window
-                    MainWindow mainWindow = new MainWindow();
-                    
-                    // Set the window to maximize
-                    IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(mainWindow);
-                    Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-                    AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                    appWindow.Resize(new SizeInt32(1920, 1080)); // Set to a large size
-                    
-                    mainWindow.Activate();
+                    // Navigate to Alpha Coders grid page
+                    mainWindow.NavigationFrame.Navigate(typeof(AlphaCoders.AlphaCodersGridPage));
                 }
 
                 // Close this window

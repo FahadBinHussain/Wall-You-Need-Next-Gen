@@ -103,47 +103,61 @@ namespace Wall_You_Need_Next_Gen.Models
         // Method to load the full image with WebP support
         public async Task<BitmapImage> LoadFullImageAsync()
         {
-            System.Diagnostics.Debug.WriteLine($"Loading full image from URL: {FullPhotoUrl}");
-
-            using (var httpClient = new System.Net.Http.HttpClient())
+            try
             {
-                // Add browser-like headers
-                httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-                httpClient.DefaultRequestHeaders.Add("Accept", "image/webp,image/apng,image/*,*/*;q=0.8");
-                httpClient.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
-                httpClient.DefaultRequestHeaders.Add("Referer", "https://wall.alphacoders.com/");
+                System.Diagnostics.Debug.WriteLine($"Loading full image from URL: {FullPhotoUrl}");
 
-                // Download the image data
-                var imageBytes = await httpClient.GetByteArrayAsync(FullPhotoUrl);
-
-                // Convert WebP to PNG using ImageSharp
-                using (var inputStream = new MemoryStream(imageBytes))
+                using (var httpClient = new System.Net.Http.HttpClient())
                 {
-                    // Load the image using ImageSharp (supports WebP)
-                    using (var image = await Image.LoadAsync(inputStream))
+                    // Add browser-like headers
+                    httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+                    httpClient.DefaultRequestHeaders.Add("Accept", "image/webp,image/apng,image/*,*/*;q=0.8");
+                    httpClient.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
+                    httpClient.DefaultRequestHeaders.Add("Referer", "https://wall.alphacoders.com/");
+
+                    // Download the image data
+                    var imageBytes = await httpClient.GetByteArrayAsync(FullPhotoUrl);
+                    System.Diagnostics.Debug.WriteLine($"Downloaded {imageBytes.Length} bytes for full image");
+
+                    // Convert WebP to PNG using ImageSharp
+                    using (var inputStream = new MemoryStream(imageBytes))
                     {
-                        using (var outputStream = new MemoryStream())
+                        // Load the image using ImageSharp (supports WebP)
+                        using (var image = await Image.LoadAsync(inputStream))
                         {
-                            // Convert to PNG
-                            await image.SaveAsPngAsync(outputStream);
-                            outputStream.Position = 0;
+                            using (var outputStream = new MemoryStream())
+                            {
+                                // Convert to PNG
+                                await image.SaveAsPngAsync(outputStream);
+                                outputStream.Position = 0;
+                                System.Diagnostics.Debug.WriteLine($"Converted full image to PNG, size: {outputStream.Length} bytes");
 
-                            // Create BitmapImage from PNG data
-                            var bitmap = new BitmapImage();
+                                // Create BitmapImage from PNG data
+                                var bitmap = new BitmapImage();
 
-                            // Convert to IRandomAccessStream
-                            var randomAccessStream = new InMemoryRandomAccessStream();
-                            var raOutputStream = randomAccessStream.GetOutputStreamAt(0);
-                            await outputStream.CopyToAsync(raOutputStream.AsStreamForWrite());
-                            await raOutputStream.FlushAsync();
+                                // Convert to IRandomAccessStream
+                                var randomAccessStream = new InMemoryRandomAccessStream();
+                                var raOutputStream = randomAccessStream.GetOutputStreamAt(0);
+                                await outputStream.CopyToAsync(raOutputStream.AsStreamForWrite());
+                                await raOutputStream.FlushAsync();
 
-                            // Set bitmap source
-                            await bitmap.SetSourceAsync(randomAccessStream);
+                                // Set bitmap source
+                                await bitmap.SetSourceAsync(randomAccessStream);
+                                System.Diagnostics.Debug.WriteLine($"Successfully created full image bitmap");
 
-                            return bitmap;
+                                return bitmap;
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading full image from {FullPhotoUrl}: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Return null instead of throwing - let the calling code handle this
+                return null;
             }
         }
 

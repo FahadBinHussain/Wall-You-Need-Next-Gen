@@ -37,9 +37,16 @@ namespace Wall_You_Need_Next_Gen
         private bool isHandlingResize = false;
         private SizeInt32 lastAppliedSize;
 
+        // Static reference to main window instance for navigation
+        public static MainWindow Instance { get; private set; }
+
+        // Public property to access ContentFrame for navigation
+        public Frame NavigationFrame => ContentFrame;
+
         public MainWindow()
         {
             this.InitializeComponent();
+            Instance = this;
 
             // Set up custom titlebar
             ExtendsContentIntoTitleBar = true;

@@ -26,50 +26,57 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
         {
             base.OnNavigatedTo(e);
 
+            System.Diagnostics.Debug.WriteLine("AlphaCodersDetailPage: OnNavigatedTo called");
+            System.Diagnostics.Debug.WriteLine($"Parameter type: {e.Parameter?.GetType().Name ?? "null"}");
+
             if (e.Parameter is WallpaperItem wallpaper)
             {
+                System.Diagnostics.Debug.WriteLine($"Received WallpaperItem with ID: {wallpaper.Id}");
                 _currentWallpaper = wallpaper;
                 await LoadWallpaperDetails();
             }
             else if (e.Parameter is string wallpaperId)
             {
+                System.Diagnostics.Debug.WriteLine($"Received wallpaper ID: {wallpaperId}");
                 // Load wallpaper by ID
                 LoadingRing.Visibility = Visibility.Visible;
                 _currentWallpaper = await _alphaCodersService.GetWallpaperDetailsAsync(wallpaperId);
                 await LoadWallpaperDetails();
                 LoadingRing.Visibility = Visibility.Collapsed;
             }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("No valid parameter received for navigation");
+            }
         }
 
         private async Task LoadWallpaperDetails()
         {
             if (_currentWallpaper == null)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadWallpaperDetails: _currentWallpaper is null");
                 return;
+            }
 
             try
             {
+                System.Diagnostics.Debug.WriteLine($"LoadWallpaperDetails: Loading details for {_currentWallpaper.Id}");
+
                 // Set the page title
                 TitleTextBlock.Text = _currentWallpaper.Title;
 
-                // Check if ImageSource is already set from the service
+                // Load the full image
+                System.Diagnostics.Debug.WriteLine($"Loading full image from URL: {_currentWallpaper.FullPhotoUrl}");
+                _currentWallpaper.ImageSource = await _currentWallpaper.LoadFullImageAsync();
+
                 if (_currentWallpaper.ImageSource != null)
                 {
-                    // Use the already loaded image
                     WallpaperImage.Source = _currentWallpaper.ImageSource;
-                }
-                // Otherwise load based on URL
-                else if (_currentWallpaper.FullPhotoUrl.StartsWith("ms-appx:"))
-                {
-                    // For local images
-                    var bitmap = new BitmapImage(new Uri(_currentWallpaper.FullPhotoUrl));
-                    _currentWallpaper.ImageSource = bitmap;
-                    WallpaperImage.Source = bitmap;
+                    System.Diagnostics.Debug.WriteLine("Full image loaded successfully");
                 }
                 else
                 {
-                    // For remote images
-                    _currentWallpaper.ImageSource = await _currentWallpaper.LoadImageAsync();
-                    WallpaperImage.Source = _currentWallpaper.ImageSource;
+                    System.Diagnostics.Debug.WriteLine("Failed to load full image - ImageSource is null");
                 }
 
                 // Set wallpaper info
@@ -93,11 +100,8 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading wallpaper details: {ex.Message}");
-                // Fallback to placeholder if loading fails
-                var fallbackImage = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
-                _currentWallpaper.ImageSource = fallbackImage;
-                WallpaperImage.Source = fallbackImage;
+                System.Diagnostics.Debug.WriteLine($"Error in LoadWallpaperDetails: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
             }
         }
 

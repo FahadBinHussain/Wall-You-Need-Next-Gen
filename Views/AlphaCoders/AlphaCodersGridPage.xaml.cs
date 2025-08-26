@@ -88,10 +88,45 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
 
         private void WallpapersGridView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (e.ClickedItem is WallpaperItem wallpaper)
+            try
             {
-                // Navigate to detail page
-                Frame.Navigate(typeof(Wall_You_Need_Next_Gen.Views.AlphaCoders.AlphaCodersDetailPage), wallpaper);
+                AppendDebugLog("ItemClick event triggered");
+
+                if (e?.ClickedItem is WallpaperItem wallpaper)
+                {
+                    AppendDebugLog($"Clicked item is WallpaperItem with ID: {wallpaper.Id}");
+
+                    // Use MainWindow static instance to access NavigationFrame
+                    if (MainWindow.Instance?.NavigationFrame == null)
+                    {
+                        AppendDebugLog("MainWindow.Instance or NavigationFrame is null - cannot navigate");
+                        return;
+                    }
+
+                    AppendDebugLog($"Navigating to detail page for wallpaper {wallpaper.Id}");
+
+                    // Navigate using the main window's NavigationFrame
+                    bool navigationResult = MainWindow.Instance.NavigationFrame.Navigate(typeof(AlphaCodersDetailPage), wallpaper);
+
+                    if (!navigationResult)
+                    {
+                        AppendDebugLog("Navigation failed - Frame.Navigate returned false");
+                    }
+                    else
+                    {
+                        AppendDebugLog("Navigation succeeded - Frame.Navigate returned true");
+                    }
+                }
+                else
+                {
+                    AppendDebugLog($"ClickedItem is not WallpaperItem. Type: {e?.ClickedItem?.GetType()?.Name ?? "null"}");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendDebugLog($"Error during navigation: {ex.Message}");
+                AppendDebugLog($"Stack trace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"Navigation error: {ex.Message}");
             }
         }
 
