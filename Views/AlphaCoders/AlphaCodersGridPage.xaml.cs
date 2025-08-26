@@ -202,22 +202,29 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             });
         }
 
-        private async void DebugButton_Click(object sender, RoutedEventArgs e)
+        private async void CopyDebugButton_Click(object sender, RoutedEventArgs e)
         {
-            // Navigate to debug page or show debug info in a popup
-            var debugWindow = new ContentDialog()
+            try
             {
-                Title = "Alpha Coders Scraper Debug",
-                CloseButtonText = "Close",
-                DefaultButton = ContentDialogButton.Close,
-                XamlRoot = this.XamlRoot
-            };
+                var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                dataPackage.SetText(_debugLog.ToString());
+                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
 
-            var debugFrame = new Frame();
-            debugFrame.Navigate(typeof(Wall_You_Need_Next_Gen.Views.Debug.DebugPage));
-            debugWindow.Content = debugFrame;
-
-            await debugWindow.ShowAsync();
+                // Show confirmation
+                var dialog = new ContentDialog()
+                {
+                    Title = "Debug Log Copied",
+                    Content = "Debug log has been copied to clipboard.",
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                AppendDebugLog($"Error copying debug log: {ex.Message}");
+            }
         }
     }
 

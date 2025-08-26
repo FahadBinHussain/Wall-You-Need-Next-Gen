@@ -48,13 +48,13 @@
                         Click="ToggleDebugButton_Click"
                         VerticalAlignment="Center"/>
 
-                <Button x:Name="DebugButton"
-                        Content="Test Scraper"
-                        Background="#FF5733"
+                <Button x:Name="CopyDebugButton"
+                        Content="Copy Debug"
+                        Background="#28a745"
                         Foreground="White"
                         Padding="15,8"
                         CornerRadius="4"
-                        Click="DebugButton_Click"
+                        Click="CopyDebugButton_Click"
                         VerticalAlignment="Center"/>
             </StackPanel>
 
