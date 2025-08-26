@@ -244,8 +244,8 @@ namespace Wall_You_Need_Next_Gen.Views
             if (e.Parameter is WallpaperItem wallpaper)
             {
                 _currentWallpaper = wallpaper;
-                // Initialize SourceUrl with a default value based on ID and detect platform
-                if (string.IsNullOrEmpty(_currentWallpaper.SourceUrl) && !string.IsNullOrEmpty(_currentWallpaper.Id))
+                // Always override SourceUrl for Alpha Coders wallpapers, set default for others
+                if (!string.IsNullOrEmpty(_currentWallpaper.Id))
                 {
                     // Check if this is an Alpha Coders wallpaper by looking at the ImageUrl
                     if (!string.IsNullOrEmpty(_currentWallpaper.ImageUrl) && _currentWallpaper.ImageUrl.Contains("alphacoders.com"))
@@ -253,7 +253,7 @@ namespace Wall_You_Need_Next_Gen.Views
                         _currentWallpaper.SourceUrl = $"https://wall.alphacoders.com/big.php?i={_currentWallpaper.Id}";
                         System.Diagnostics.Debug.WriteLine($"Set Alpha Coders SourceUrl: {_currentWallpaper.SourceUrl}");
                     }
-                    else
+                    else if (string.IsNullOrEmpty(_currentWallpaper.SourceUrl))
                     {
                         _currentWallpaper.SourceUrl = $"https://backiee.com/wallpaper/{_currentWallpaper.Id}";
                         System.Diagnostics.Debug.WriteLine($"Set default Backiee SourceUrl: {_currentWallpaper.SourceUrl}");
