@@ -111,19 +111,15 @@ namespace Wall_You_Need_Next_Gen
             }
             // *** End TitleBar color customization ***
 
-            // Set window to fullscreen by default
+            // Set window to maximized by default while keeping window controls
             isHandlingResize = true;
             try
             {
-                // Set window to true fullscreen mode
+                // Maximize the window while preserving window controls
                 if (m_appWindow.Presenter is OverlappedPresenter overlappedPresenter)
                 {
-                    overlappedPresenter.SetBorderAndTitleBar(false, false);
                     overlappedPresenter.Maximize();
                 }
-
-                // Alternative: Set to fullscreen mode
-                m_appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
             }
             finally
             {
