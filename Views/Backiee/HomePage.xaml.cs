@@ -12,13 +12,13 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Wall_You_Need_Next_Gen.Models;
 using Wall_You_Need_Next_Gen.Services;
 
-namespace Wall_You_Need_Next_Gen.Views
+namespace Wall_You_Need_Next_Gen.Views.Backiee
 {
     public sealed partial class HomePage : Page
     {
         private WallpaperService _wallpaperService;
         private ObservableCollection<Wallpaper> _dailyWallpapers;
-        
+
         // Fields for banner rotation
         private readonly HttpClient _httpClient = new HttpClient();
         private List<WallpaperItem> _latestBannerWallpapers = new List<WallpaperItem>();
@@ -33,7 +33,7 @@ namespace Wall_You_Need_Next_Gen.Views
             this.InitializeComponent();
             _wallpaperService = new WallpaperService();
             _dailyWallpapers = new ObservableCollection<Wallpaper>();
-            
+
             Loaded += HomePage_Loaded;
             Unloaded += HomePage_Unloaded;
         }
@@ -41,7 +41,7 @@ namespace Wall_You_Need_Next_Gen.Views
         private async void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
             // Load static banners first (UltraHD, AI)
-            LoadStaticBannerImages(); 
+            LoadStaticBannerImages();
             // Load daily popular wallpapers
             LoadDailyPopularWallpapers();
             // Asynchronously load and start rotating the main banner
@@ -70,7 +70,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 AiGeneratedImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/StoreLogo.png"));
             }
         }
-        
+
         private async Task LoadLatestBannerWallpapersAsync()
         {
             try
@@ -87,8 +87,8 @@ namespace Wall_You_Need_Next_Gen.Views
                             try
                             {
                                 // Use MediumPhotoUrl for potentially better quality in banner
-                                string imageUrl = wallpaperElement.TryGetProperty("MediumPhotoUrl", out var urlProp) && urlProp.ValueKind == JsonValueKind.String 
-                                                  ? urlProp.GetString() 
+                                string imageUrl = wallpaperElement.TryGetProperty("MediumPhotoUrl", out var urlProp) && urlProp.ValueKind == JsonValueKind.String
+                                                  ? urlProp.GetString()
                                                   : wallpaperElement.GetProperty("MiniPhotoUrl").GetString(); // Fallback
 
                                 var wallpaper = new WallpaperItem
@@ -97,9 +97,9 @@ namespace Wall_You_Need_Next_Gen.Views
                                     Title = wallpaperElement.GetProperty("Title").GetString(),
                                     ImageUrl = imageUrl, // Store URL
                                     // Extract description if available, fallback to title
-                                    Description = wallpaperElement.TryGetProperty("Description", out var descProp) && descProp.ValueKind == JsonValueKind.String 
-                                                  ? descProp.GetString() 
-                                                  : wallpaperElement.GetProperty("Title").GetString(), 
+                                    Description = wallpaperElement.TryGetProperty("Description", out var descProp) && descProp.ValueKind == JsonValueKind.String
+                                                  ? descProp.GetString()
+                                                  : wallpaperElement.GetProperty("Title").GetString(),
                                 };
                                 fetchedWallpapers.Add(wallpaper);
                             }
@@ -114,13 +114,13 @@ namespace Wall_You_Need_Next_Gen.Views
                             // Select 5 random wallpapers (or fewer if less than 5 available)
                             Random random = new Random();
                             _latestBannerWallpapers = fetchedWallpapers.OrderBy(x => random.Next()).Take(5).ToList();
-                            
+
                             // Start the timer if we have wallpapers
                             if (_latestBannerWallpapers.Count > 0)
                             {
                                 SetupBannerTimer();
                                 // Initial display
-                                UpdateBannerContent(); 
+                                UpdateBannerContent();
                             }
                         }
                     }
@@ -154,7 +154,7 @@ namespace Wall_You_Need_Next_Gen.Views
         private void BannerTimer_Tick(object sender, object e)
         {
             // Trigger fade-out animation before changing content
-            FadeOutBanner.Begin(); 
+            FadeOutBanner.Begin();
         }
 
         private void FadeOutBanner_Completed(object sender, object e)
@@ -179,20 +179,20 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             // Get daily popular wallpapers from service
             var wallpapers = _wallpaperService.GetDailyPopularWallpapers();
-            
+
             // Clear existing collection
             _dailyWallpapers.Clear();
-            
+
             // Add wallpapers to collection
             foreach (var wallpaper in wallpapers)
             {
                 _dailyWallpapers.Add(wallpaper);
             }
-            
+
             // Set up the GridView
             DailyWallpapersGridView.ItemsSource = _dailyWallpapers;
         }
-        
+
         private void LatestWallpapers_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             // Navigate to the Latest Wallpapers page
@@ -205,39 +205,39 @@ namespace Wall_You_Need_Next_Gen.Views
             {
                 // Calculate number of columns based on available width
                 double availableWidth = e.NewSize.Width;
-                
+
                 // Determine desired item width (considering margins)
                 double desiredItemWidth = 280;  // Base item width
                 double itemMargin = 4;          // Total margin between items
-                
+
                 // Calculate how many items can fit in the available width
                 int columnsCount = Math.Max(1, (int)(availableWidth / (desiredItemWidth + itemMargin)));
-                
+
                 // Ensure we have a reasonable column count based on screen size
                 columnsCount = Math.Min(columnsCount, 6);  // Limit to maximum 6 columns
-                
+
                 // Set the maximum columns
                 wrapGrid.MaximumRowsOrColumns = columnsCount;
-                
+
                 // Calculate the new item width to fill the available space evenly
                 // Accounting for margins between items
                 double totalMarginWidth = (columnsCount - 1) * itemMargin;
                 double newItemWidth = (availableWidth - totalMarginWidth) / columnsCount;
-                
+
                 // Ensure the width is not too small to maintain quality
                 double finalWidth = Math.Max(180, newItemWidth);
-                
+
                 // Calculate proportional height based on typical wallpaper aspect ratio (16:9)
                 double aspectRatio = 16.0 / 9.0;
                 double finalHeight = finalWidth / aspectRatio;
-                
+
                 // Set item dimensions - use only the image height since stats are overlaid
                 wrapGrid.ItemWidth = finalWidth;
                 wrapGrid.ItemHeight = finalHeight; // Remove the +50 for info panel
-                
+
                 // Ensure alignment stretches to use all available space
                 wrapGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
             }
         }
     }
-} 
+}

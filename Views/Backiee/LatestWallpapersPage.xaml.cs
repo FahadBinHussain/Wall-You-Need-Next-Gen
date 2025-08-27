@@ -15,65 +15,25 @@ using System.Text.Json;
 using Microsoft.UI.Xaml.Media.Animation; // For Storyboard
 using Microsoft.UI.Xaml.Data; // For value converter
 
-namespace Wall_You_Need_Next_Gen.Views
+namespace Wall_You_Need_Next_Gen.Views.Backiee
 {
-    // Converter to convert boolean to visibility (visible if true)
-    public class BooleanToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            if (value is bool boolValue)
-            {
-                return boolValue ? Visibility.Visible : Visibility.Collapsed;
-            }
-            return Visibility.Collapsed;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            if (value is Visibility visibility)
-            {
-                return visibility == Visibility.Visible;
-            }
-            return false;
-        }
-    }
-    
-    // Converter to convert string to visibility (visible if not null or empty)
-    public class StringToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            if (value is string stringValue)
-            {
-                return string.IsNullOrEmpty(stringValue) ? Visibility.Collapsed : Visibility.Visible;
-            }
-            return Visibility.Collapsed;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    
     public sealed partial class LatestWallpapersPage : Page
     {
         // Collection to hold the wallpapers
         private ObservableCollection<WallpaperItem> _wallpapers;
-        
+
         // For HTTP requests
         private readonly HttpClient _httpClient = new HttpClient();
-        
+
         // Preloaded placeholder image for faster loading
         private BitmapImage _placeholderImage;
-        
+
         // For simulating delayed loading
         private DispatcherQueue _dispatcherQueue;
-        
+
         // Timer for periodically checking placeholder images
         private DispatcherQueueTimer _placeholderTimer;
-        
+
         // Properties for infinite scrolling
         private bool _isLoading = false;
         private int _currentPage = 0;
@@ -81,37 +41,37 @@ namespace Wall_You_Need_Next_Gen.Views
         private bool _hasMoreItems = true;
         private double _loadMoreThreshold = 0.4; // 40% of the scroll viewer height
         // No max pages limit - truly infinite scrolling
-        
+
         // Flag to track if initial load is complete
         private bool _initialLoadComplete = false;
-        
+
         // Base API URL for wallpaper requests
         private const string ApiBaseUrl = "https://backiee.com/api/wallpaper/list.php";
-        
+
         public LatestWallpapersPage()
         {
             this.InitializeComponent();
-            
+
             // Initialize the wallpapers collection
             _wallpapers = new ObservableCollection<WallpaperItem>();
-            
+
             // Get the dispatcher queue for this thread
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            
+
             // Preload the placeholder image
             InitializePlaceholderImage();
-            
+
             // We're using a fully asynchronous approach now, so no timer is needed
             // _placeholderTimer = _dispatcherQueue.CreateTimer();
-            // _placeholderTimer.Interval = TimeSpan.FromMilliseconds(1000); 
+            // _placeholderTimer.Interval = TimeSpan.FromMilliseconds(1000);
             // _placeholderTimer.Tick += (s, e) => EnsurePlaceholdersForVisibleItems();
             // _placeholderTimer.Start();
-            
+
             // Register for events
             Loaded += LatestWallpapersPage_Loaded;
             Unloaded += LatestWallpapersPage_Unloaded;
         }
-        
+
         private void InitializePlaceholderImage()
         {
             try
@@ -119,7 +79,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 _placeholderImage = new BitmapImage();
                 _placeholderImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 _placeholderImage.UriSource = new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg");
-                
+
                 // Log success
                 System.Diagnostics.Debug.WriteLine("Placeholder image initialized successfully");
             }
@@ -130,32 +90,32 @@ namespace Wall_You_Need_Next_Gen.Views
                 _placeholderImage = new BitmapImage();
             }
         }
-        
+
         private async void LatestWallpapersPage_Loaded(object sender, RoutedEventArgs e)
         {
             // Reset the initial load flag
             _initialLoadComplete = false;
-            
+
             // Initialize the GridView with wallpapers collection
             WallpapersGridView.ItemsSource = _wallpapers;
-            
+
             // Reset paging variables
             _currentPage = 0;
             _hasMoreItems = true;
             _wallpapers.Clear();
-            
+
             // Load first page of wallpapers
             await LoadMoreWallpapers();
-            
+
             // Mark initial load as complete
             _initialLoadComplete = true;
         }
-        
+
         private void LatestWallpapersPage_Unloaded(object sender, RoutedEventArgs e)
         {
             // Clean up
             _wallpapers.Clear();
-            
+
             // Stop timer
             if (_placeholderTimer != null)
             {
@@ -163,26 +123,26 @@ namespace Wall_You_Need_Next_Gen.Views
                 _placeholderTimer = null;
             }
         }
-        
+
         private async Task LoadMoreWallpapers()
         {
             // Prevent multiple concurrent loading operations
             if (_isLoading || !_hasMoreItems)
                 return;
-            
+
             try
             {
                 _isLoading = true;
-                
+
                 // Show loading indicator for every API call
                 LoadingProgressBar.Visibility = Visibility.Visible;
-                
+
                 // Start the API call immediately
                 string apiUrl = $"{ApiBaseUrl}?action=paging_list&list_type=latest&page={_currentPage}&page_size={_itemsPerPage}&category=all&is_ai=all&sort_by=popularity&4k=false&5k=false&8k=false&status=active&args=";
-                
+
                 // Fetch data from API
                 HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
-                
+
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonContent = await response.Content.ReadAsStringAsync();
@@ -190,16 +150,16 @@ namespace Wall_You_Need_Next_Gen.Views
                     {
                         // Process API response and create wallpaper items
                         List<WallpaperItem> newWallpapers = new List<WallpaperItem>();
-                        
+
                         foreach (JsonElement wallpaperElement in doc.RootElement.EnumerateArray())
                         {
                             // Extract wallpaper details from JSON
                             string id = wallpaperElement.GetProperty("ID").GetString();
                             string title = wallpaperElement.GetProperty("Title").GetString();
-                            
+
                             // Debug output the full JSON for this wallpaper
                             System.Diagnostics.Debug.WriteLine($"Wallpaper {id} JSON: {wallpaperElement.ToString()}");
-                            
+
                             // Try to get MiniPhotoUrl
                             string imageUrl;
                             try
@@ -212,10 +172,10 @@ namespace Wall_You_Need_Next_Gen.Views
                                 imageUrl = wallpaperElement.GetProperty("FullPhotoUrl").GetString();
                                 System.Diagnostics.Debug.WriteLine($"MiniPhotoUrl not found for wallpaper ID {id}, using regular photo URL instead");
                             }
-                            
+
                             // Get FullPhotoUrl with proper error handling
                             string fullPhotoUrl = string.Empty;
-                            try 
+                            try
                             {
                                 fullPhotoUrl = wallpaperElement.GetProperty("FullPhotoUrl").GetString();
                                 System.Diagnostics.Debug.WriteLine($"FullPhotoUrl for ID {id}: {fullPhotoUrl}");
@@ -226,15 +186,15 @@ namespace Wall_You_Need_Next_Gen.Views
                                 // Fallback to using the thumbnail URL if full photo URL is not available
                                 fullPhotoUrl = imageUrl;
                             }
-                            
+
                             string resolution = wallpaperElement.GetProperty("Resolution").GetString();
-                            
+
                             // Extract tag data
                             string qualityTag = wallpaperElement.GetProperty("UltraHDType").GetString();
                             bool isAI = wallpaperElement.GetProperty("AIGenerated").GetString() == "1";
                             string likesCount = wallpaperElement.GetProperty("Rating").GetString();
                             string downloadsCount = wallpaperElement.GetProperty("Downloads").GetString();
-                            
+
                             // Create wallpaper item - don't try to load the image yet, just store the URL
                             var wallpaper = new WallpaperItem
                             {
@@ -249,20 +209,20 @@ namespace Wall_You_Need_Next_Gen.Views
                                 Downloads = downloadsCount,
                                 FullPhotoUrl = fullPhotoUrl // Store the full photo URL
                             };
-                            
+
                             newWallpapers.Add(wallpaper);
                         }
-                        
+
                         // Add all items at once for maximum speed
                         foreach (var wallpaper in newWallpapers)
                         {
                             _wallpapers.Add(wallpaper);
                         }
                     }
-                    
+
                     // Increment page counter for next load
                     _currentPage++;
-                    
+
                     // If we received fewer items than requested, we've reached the end
                     _hasMoreItems = true; // Always true for this API as it has many pages
                 }
@@ -281,12 +241,12 @@ namespace Wall_You_Need_Next_Gen.Views
             finally
             {
                 _isLoading = false;
-                
+
                 // Hide loading indicator
                 LoadingProgressBar.Visibility = Visibility.Collapsed;
             }
         }
-        
+
         private async void MainScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
             // Check if we need to load more items
@@ -295,7 +255,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Check if we're approaching the bottom
                 double verticalOffset = scrollViewer.VerticalOffset;
                 double maxVerticalOffset = scrollViewer.ScrollableHeight;
-                
+
                 // Load more items when the scrollbar is at the defined threshold of the scrollable content
                 if (maxVerticalOffset > 0 &&
                     verticalOffset >= maxVerticalOffset * _loadMoreThreshold &&
@@ -306,7 +266,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 }
             }
         }
-        
+
         private void WallpapersGridView_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is WallpaperItem wallpaper)
@@ -315,64 +275,64 @@ namespace Wall_You_Need_Next_Gen.Views
                 this.Frame.Navigate(typeof(WallpaperDetailPage), wallpaper);
             }
         }
-        
+
         private void FilterButton_Click(object sender, RoutedEventArgs e)
         {
             // Just log to debug
             System.Diagnostics.Debug.WriteLine("Filter button clicked");
         }
-        
+
         private void SetAsSlideshowButton_Click(object sender, RoutedEventArgs e)
         {
             // Just log to debug
             System.Diagnostics.Debug.WriteLine("Set as slideshow button clicked");
         }
-        
+
         private void WallpapersWrapGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (sender is ItemsWrapGrid wrapGrid)
             {
                 // Calculate number of columns based on available width
                 double availableWidth = e.NewSize.Width;
-                
+
                 // Determine desired item width (considering margins)
                 double desiredItemWidth = 300;  // Base item width
                 double itemMargin = 8;          // Total margin between items (4px on each side)
-                
+
                 // Calculate how many items can fit in the available width
                 int columnsCount = Math.Max(1, (int)(availableWidth / desiredItemWidth));
-                
+
                 // Ensure we have a reasonable column count based on screen size
                 columnsCount = Math.Min(columnsCount, 6);  // Limit to maximum 6 columns
-                
+
                 // Set the maximum columns
                 wrapGrid.MaximumRowsOrColumns = columnsCount;
-                
+
                 // Calculate the new item width to fill the available space with margins
                 double totalMarginWidth = (columnsCount - 1) * itemMargin;
                 double newItemWidth = (availableWidth - totalMarginWidth) / columnsCount;
-                
+
                 // Set a reasonable minimum width
                 double finalWidth = Math.Max(200, newItemWidth);
-                
+
                 // Calculate proportional height based on typical wallpaper aspect ratio (16:9)
                 double aspectRatio = 16.0 / 9.0;
                 double finalHeight = finalWidth / aspectRatio;
-                
+
                 // Set item dimensions - use only the image height since we removed the info panel
                 wrapGrid.ItemWidth = finalWidth;
                 wrapGrid.ItemHeight = finalHeight;
-                
+
                 // Make sure the grid fills all available space
                 wrapGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
             }
         }
-        
+
         private void WallpapersGridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             // Add logging to track container lifecycle
             System.Diagnostics.Debug.WriteLine($"Container changing for phase {args.Phase}, recycling: {args.InRecycleQueue}");
-            
+
             if (args.InRecycleQueue)
             {
                 // Use placeholder image for items that are being recycled
@@ -382,13 +342,13 @@ namespace Wall_You_Need_Next_Gen.Views
                 {
                     // Always set to placeholder when recycling, don't try to reuse
                     image.Source = _placeholderImage;
-                    
+
                     // Clear the tag to prevent confusion
                     image.Tag = null;
                 }
                 return;
             }
-            
+
             if (args.Phase == 0)
             {
                 // Register for the next phase to load the actual image
@@ -397,7 +357,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 args.Handled = true;
             }
         }
-        
+
         private async void ShowImage(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             if (args.Phase == 1)
@@ -405,28 +365,28 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Get the wallpaper item
                 var wallpaper = args.Item as WallpaperItem;
                 if (wallpaper == null) return;
-                
+
                 // Find the Image control
                 var templateRoot = args.ItemContainer.ContentTemplateRoot as Grid;
                 if (templateRoot == null) return;
-                
+
                 var image = templateRoot.FindName("ItemImage") as Image;
                 if (image == null) return;
-                
+
                 // Get a unique identifier for this specific instance
                 string imageKey = $"image_{wallpaper.Id}_{args.ItemContainer.GetHashCode()}";
-                
+
                 try
                 {
                     // Set a tag to track the current loading request
                     image.Tag = imageKey;
-                    
+
                     // Make sure placeholder is showing while we load
                     image.Source = _placeholderImage;
-                    
+
                     // Handle the metadata display
                     SetItemMetadata(templateRoot, wallpaper);
-                    
+
                     // Now trigger an asynchronous load of the actual image
                     // This is done after setting metadata so UI is responsive
                     await LoadImageForItemAsync(image, wallpaper, imageKey);
@@ -437,45 +397,45 @@ namespace Wall_You_Need_Next_Gen.Views
                 }
             }
         }
-        
+
         private async Task LoadImageForItemAsync(Image imageControl, WallpaperItem wallpaper, string requestKey)
         {
             try
             {
                 System.Diagnostics.Debug.WriteLine($"Starting image load for {wallpaper.Id} with key {requestKey}");
-                
+
                 // Load the image asynchronously
                 var bitmap = await wallpaper.LoadImageAsync();
-                
+
                 // If we got a valid bitmap
                 if (bitmap != null)
                 {
                     // Set up event handlers to track loading
-                    bitmap.ImageOpened += (s, e) => 
+                    bitmap.ImageOpened += (s, e) =>
                     {
                         System.Diagnostics.Debug.WriteLine($"SUCCESS: Image loaded for {wallpaper.Id}");
-                        
+
                         // After successful load, update the item's ImageSource
                         wallpaper.ImageSource = bitmap;
-                        
+
                         // Double check tag to ensure we're setting the right image
                         if (_dispatcherQueue.HasThreadAccess && imageControl.Tag?.ToString() == requestKey)
                         {
                             imageControl.Source = bitmap;
                         }
                     };
-                    
-                    bitmap.ImageFailed += (s, e) => 
+
+                    bitmap.ImageFailed += (s, e) =>
                     {
                         System.Diagnostics.Debug.WriteLine($"FAILED: Image failed to load for {wallpaper.Id}: {e.ErrorMessage}");
-                        
+
                         // If image fails to load, ensure we keep the placeholder
                         if (_dispatcherQueue.HasThreadAccess && imageControl.Tag?.ToString() == requestKey)
                         {
                             imageControl.Source = _placeholderImage;
                         }
                     };
-                    
+
                     // Check if this image control is still showing the same item
                     if (imageControl.Tag?.ToString() == requestKey)
                     {
@@ -487,7 +447,7 @@ namespace Wall_You_Need_Next_Gen.Views
                         }
                         else
                         {
-                            _dispatcherQueue.TryEnqueue(() => 
+                            _dispatcherQueue.TryEnqueue(() =>
                             {
                                 if (imageControl.Tag?.ToString() == requestKey)
                                 {
@@ -506,7 +466,7 @@ namespace Wall_You_Need_Next_Gen.Views
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Exception loading image for {wallpaper.Id}: {ex.Message}");
-                
+
                 // Keep the placeholder on failure
                 if (imageControl.Tag?.ToString() == requestKey && _dispatcherQueue.HasThreadAccess)
                 {
@@ -514,7 +474,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 }
             }
         }
-        
+
         // Extract metadata setup to a separate method for clarity
         private void SetItemMetadata(Grid templateRoot, WallpaperItem wallpaper)
         {
@@ -531,7 +491,7 @@ namespace Wall_You_Need_Next_Gen.Views
                     qualityImage.Source = new BitmapImage(new Uri(qualityImagePath));
                 }
             }
-            
+
             // Handle AI tag
             var aiTagBorder = templateRoot.FindName("AITagBorder") as Border;
             var aiImage = templateRoot.FindName("AIImage") as Image;
@@ -543,28 +503,28 @@ namespace Wall_You_Need_Next_Gen.Views
                     aiImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/aigenerated-icon.png"));
                 }
             }
-            
+
             // Handle likes and downloads text
             var likesText = templateRoot.FindName("LikesText") as TextBlock;
             if (likesText != null)
             {
                 likesText.Text = wallpaper.Likes;
             }
-            
+
             var downloadsText = templateRoot.FindName("DownloadsText") as TextBlock;
             if (downloadsText != null)
             {
                 downloadsText.Text = wallpaper.Downloads;
             }
         }
-        
+
         // Make sure we always set placeholders for all visible items
         private void EnsurePlaceholdersForVisibleItems()
         {
             try
             {
                 if (WallpapersGridView.ItemsPanelRoot == null) return;
-                
+
                 foreach (var item in WallpapersGridView.ItemsPanelRoot.Children)
                 {
                     var container = item as GridViewItem;
@@ -591,4 +551,4 @@ namespace Wall_You_Need_Next_Gen.Views
             }
         }
     }
-} 
+}

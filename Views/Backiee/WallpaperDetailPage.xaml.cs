@@ -18,7 +18,7 @@ using System.IO;
 using WinRT.Interop;
 using Microsoft.UI.Windowing;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using IOPath = System.IO.Path; // Use System.IO.Path for file operations with alias
 using System.Linq;
 using System.Reflection; // For reflection functionality
 using Windows.System.UserProfile; // For wallpaper functionality
@@ -27,20 +27,19 @@ using System.Runtime.InteropServices; // For P/Invoke
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace Wall_You_Need_Next_Gen.Views
+namespace Wall_You_Need_Next_Gen.Views.Backiee
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public static class WallpaperHelper
     {
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
 
         private const int SPI_SETDESKWALLPAPER = 0x0014;
         private const int SPIF_UPDATEINIFILE = 0x01;
         private const int SPIF_SENDCHANGE = 0x02;
-        private const int SPIF_SENDWININICHANGE = 0x02;
 
         // Registry keys for wallpaper settings
         private const string WALLPAPER_REG_KEY = @"Control Panel\Desktop";
@@ -58,48 +57,13 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             try
             {
-                // Ensure the file exists and is accessible
-                if (!File.Exists(path))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Wallpaper file does not exist: {path}");
-                    return false;
-                }
-
-                // Make sure the file has proper permissions
-                try
-                {
-                    // Test read access to the file
-                    using (var fileStream = File.OpenRead(path))
-                    {
-                        // Just testing access, no need to read anything
-                    }
-                    System.Diagnostics.Debug.WriteLine($"Confirmed file is readable: {path}");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"File access test failed: {ex.Message}");
-                    return false;
-                }
-
                 // Method 1: Using SystemParametersInfo
                 bool success = false;
                 try
                 {
                     System.Diagnostics.Debug.WriteLine($"Setting wallpaper using SystemParametersInfo: {path}");
-
-                    // Make sure the file is accessible to the system
-                    System.IO.File.SetAttributes(path, System.IO.FileAttributes.Normal);
-
-                    // Use all available flags to ensure the setting persists
-                    int result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE | SPIF_SENDWININICHANGE);
+                    int result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
                     success = result != 0;
-
-                    if (!success)
-                    {
-                        int error = Marshal.GetLastWin32Error();
-                        System.Diagnostics.Debug.WriteLine($"SystemParametersInfo failed with error code: {error}");
-                    }
-
                     System.Diagnostics.Debug.WriteLine($"SystemParametersInfo result: {result}");
                 }
                 catch (Exception ex)
@@ -113,27 +77,6 @@ namespace Wall_You_Need_Next_Gen.Views
                     try
                     {
                         System.Diagnostics.Debug.WriteLine("Trying registry method for wallpaper...");
-                        // First, ensure the file is accessible with proper permissions
-                        System.IO.File.SetAttributes(path, System.IO.FileAttributes.Normal);
-
-                        // Copy the file to Windows directory for better persistence
-                        string windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-                        string persistentWallpaperPath = System.IO.Path.Combine(windowsPath, "Web", "Wallpaper", "Windows", System.IO.Path.GetFileName(path));
-
-                        try {
-                            // Create directory if it doesn't exist
-                            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(persistentWallpaperPath));
-                            // Copy the file
-                            System.IO.File.Copy(path, persistentWallpaperPath, true);
-                            System.Diagnostics.Debug.WriteLine($"Copied wallpaper to Windows directory: {persistentWallpaperPath}");
-                            // Use the Windows directory path for registry
-                            path = persistentWallpaperPath;
-                        }
-                        catch (Exception ex) {
-                            System.Diagnostics.Debug.WriteLine($"Failed to copy to Windows directory: {ex.Message}");
-                            // Continue with original path if copy fails
-                        }
-
                         using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(WALLPAPER_REG_KEY, true))
                         {
                             if (key != null)
@@ -159,7 +102,7 @@ namespace Wall_You_Need_Next_Gen.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"SetWallpaper failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"SetWallpaper exception: {ex.Message}");
                 return false;
             }
         }
@@ -205,7 +148,7 @@ namespace Wall_You_Need_Next_Gen.Views
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"LocalMachine registry method for lock screen failed: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Registry method for lock screen failed: {ex.Message}");
                 }
 
                 // If LocalMachine failed, try with CurrentUser as fallback
@@ -252,7 +195,7 @@ namespace Wall_You_Need_Next_Gen.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"SetLockScreen failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"SetLockScreen exception: {ex.Message}");
                 return false;
             }
         }
@@ -263,44 +206,6 @@ namespace Wall_You_Need_Next_Gen.Views
         private const string ApiBaseUrl = "https://atozmashprima.com/api/search-wall-papers?id=";
         private const string DetailApiBaseUrl = "https://backiee.com/api/wallpaper/list.php?action=detail_page_v2&wallpaper_id=";
         private WallpaperItem _currentWallpaper;
-
-        private async Task LoadAlphaCodersImageAsync(WallpaperItem wallpaper)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("Fetching big thumb URL for Alpha Coders wallpaper on-demand");
-
-                // Only fetch the big thumb URL for display
-                var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
-                var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(wallpaper.Id, wallpaper.ImageUrl);
-
-                // Update debug TextBlock with big thumb URL
-                if (!string.IsNullOrEmpty(bigThumbUrl))
-                {
-                    DebugBigThumbTextBlock.Text = $"Big Thumb URL: {bigThumbUrl}";
-
-                    // Store big thumb for display, original URL will be fetched on-demand during set/download
-                    System.Diagnostics.Debug.WriteLine($"Found big thumb URL: {bigThumbUrl}");
-
-                    // Load the big thumb directly (no WebP conversion needed)
-                    WallpaperImage.Source = new BitmapImage(new Uri(bigThumbUrl));
-                    System.Diagnostics.Debug.WriteLine("Successfully loaded Alpha Coders big thumb");
-                }
-                else
-                {
-                    DebugBigThumbTextBlock.Text = "Big Thumb URL: Not available";
-                    System.Diagnostics.Debug.WriteLine("Failed to find big thumb URL");
-                    await ShowErrorDialogAsync("Image preview is not available for this wallpaper.");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading Alpha Coders image: {ex.Message}");
-            }
-        }
-
-
-
 
         public WallpaperDetailPage()
         {
@@ -316,23 +221,12 @@ namespace Wall_You_Need_Next_Gen.Views
             if (e.Parameter is WallpaperItem wallpaper)
             {
                 _currentWallpaper = wallpaper;
-                // Always override SourceUrl for Alpha Coders wallpapers, set default for others
-                if (!string.IsNullOrEmpty(_currentWallpaper.Id))
+                // Initialize SourceUrl with a default value based on ID
+                if (string.IsNullOrEmpty(_currentWallpaper.SourceUrl) && !string.IsNullOrEmpty(_currentWallpaper.Id))
                 {
-                    // Check if this is an Alpha Coders wallpaper by looking at the ImageUrl
-                    if (!string.IsNullOrEmpty(_currentWallpaper.ImageUrl) && _currentWallpaper.ImageUrl.Contains("alphacoders.com"))
-                    {
-                        _currentWallpaper.SourceUrl = $"https://wall.alphacoders.com/big.php?i={_currentWallpaper.Id}";
-                        System.Diagnostics.Debug.WriteLine($"Set Alpha Coders SourceUrl: {_currentWallpaper.SourceUrl}");
-                    }
-                    else if (string.IsNullOrEmpty(_currentWallpaper.SourceUrl))
-                    {
-                        _currentWallpaper.SourceUrl = $"https://backiee.com/wallpaper/{_currentWallpaper.Id}";
-                        System.Diagnostics.Debug.WriteLine($"Set default Backiee SourceUrl: {_currentWallpaper.SourceUrl}");
-                    }
+                    _currentWallpaper.SourceUrl = $"https://backiee.com/wallpaper/{_currentWallpaper.Id}";
+                    System.Diagnostics.Debug.WriteLine($"Set default SourceUrl in OnNavigatedTo: {_currentWallpaper.SourceUrl}");
                 }
-
-
                 System.Diagnostics.Debug.WriteLine($"Received wallpaper: ID={wallpaper.Id}, Title={wallpaper.Title}");
                 System.Diagnostics.Debug.WriteLine($"FullPhotoUrl={wallpaper.FullPhotoUrl}");
                 System.Diagnostics.Debug.WriteLine($"SourceUrl={wallpaper.SourceUrl}");
@@ -340,16 +234,9 @@ namespace Wall_You_Need_Next_Gen.Views
                 // Set title at the top of the page
                 TitleTextBlock.Text = wallpaper.Title ?? "Error Loading Wallpaper";
 
-                // Check if this is an Alpha Coders wallpaper that needs on-demand big thumb fetching
-                if (!string.IsNullOrEmpty(_currentWallpaper.ImageUrl) && _currentWallpaper.ImageUrl.Contains("alphacoders.com"))
+                // Set the full image using the FullPhotoUrl property
+                if (!string.IsNullOrEmpty(wallpaper.FullPhotoUrl))
                 {
-                    System.Diagnostics.Debug.WriteLine("Detected Alpha Coders wallpaper - fetching big thumb on-demand");
-                    // Load the big thumb asynchronously
-                    _ = LoadAlphaCodersImageAsync(wallpaper);
-                }
-                else if (!string.IsNullOrEmpty(wallpaper.FullPhotoUrl))
-                {
-                    // For non-Alpha Coders wallpapers with FullPhotoUrl, load directly
                     try
                     {
                         System.Diagnostics.Debug.WriteLine($"Setting WallpaperImage.Source to {wallpaper.FullPhotoUrl}");
@@ -357,12 +244,13 @@ namespace Wall_You_Need_Next_Gen.Views
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error setting wallpaper image: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Error setting wallpaper/lock screen: {ex.Message}");
+                        // Keep using the placeholder image (already set in XAML)
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("No FullPhotoUrl available - using placeholder image");
+                    System.Diagnostics.Debug.WriteLine("FullPhotoUrl is empty - using placeholder image");
                 }
 
                 // Handle AI tag exactly as in LatestWallpapersPage.SetItemMetadata
@@ -470,12 +358,12 @@ namespace Wall_You_Need_Next_Gen.Views
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("Publisher info not found in API response");
+                        System.Diagnostics.Debug.WriteLine($"Publisher data not found in API response");
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error fetching publisher details: {response.StatusCode}");
+                    System.Diagnostics.Debug.WriteLine($"Error fetching publisher details: HTTP error");
                 }
             }
             catch (Exception ex)
@@ -604,9 +492,9 @@ namespace Wall_You_Need_Next_Gen.Views
 
         private async Task SetWallpaperAsync(WallpaperType wallpaperType)
         {
-            if (_currentWallpaper == null)
+            if (_currentWallpaper == null || string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
             {
-                await ShowErrorDialogAsync($"Failed to set {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}. No wallpaper available.");
+                await ShowErrorDialogAsync($"Failed to set {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}. No wallpaper image available.");
                 return;
             }
 
@@ -645,76 +533,19 @@ namespace Wall_You_Need_Next_Gen.Views
                     var picturesFolder = KnownFolders.PicturesLibrary;
                     var wallpapersFolder = await picturesFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
 
-                    // Get the big thumb URL to extract extension
-                    var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
-                    var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(_currentWallpaper.Id, _currentWallpaper.ImageUrl);
+                    // Download the image
+                    var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
 
-                    if (string.IsNullOrEmpty(bigThumbUrl))
-                    {
-                        throw new Exception("Could not get image information for this wallpaper.");
-                    }
-
-                    // Extract extension from big thumb URL
-                    var bigThumbUri = new Uri(bigThumbUrl);
-                    var bigThumbPath = bigThumbUri.AbsolutePath;
-                    var extension = System.IO.Path.GetExtension(bigThumbPath).TrimStart('.');
-
-                    System.Diagnostics.Debug.WriteLine($"Debug - Big thumb URL: {bigThumbUrl}");
-                    System.Diagnostics.Debug.WriteLine($"Debug - Big thumb path: {bigThumbPath}");
-                    System.Diagnostics.Debug.WriteLine($"Debug - Extracted extension: {extension}");
-
-                    // Build original URL with same extension
-                    var imageId = _currentWallpaper.Id;
-                    var uri = new Uri(_currentWallpaper.ImageUrl);
-                    var domainParts = uri.Host.Split('.');
-                    var domainShort = domainParts[0];
-
-                    var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageId}/{extension}";
-
-                    System.Diagnostics.Debug.WriteLine($"Debug - Image ID: {imageId}");
-                    System.Diagnostics.Debug.WriteLine($"Debug - Domain short: {domainShort}");
-                    System.Diagnostics.Debug.WriteLine($"Debug - Original URL: {originalUrl}");
-
-                    byte[] imageBytes;
-                    try
-                    {
-                        imageBytes = await _httpClient.GetByteArrayAsync(originalUrl);
-                        System.Diagnostics.Debug.WriteLine($"Successfully downloaded from: {originalUrl}");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Failed to download from {originalUrl}: {ex.Message}");
-                        throw new Exception($"Failed to download original image. Error: {ex.Message}");
-                    }
-
-                    // Create a file in Pictures folder with a unique name based on timestamp to avoid caching issues
-                    string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-
-                    // Use the same extension as determined above
-                    string fileExtension = !string.IsNullOrEmpty(extension) ? extension : "jpg";
-
-                    System.Diagnostics.Debug.WriteLine($"Debug - File extension for saving: {fileExtension}");
-
+                    // Create a file in Pictures folder
                     var wallpaperFile = await wallpapersFolder.CreateFileAsync(
-                        $"wallpaper-{_currentWallpaper.Id}-{timestamp}.{fileExtension}",
-                        CreationCollisionOption.GenerateUniqueName);
-
-                    System.Diagnostics.Debug.WriteLine($"Debug - Final file path: {wallpaperFile.Path}");
+                        $"wallpaper-{_currentWallpaper.Id}.jpg",
+                        CreationCollisionOption.ReplaceExisting);
 
                     // Write the image to the file
                     using (var stream = await wallpaperFile.OpenStreamForWriteAsync())
                     {
                         await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
-                        await stream.FlushAsync(); // Ensure data is written to disk
                     }
-
-                    // Make sure the file is accessible after restart by copying to a more permanent location
-                    var localFolder = ApplicationData.Current.LocalFolder;
-                    var permanentWallpapersFolder = await localFolder.CreateFolderAsync("Wallpapers", CreationCollisionOption.OpenIfExists);
-                    var permanentWallpaperFile = await wallpaperFile.CopyAsync(permanentWallpapersFolder, wallpaperFile.Name, NameCollisionOption.ReplaceExisting);
-
-                    // Use the permanent file path for setting the wallpaper
-                    wallpaperFile = permanentWallpaperFile;
 
                     // Verify the file exists and has content
                     var fileProperties = await wallpaperFile.GetBasicPropertiesAsync();
@@ -751,11 +582,11 @@ namespace Wall_You_Need_Next_Gen.Views
                             {
                                 System.Diagnostics.Debug.WriteLine("WinRT API failed or returned false, trying WallpaperHelper...");
                                 success = WallpaperHelper.SetWallpaper(wallpaperFile.Path);
-                                System.Diagnostics.Debug.WriteLine($"WallpaperHelper result: {success}");
+                                System.Diagnostics.Debug.WriteLine($"SetWallpaper final result: {success}");
                             }
                             catch (Exception innerEx)
                             {
-                                System.Diagnostics.Debug.WriteLine($"WallpaperHelper also failed: {innerEx.Message}");
+                                System.Diagnostics.Debug.WriteLine($"WallpaperHelper exception: {innerEx.Message}");
                                 errorMessage += $" Fallback method also failed: {innerEx.Message}";
                             }
                         }
@@ -857,9 +688,9 @@ namespace Wall_You_Need_Next_Gen.Views
 
         private async void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentWallpaper == null)
+            if (_currentWallpaper == null || string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
             {
-                await ShowErrorDialogAsync("No wallpaper available to download.");
+                await ShowErrorDialogAsync("Failed to download. No wallpaper image available.");
                 return;
             }
 
@@ -886,53 +717,16 @@ namespace Wall_You_Need_Next_Gen.Views
                     // Create a subfolder for our app if it doesn't exist
                     var appFolder = await downloadsFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
 
-                    // Get the correct extension from the big thumb URL (will be set below)
-                    var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
-                    var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(_currentWallpaper.Id, _currentWallpaper.ImageUrl);
-
-                    if (string.IsNullOrEmpty(bigThumbUrl))
-                    {
-                        throw new Exception("Could not get image information for this wallpaper.");
-                    }
-
-                    // Extract extension from big thumb URL for filename
-                    var bigThumbUri = new Uri(bigThumbUrl);
-                    var bigThumbPath = bigThumbUri.AbsolutePath;
-                    var correctExtension = System.IO.Path.GetExtension(bigThumbPath).TrimStart('.');
-
-                    // Create a unique filename based on wallpaper title and ID with correct extension
+                    // Create a unique filename based on wallpaper title and ID
                     string safeFileName = _currentWallpaper.Title.Replace(" ", "_");
-                    safeFileName = string.Join("_", safeFileName.Split(System.IO.Path.GetInvalidFileNameChars()));
-                    var fileName = $"{safeFileName}_{_currentWallpaper.Id}.{correctExtension}";
-
-                    System.Diagnostics.Debug.WriteLine($"Debug Download - Download filename: {fileName}");
+                    safeFileName = string.Join("_", safeFileName.Split(IOPath.GetInvalidFileNameChars()));
+                    var fileName = $"{safeFileName}_{_currentWallpaper.Id}.jpg";
 
                     // Create the file in the downloads folder
                     var downloadFile = await appFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
 
-                    // Build original URL with same extension as determined above
-                    var imageId = _currentWallpaper.Id;
-                    var uri = new Uri(_currentWallpaper.ImageUrl);
-                    var domainParts = uri.Host.Split('.');
-                    var domainShort = domainParts[0];
-
-                    var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageId}/{correctExtension}";
-
-                    System.Diagnostics.Debug.WriteLine($"Debug Download - Image ID: {imageId}");
-                    System.Diagnostics.Debug.WriteLine($"Debug Download - Domain short: {domainShort}");
-                    System.Diagnostics.Debug.WriteLine($"Debug Download - Original URL: {originalUrl}");
-
-                    byte[] imageBytes;
-                    try
-                    {
-                        imageBytes = await _httpClient.GetByteArrayAsync(originalUrl);
-                        System.Diagnostics.Debug.WriteLine($"Successfully downloaded from: {originalUrl}");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Failed to download from {originalUrl}: {ex.Message}");
-                        throw new Exception($"Failed to download original image. Error: {ex.Message}");
-                    }
+                    // Download directly to the file
+                    var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
                     using (var stream = await downloadFile.OpenStreamForWriteAsync())
                     {
                         await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
@@ -955,7 +749,7 @@ namespace Wall_You_Need_Next_Gen.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in DownloadWallpaper: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error in DownloadButton_Click: {ex.Message}");
                 await ShowErrorDialogAsync($"An error occurred: {ex.Message}");
             }
         }

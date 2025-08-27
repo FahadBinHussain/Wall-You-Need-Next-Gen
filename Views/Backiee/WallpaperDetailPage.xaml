@@ -1,5 +1,5 @@
 <Page
-    x:Class="Wall_You_Need_Next_Gen.Views.WallpaperDetailPage"
+    x:Class="Wall_You_Need_Next_Gen.Views.Backiee.WallpaperDetailPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Wall_You_Need_Next_Gen.Views"
@@ -38,16 +38,6 @@
                            FontWeight="Bold"
                            TextWrapping="Wrap"
                            HorizontalAlignment="Center"/>
-
-                <!-- Debug TextBlock for Big Thumb URL -->
-                <TextBlock x:Name="DebugBigThumbTextBlock"
-                           Text="Big Thumb URL: Loading..."
-                           FontSize="12"
-                           FontFamily="Consolas"
-                           TextWrapping="Wrap"
-                           HorizontalAlignment="Center"
-                           Foreground="Gray"
-                           Margin="0,5,0,10"/>
 
                 <!-- This section is now replaced by the Wallpaper Image Container with Overlay Buttons below -->
 
