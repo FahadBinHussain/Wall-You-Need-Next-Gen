@@ -261,15 +261,38 @@ namespace Wall_You_Need_Next_Gen.Services
 
                 Console.WriteLine($"Getting original URL for imageId: {imageIdFromUrl}, domainShort: {domainShort}");
 
-                // Return the first URL format - don't validate as it's for download only
-                foreach (var ext in extensions)
+                using (var httpClient = new HttpClient())
                 {
-                    var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageIdFromUrl}/{ext}";
-                    Console.WriteLine($"Generated original URL: {originalUrl}");
-                    return originalUrl; // Return the first one (jpeg) as default
+                    httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+                    httpClient.DefaultRequestHeaders.Add("Referer", "https://wall.alphacoders.com/");
+
+                    // Try each extension and validate with HEAD request
+                    foreach (var ext in extensions)
+                    {
+                        var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageIdFromUrl}/{ext}";
+                        Console.WriteLine($"Trying original URL: {originalUrl}");
+
+                        try
+                        {
+                            var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, originalUrl));
+                            if (response.IsSuccessStatusCode)
+                            {
+                                Console.WriteLine($"Valid original URL found: {originalUrl}");
+                                return originalUrl;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"URL returned {response.StatusCode}: {originalUrl}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to validate {originalUrl}: {ex.Message}");
+                        }
+                    }
                 }
 
-                Console.WriteLine($"Could not generate original URL for {smallUrl}");
+                Console.WriteLine($"No valid original URL found for {smallUrl}");
                 return null;
             }
             catch (Exception ex)

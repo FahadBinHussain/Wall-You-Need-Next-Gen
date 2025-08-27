@@ -11,36 +11,46 @@
     <Grid>
         <Grid.RowDefinitions>
             <!-- Remove the dedicated row for the title -->
-            <!-- <RowDefinition Height="Auto"/> --> 
+            <!-- <RowDefinition Height="Auto"/> -->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Remove TitleTextBlock from here -->
-        <!-- 
-        <TextBlock x:Name="TitleTextBlock" 
+        <!--
+        <TextBlock x:Name="TitleTextBlock"
                    Grid.Row="0"
-                   Text="Wallpaper Title" 
-                   FontSize="24" 
-                   FontWeight="Bold" 
+                   Text="Wallpaper Title"
+                   FontSize="24"
+                   FontWeight="Bold"
                    TextWrapping="Wrap"
                    HorizontalAlignment="Center"
                    Margin="10,10,10,0"/>
         -->
-        
+
         <!-- ScrollViewer is now in Grid.Row=0 -->
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="20" Spacing="10"> 
-                
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="20" Spacing="10">
+
                 <!-- TitleTextBlock -->
-                <TextBlock x:Name="TitleTextBlock" 
-                           Text="Wallpaper Title" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
+                <TextBlock x:Name="TitleTextBlock"
+                           Text="Wallpaper Title"
+                           FontSize="24"
+                           FontWeight="Bold"
                            TextWrapping="Wrap"
                            HorizontalAlignment="Center"/>
-                
+
+                <!-- Debug TextBlock for Big Thumb URL -->
+                <TextBlock x:Name="DebugBigThumbTextBlock"
+                           Text="Big Thumb URL: Loading..."
+                           FontSize="12"
+                           FontFamily="Consolas"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Foreground="Gray"
+                           Margin="0,5,0,10"/>
+
                 <!-- This section is now replaced by the Wallpaper Image Container with Overlay Buttons below -->
-                
+
                 <!-- Wallpaper Image Container with Buttons Below -->
                 <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                       CornerRadius="12"
@@ -53,56 +63,56 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    
+
                     <!-- Image Container with Tags -->
                     <Grid Grid.Row="0">
                         <!-- Wallpaper Image -->
-                        <Image x:Name="WallpaperImage" 
+                        <Image x:Name="WallpaperImage"
                                Source="ms-appx:///Assets/placeholder-wallpaper-1000.jpg"
-                               Stretch="Uniform" 
+                               Stretch="Uniform"
                                CacheMode="BitmapCache"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               MaxHeight="800" 
+                               MaxHeight="800"
                                MaxWidth="1200"/>
-                                
+
                         <!-- Tag Overlays -->
                         <Grid Margin="0" Padding="0">
                             <!-- Quality Tag - Top Left -->
-                            <Border x:Name="QualityTagBorder" 
-                                    HorizontalAlignment="Left" 
+                            <Border x:Name="QualityTagBorder"
+                                    HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     Margin="0"
                                     Padding="0"
                                     Visibility="Collapsed">
                                 <Image x:Name="QualityImage" Width="90" Height="54" Margin="0" HorizontalAlignment="Left"/>
                             </Border>
-                                    
+
                             <!-- AI Tag - Top Right -->
                             <Border x:Name="AITagBorder"
-                                    HorizontalAlignment="Right" 
+                                    HorizontalAlignment="Right"
                                     VerticalAlignment="Top"
                                     Margin="0,0,8,0"
                                     Padding="0"
                                     Visibility="Collapsed">
-                                <Image x:Name="AIImage" 
+                                <Image x:Name="AIImage"
                                        Source="ms-appx:///Assets/aigenerated-icon.png"
                                        Width="40" Height="40" Margin="0"/>
                             </Border>
                         </Grid>
                     </Grid>
-                    
+
                     <!-- Action Buttons Below Image -->
-                    <Grid Grid.Row="1" 
+                    <Grid Grid.Row="1"
                           Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                           BorderThickness="0,0.5,0,0"
                           Padding="10">
-                        <StackPanel Orientation="Horizontal" 
-                                    HorizontalAlignment="Right" 
-                                    Margin="0" 
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    Margin="0"
                                     Spacing="15">
-                                    
+
                                     <!-- Set As Wallpaper Button with Flyout -->
                                     <Button x:Name="SetAsWallpaperButton"
                                             Background="Transparent"
@@ -125,10 +135,10 @@
                                             <FontIcon Glyph="&#xE136;" FontSize="14" Foreground="Black"/>
                                             <TextBlock Text="Set" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
                                         </StackPanel>
-                                    </Button>                                    
+                                    </Button>
                                     <!-- Download Button -->
                                     <Button x:Name="DownloadButton"
-                                            Background="Transparent" 
+                                            Background="Transparent"
                                             BorderBrush="Transparent"
                                             Click="DownloadButton_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -136,10 +146,10 @@
                                             <TextBlock Text="Download" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
                                         </StackPanel>
                                     </Button>
-                                    
+
                                     <!-- View on Web Button -->
                                     <Button x:Name="ViewOnWebButton"
-                                            Background="Transparent" 
+                                            Background="Transparent"
                                             BorderBrush="Transparent"
                                             Click="ViewOnWebButton_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -147,14 +157,14 @@
                                             <TextBlock Text="View on Web" FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
                                         </StackPanel>
                                     </Button>
-                                    
+
                                     <!-- Buttons removed as requested -->
                                 </StackPanel>
                             </Grid>
                         </Grid>
-                
 
-                
+
+
 
             </StackPanel>
         </ScrollViewer>

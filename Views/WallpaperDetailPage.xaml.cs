@@ -268,57 +268,34 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"Fetching URLs for Alpha Coders wallpaper - ID: {wallpaper.Id}, ImageUrl: {wallpaper.ImageUrl}");
+                System.Diagnostics.Debug.WriteLine("Fetching big thumb URL for Alpha Coders wallpaper on-demand");
 
+                // Only fetch the big thumb URL for display
                 var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
-
-                // Get original URL for download/set operations (always get this first)
-                var originalUrl = await scraperService.GetOriginalImageUrlAsync(wallpaper.Id, wallpaper.ImageUrl);
-                System.Diagnostics.Debug.WriteLine($"Original URL result: {originalUrl}");
-
-                // Get big thumb URL for display
                 var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(wallpaper.Id, wallpaper.ImageUrl);
-                System.Diagnostics.Debug.WriteLine($"Big thumb URL result: {bigThumbUrl}");
 
-                // Always store original URL if available (needed for download/set)
-                if (!string.IsNullOrEmpty(originalUrl))
-                {
-                    wallpaper.FullPhotoUrl = originalUrl;
-                    System.Diagnostics.Debug.WriteLine($"Stored original URL for download/set: {originalUrl}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("Original image URL not available - showing error");
-                    await ShowErrorDialogAsync("Original image URL is not available for this wallpaper. Cannot download or set as wallpaper.");
-                    return;
-                }
-
-                // Try to display big thumb in UI
+                // Update debug TextBlock with big thumb URL
                 if (!string.IsNullOrEmpty(bigThumbUrl))
                 {
-                    try
-                    {
-                        WallpaperImage.Source = new BitmapImage(new Uri(bigThumbUrl));
-                        System.Diagnostics.Debug.WriteLine("Successfully loaded Alpha Coders big thumb for display");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Failed to load big thumb image: {ex.Message}");
-                        // Show placeholder or error message for display only
-                        await ShowErrorDialogAsync("Image preview failed to load, but wallpaper can still be downloaded/set.");
-                    }
+                    DebugBigThumbTextBlock.Text = $"Big Thumb URL: {bigThumbUrl}";
+
+                    // Store big thumb for display, original URL will be fetched on-demand during set/download
+                    System.Diagnostics.Debug.WriteLine($"Found big thumb URL: {bigThumbUrl}");
+
+                    // Load the big thumb directly (no WebP conversion needed)
+                    WallpaperImage.Source = new BitmapImage(new Uri(bigThumbUrl));
+                    System.Diagnostics.Debug.WriteLine("Successfully loaded Alpha Coders big thumb");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Big thumb URL not available for display");
-                    await ShowErrorDialogAsync("Image preview is not available, but wallpaper can still be downloaded/set.");
+                    DebugBigThumbTextBlock.Text = "Big Thumb URL: Not available";
+                    System.Diagnostics.Debug.WriteLine("Failed to find big thumb URL");
+                    await ShowErrorDialogAsync("Image preview is not available for this wallpaper.");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in LoadAlphaCodersImageAsync: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                await ShowErrorDialogAsync($"Error loading wallpaper: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading Alpha Coders image: {ex.Message}");
             }
         }
 
@@ -627,9 +604,9 @@ namespace Wall_You_Need_Next_Gen.Views
 
         private async Task SetWallpaperAsync(WallpaperType wallpaperType)
         {
-            if (_currentWallpaper == null || string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
+            if (_currentWallpaper == null)
             {
-                await ShowErrorDialogAsync($"Failed to set {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}. No wallpaper image available.");
+                await ShowErrorDialogAsync($"Failed to set {(wallpaperType == WallpaperType.Desktop ? "desktop wallpaper" : "lock screen")}. No wallpaper available.");
                 return;
             }
 
@@ -668,28 +645,61 @@ namespace Wall_You_Need_Next_Gen.Views
                     var picturesFolder = KnownFolders.PicturesLibrary;
                     var wallpapersFolder = await picturesFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
 
-                    // Download the image
-                    var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
+                    // Get the big thumb URL to extract extension
+                    var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
+                    var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(_currentWallpaper.Id, _currentWallpaper.ImageUrl);
+
+                    if (string.IsNullOrEmpty(bigThumbUrl))
+                    {
+                        throw new Exception("Could not get image information for this wallpaper.");
+                    }
+
+                    // Extract extension from big thumb URL
+                    var bigThumbUri = new Uri(bigThumbUrl);
+                    var bigThumbPath = bigThumbUri.AbsolutePath;
+                    var extension = System.IO.Path.GetExtension(bigThumbPath).TrimStart('.');
+
+                    System.Diagnostics.Debug.WriteLine($"Debug - Big thumb URL: {bigThumbUrl}");
+                    System.Diagnostics.Debug.WriteLine($"Debug - Big thumb path: {bigThumbPath}");
+                    System.Diagnostics.Debug.WriteLine($"Debug - Extracted extension: {extension}");
+
+                    // Build original URL with same extension
+                    var imageId = _currentWallpaper.Id;
+                    var uri = new Uri(_currentWallpaper.ImageUrl);
+                    var domainParts = uri.Host.Split('.');
+                    var domainShort = domainParts[0];
+
+                    var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageId}/{extension}";
+
+                    System.Diagnostics.Debug.WriteLine($"Debug - Image ID: {imageId}");
+                    System.Diagnostics.Debug.WriteLine($"Debug - Domain short: {domainShort}");
+                    System.Diagnostics.Debug.WriteLine($"Debug - Original URL: {originalUrl}");
+
+                    byte[] imageBytes;
+                    try
+                    {
+                        imageBytes = await _httpClient.GetByteArrayAsync(originalUrl);
+                        System.Diagnostics.Debug.WriteLine($"Successfully downloaded from: {originalUrl}");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to download from {originalUrl}: {ex.Message}");
+                        throw new Exception($"Failed to download original image. Error: {ex.Message}");
+                    }
 
                     // Create a file in Pictures folder with a unique name based on timestamp to avoid caching issues
                     string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
 
-                    // Extract the file extension from the original URL
-                    string fileExtension = "jpg"; // Default extension
-                    if (!string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
-                    {
-                        Uri uri = new Uri(_currentWallpaper.FullPhotoUrl);
-                        string path = uri.AbsolutePath;
-                        string extractedExtension = System.IO.Path.GetExtension(path);
-                        if (!string.IsNullOrEmpty(extractedExtension))
-                        {
-                            fileExtension = extractedExtension.TrimStart('.');
-                        }
-                    }
+                    // Use the same extension as determined above
+                    string fileExtension = !string.IsNullOrEmpty(extension) ? extension : "jpg";
+
+                    System.Diagnostics.Debug.WriteLine($"Debug - File extension for saving: {fileExtension}");
 
                     var wallpaperFile = await wallpapersFolder.CreateFileAsync(
                         $"wallpaper-{_currentWallpaper.Id}-{timestamp}.{fileExtension}",
                         CreationCollisionOption.GenerateUniqueName);
+
+                    System.Diagnostics.Debug.WriteLine($"Debug - Final file path: {wallpaperFile.Path}");
 
                     // Write the image to the file
                     using (var stream = await wallpaperFile.OpenStreamForWriteAsync())
@@ -847,9 +857,9 @@ namespace Wall_You_Need_Next_Gen.Views
 
         private async void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentWallpaper == null || string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
+            if (_currentWallpaper == null)
             {
-                await ShowErrorDialogAsync("Failed to download. No wallpaper image available.");
+                await ShowErrorDialogAsync("No wallpaper available to download.");
                 return;
             }
 
@@ -876,16 +886,53 @@ namespace Wall_You_Need_Next_Gen.Views
                     // Create a subfolder for our app if it doesn't exist
                     var appFolder = await downloadsFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
 
-                    // Create a unique filename based on wallpaper title and ID
+                    // Get the correct extension from the big thumb URL (will be set below)
+                    var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
+                    var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(_currentWallpaper.Id, _currentWallpaper.ImageUrl);
+
+                    if (string.IsNullOrEmpty(bigThumbUrl))
+                    {
+                        throw new Exception("Could not get image information for this wallpaper.");
+                    }
+
+                    // Extract extension from big thumb URL for filename
+                    var bigThumbUri = new Uri(bigThumbUrl);
+                    var bigThumbPath = bigThumbUri.AbsolutePath;
+                    var correctExtension = System.IO.Path.GetExtension(bigThumbPath).TrimStart('.');
+
+                    // Create a unique filename based on wallpaper title and ID with correct extension
                     string safeFileName = _currentWallpaper.Title.Replace(" ", "_");
                     safeFileName = string.Join("_", safeFileName.Split(System.IO.Path.GetInvalidFileNameChars()));
-                    var fileName = $"{safeFileName}_{_currentWallpaper.Id}.jpg";
+                    var fileName = $"{safeFileName}_{_currentWallpaper.Id}.{correctExtension}";
+
+                    System.Diagnostics.Debug.WriteLine($"Debug Download - Download filename: {fileName}");
 
                     // Create the file in the downloads folder
                     var downloadFile = await appFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
 
-                    // Download directly to the file
-                    var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
+                    // Build original URL with same extension as determined above
+                    var imageId = _currentWallpaper.Id;
+                    var uri = new Uri(_currentWallpaper.ImageUrl);
+                    var domainParts = uri.Host.Split('.');
+                    var domainShort = domainParts[0];
+
+                    var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageId}/{correctExtension}";
+
+                    System.Diagnostics.Debug.WriteLine($"Debug Download - Image ID: {imageId}");
+                    System.Diagnostics.Debug.WriteLine($"Debug Download - Domain short: {domainShort}");
+                    System.Diagnostics.Debug.WriteLine($"Debug Download - Original URL: {originalUrl}");
+
+                    byte[] imageBytes;
+                    try
+                    {
+                        imageBytes = await _httpClient.GetByteArrayAsync(originalUrl);
+                        System.Diagnostics.Debug.WriteLine($"Successfully downloaded from: {originalUrl}");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to download from {originalUrl}: {ex.Message}");
+                        throw new Exception($"Failed to download original image. Error: {ex.Message}");
+                    }
                     using (var stream = await downloadFile.OpenStreamForWriteAsync())
                     {
                         await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
