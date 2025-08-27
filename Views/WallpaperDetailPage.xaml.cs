@@ -18,7 +18,7 @@ using System.IO;
 using WinRT.Interop;
 using Microsoft.UI.Windowing;
 using System.Collections.Generic;
-using IOPath = System.IO.Path; // Use System.IO.Path for file operations with alias
+using System.Runtime.InteropServices;
 using System.Linq;
 using System.Reflection; // For reflection functionality
 using Windows.System.UserProfile; // For wallpaper functionality
@@ -34,12 +34,13 @@ namespace Wall_You_Need_Next_Gen.Views
     /// </summary>
     public static class WallpaperHelper
     {
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
 
         private const int SPI_SETDESKWALLPAPER = 0x0014;
         private const int SPIF_UPDATEINIFILE = 0x01;
         private const int SPIF_SENDCHANGE = 0x02;
+        private const int SPIF_SENDWININICHANGE = 0x02;
 
         // Registry keys for wallpaper settings
         private const string WALLPAPER_REG_KEY = @"Control Panel\Desktop";
@@ -57,13 +58,48 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             try
             {
+                // Ensure the file exists and is accessible
+                if (!File.Exists(path))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Wallpaper file does not exist: {path}");
+                    return false;
+                }
+
+                // Make sure the file has proper permissions
+                try
+                {
+                    // Test read access to the file
+                    using (var fileStream = File.OpenRead(path))
+                    {
+                        // Just testing access, no need to read anything
+                    }
+                    System.Diagnostics.Debug.WriteLine($"Confirmed file is readable: {path}");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"File access test failed: {ex.Message}");
+                    return false;
+                }
+
                 // Method 1: Using SystemParametersInfo
                 bool success = false;
                 try
                 {
                     System.Diagnostics.Debug.WriteLine($"Setting wallpaper using SystemParametersInfo: {path}");
-                    int result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+                    
+                    // Make sure the file is accessible to the system
+                    System.IO.File.SetAttributes(path, System.IO.FileAttributes.Normal);
+                    
+                    // Use all available flags to ensure the setting persists
+                    int result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE | SPIF_SENDWININICHANGE);
                     success = result != 0;
+                    
+                    if (!success)
+                    {
+                        int error = Marshal.GetLastWin32Error();
+                        System.Diagnostics.Debug.WriteLine($"SystemParametersInfo failed with error code: {error}");
+                    }
+                    
                     System.Diagnostics.Debug.WriteLine($"SystemParametersInfo result: {result}");
                 }
                 catch (Exception ex)
@@ -77,6 +113,27 @@ namespace Wall_You_Need_Next_Gen.Views
                     try
                     {
                         System.Diagnostics.Debug.WriteLine("Trying registry method for wallpaper...");
+                        // First, ensure the file is accessible with proper permissions
+                        System.IO.File.SetAttributes(path, System.IO.FileAttributes.Normal);
+                        
+                        // Copy the file to Windows directory for better persistence
+                        string windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                        string persistentWallpaperPath = System.IO.Path.Combine(windowsPath, "Web", "Wallpaper", "Windows", System.IO.Path.GetFileName(path));
+                        
+                        try {
+                            // Create directory if it doesn't exist
+                            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(persistentWallpaperPath));
+                            // Copy the file
+                            System.IO.File.Copy(path, persistentWallpaperPath, true);
+                            System.Diagnostics.Debug.WriteLine($"Copied wallpaper to Windows directory: {persistentWallpaperPath}");
+                            // Use the Windows directory path for registry
+                            path = persistentWallpaperPath;
+                        }
+                        catch (Exception ex) {
+                            System.Diagnostics.Debug.WriteLine($"Failed to copy to Windows directory: {ex.Message}");
+                            // Continue with original path if copy fails
+                        }
+                        
                         using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(WALLPAPER_REG_KEY, true))
                         {
                             if (key != null)
@@ -583,16 +640,40 @@ namespace Wall_You_Need_Next_Gen.Views
                     // Download the image
                     var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
 
-                    // Create a file in Pictures folder
+                    // Create a file in Pictures folder with a unique name based on timestamp to avoid caching issues
+                    string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+                    
+                    // Extract the file extension from the original URL
+                    string fileExtension = "jpg"; // Default extension
+                    if (!string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
+                    {
+                        Uri uri = new Uri(_currentWallpaper.FullPhotoUrl);
+                        string path = uri.AbsolutePath;
+                        string extractedExtension = System.IO.Path.GetExtension(path);
+                        if (!string.IsNullOrEmpty(extractedExtension))
+                        {
+                            fileExtension = extractedExtension.TrimStart('.');
+                        }
+                    }
+                    
                     var wallpaperFile = await wallpapersFolder.CreateFileAsync(
-                        $"wallpaper-{_currentWallpaper.Id}.jpg",
-                        CreationCollisionOption.ReplaceExisting);
+                        $"wallpaper-{_currentWallpaper.Id}-{timestamp}.{fileExtension}",
+                        CreationCollisionOption.GenerateUniqueName);
 
                     // Write the image to the file
                     using (var stream = await wallpaperFile.OpenStreamForWriteAsync())
                     {
                         await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
+                        await stream.FlushAsync(); // Ensure data is written to disk
                     }
+                    
+                    // Make sure the file is accessible after restart by copying to a more permanent location
+                    var localFolder = ApplicationData.Current.LocalFolder;
+                    var permanentWallpapersFolder = await localFolder.CreateFolderAsync("Wallpapers", CreationCollisionOption.OpenIfExists);
+                    var permanentWallpaperFile = await wallpaperFile.CopyAsync(permanentWallpapersFolder, wallpaperFile.Name, NameCollisionOption.ReplaceExisting);
+                    
+                    // Use the permanent file path for setting the wallpaper
+                    wallpaperFile = permanentWallpaperFile;
 
                     // Verify the file exists and has content
                     var fileProperties = await wallpaperFile.GetBasicPropertiesAsync();
@@ -766,7 +847,7 @@ namespace Wall_You_Need_Next_Gen.Views
 
                     // Create a unique filename based on wallpaper title and ID
                     string safeFileName = _currentWallpaper.Title.Replace(" ", "_");
-                    safeFileName = string.Join("_", safeFileName.Split(IOPath.GetInvalidFileNameChars()));
+                    safeFileName = string.Join("_", safeFileName.Split(System.IO.Path.GetInvalidFileNameChars()));
                     var fileName = $"{safeFileName}_{_currentWallpaper.Id}.jpg";
 
                     // Create the file in the downloads folder
