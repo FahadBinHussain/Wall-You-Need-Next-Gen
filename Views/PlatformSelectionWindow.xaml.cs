@@ -31,8 +31,15 @@ namespace Wall_You_Need_Next_Gen.Views
             Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             m_appWindow = AppWindow.GetFromWindowId(windowId);
 
-            // Set window to fullscreen size
-            m_appWindow.Resize(new SizeInt32(1920, 1080));
+            // Set window to true fullscreen mode
+            if (m_appWindow.Presenter is OverlappedPresenter overlappedPresenter)
+            {
+                overlappedPresenter.SetBorderAndTitleBar(false, false);
+                overlappedPresenter.Maximize();
+            }
+
+            // Alternative: Set to fullscreen mode
+            m_appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
 
             // Initialize platforms list
             List<string> platforms = new List<string>
