@@ -86,20 +86,20 @@ namespace Wall_You_Need_Next_Gen.Views
                 try
                 {
                     System.Diagnostics.Debug.WriteLine($"Setting wallpaper using SystemParametersInfo: {path}");
-                    
+
                     // Make sure the file is accessible to the system
                     System.IO.File.SetAttributes(path, System.IO.FileAttributes.Normal);
-                    
+
                     // Use all available flags to ensure the setting persists
                     int result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE | SPIF_SENDWININICHANGE);
                     success = result != 0;
-                    
+
                     if (!success)
                     {
                         int error = Marshal.GetLastWin32Error();
                         System.Diagnostics.Debug.WriteLine($"SystemParametersInfo failed with error code: {error}");
                     }
-                    
+
                     System.Diagnostics.Debug.WriteLine($"SystemParametersInfo result: {result}");
                 }
                 catch (Exception ex)
@@ -115,11 +115,11 @@ namespace Wall_You_Need_Next_Gen.Views
                         System.Diagnostics.Debug.WriteLine("Trying registry method for wallpaper...");
                         // First, ensure the file is accessible with proper permissions
                         System.IO.File.SetAttributes(path, System.IO.FileAttributes.Normal);
-                        
+
                         // Copy the file to Windows directory for better persistence
                         string windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
                         string persistentWallpaperPath = System.IO.Path.Combine(windowsPath, "Web", "Wallpaper", "Windows", System.IO.Path.GetFileName(path));
-                        
+
                         try {
                             // Create directory if it doesn't exist
                             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(persistentWallpaperPath));
@@ -133,7 +133,7 @@ namespace Wall_You_Need_Next_Gen.Views
                             System.Diagnostics.Debug.WriteLine($"Failed to copy to Windows directory: {ex.Message}");
                             // Continue with original path if copy fails
                         }
-                        
+
                         using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(WALLPAPER_REG_KEY, true))
                         {
                             if (key != null)
@@ -268,31 +268,62 @@ namespace Wall_You_Need_Next_Gen.Views
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("Fetching big thumb URL for Alpha Coders wallpaper on-demand");
+                System.Diagnostics.Debug.WriteLine($"Fetching URLs for Alpha Coders wallpaper - ID: {wallpaper.Id}, ImageUrl: {wallpaper.ImageUrl}");
 
-                // First, fetch the big thumb URL dynamically
                 var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
+
+                // Get original URL for download/set operations (always get this first)
+                var originalUrl = await scraperService.GetOriginalImageUrlAsync(wallpaper.Id, wallpaper.ImageUrl);
+                System.Diagnostics.Debug.WriteLine($"Original URL result: {originalUrl}");
+
+                // Get big thumb URL for display
                 var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(wallpaper.Id, wallpaper.ImageUrl);
+                System.Diagnostics.Debug.WriteLine($"Big thumb URL result: {bigThumbUrl}");
 
-                if (!string.IsNullOrEmpty(bigThumbUrl))
+                // Always store original URL if available (needed for download/set)
+                if (!string.IsNullOrEmpty(originalUrl))
                 {
-                    wallpaper.FullPhotoUrl = bigThumbUrl;
-                    System.Diagnostics.Debug.WriteLine($"Found big thumb URL: {bigThumbUrl}");
-
-                    // Load the big thumb directly (no WebP conversion needed)
-                    WallpaperImage.Source = new BitmapImage(new Uri(bigThumbUrl));
-                    System.Diagnostics.Debug.WriteLine("Successfully loaded Alpha Coders big thumb");
+                    wallpaper.FullPhotoUrl = originalUrl;
+                    System.Diagnostics.Debug.WriteLine($"Stored original URL for download/set: {originalUrl}");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Failed to find big thumb URL");
+                    System.Diagnostics.Debug.WriteLine("Original image URL not available - showing error");
+                    await ShowErrorDialogAsync("Original image URL is not available for this wallpaper. Cannot download or set as wallpaper.");
+                    return;
+                }
+
+                // Try to display big thumb in UI
+                if (!string.IsNullOrEmpty(bigThumbUrl))
+                {
+                    try
+                    {
+                        WallpaperImage.Source = new BitmapImage(new Uri(bigThumbUrl));
+                        System.Diagnostics.Debug.WriteLine("Successfully loaded Alpha Coders big thumb for display");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to load big thumb image: {ex.Message}");
+                        // Show placeholder or error message for display only
+                        await ShowErrorDialogAsync("Image preview failed to load, but wallpaper can still be downloaded/set.");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Big thumb URL not available for display");
+                    await ShowErrorDialogAsync("Image preview is not available, but wallpaper can still be downloaded/set.");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading Alpha Coders image: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error in LoadAlphaCodersImageAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                await ShowErrorDialogAsync($"Error loading wallpaper: {ex.Message}");
             }
         }
+
+
+
 
         public WallpaperDetailPage()
         {
@@ -642,7 +673,7 @@ namespace Wall_You_Need_Next_Gen.Views
 
                     // Create a file in Pictures folder with a unique name based on timestamp to avoid caching issues
                     string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-                    
+
                     // Extract the file extension from the original URL
                     string fileExtension = "jpg"; // Default extension
                     if (!string.IsNullOrEmpty(_currentWallpaper.FullPhotoUrl))
@@ -655,7 +686,7 @@ namespace Wall_You_Need_Next_Gen.Views
                             fileExtension = extractedExtension.TrimStart('.');
                         }
                     }
-                    
+
                     var wallpaperFile = await wallpapersFolder.CreateFileAsync(
                         $"wallpaper-{_currentWallpaper.Id}-{timestamp}.{fileExtension}",
                         CreationCollisionOption.GenerateUniqueName);
@@ -666,12 +697,12 @@ namespace Wall_You_Need_Next_Gen.Views
                         await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
                         await stream.FlushAsync(); // Ensure data is written to disk
                     }
-                    
+
                     // Make sure the file is accessible after restart by copying to a more permanent location
                     var localFolder = ApplicationData.Current.LocalFolder;
                     var permanentWallpapersFolder = await localFolder.CreateFolderAsync("Wallpapers", CreationCollisionOption.OpenIfExists);
                     var permanentWallpaperFile = await wallpaperFile.CopyAsync(permanentWallpapersFolder, wallpaperFile.Name, NameCollisionOption.ReplaceExisting);
-                    
+
                     // Use the permanent file path for setting the wallpaper
                     wallpaperFile = permanentWallpaperFile;
 

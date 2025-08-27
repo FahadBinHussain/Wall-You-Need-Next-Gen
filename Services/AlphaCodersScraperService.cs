@@ -247,6 +247,38 @@ namespace Wall_You_Need_Next_Gen.Services
             }
         }
 
+        // Public method to get original image URL for wallpapers (async version)
+        public async Task<string> GetOriginalImageUrlAsync(string imageId, string smallUrl)
+        {
+            try
+            {
+                var imageIdFromUrl = GetImageIdFromUrl(smallUrl);
+                var uri = new Uri(smallUrl);
+                var domainParts = uri.Host.Split('.');
+                var domainShort = domainParts[0]; // e.g., images3
+
+                string[] extensions = { "jpeg", "jpg", "png" };
+
+                Console.WriteLine($"Getting original URL for imageId: {imageIdFromUrl}, domainShort: {domainShort}");
+
+                // Return the first URL format - don't validate as it's for download only
+                foreach (var ext in extensions)
+                {
+                    var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageIdFromUrl}/{ext}";
+                    Console.WriteLine($"Generated original URL: {originalUrl}");
+                    return originalUrl; // Return the first one (jpeg) as default
+                }
+
+                Console.WriteLine($"Could not generate original URL for {smallUrl}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting original image URL for {smallUrl}: {ex.Message}");
+                return null;
+            }
+        }
+
         private string GetOriginalImageUrl(string smallUrl)
         {
             try
@@ -256,14 +288,14 @@ namespace Wall_You_Need_Next_Gen.Services
                 var domainParts = uri.Host.Split('.');
                 var domainShort = domainParts[0]; // e.g., images3
 
-                // Default to jpg extension for original images
-                var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageId}/jpg";
-                Console.WriteLine($"Converting to original URL:");
+                // Return base URL pattern - extension will be determined dynamically
+                var baseOriginalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageId}";
+                Console.WriteLine($"Converting to original URL base:");
                 Console.WriteLine($"  Small URL: {smallUrl}");
                 Console.WriteLine($"  Image ID: {imageId}");
                 Console.WriteLine($"  Domain short: {domainShort}");
-                Console.WriteLine($"  Original URL: {originalUrl}");
-                return originalUrl;
+                Console.WriteLine($"  Base Original URL: {baseOriginalUrl}");
+                return baseOriginalUrl;
             }
             catch (Exception ex)
             {
