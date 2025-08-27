@@ -111,20 +111,23 @@ namespace Wall_You_Need_Next_Gen
             }
             // *** End TitleBar color customization ***
 
-            // Set initial window size if needed - without triggering resize event
-            if (m_appWindow.Size.Width < 800 || m_appWindow.Size.Height < 600)
+            // Set window to fullscreen by default
+            isHandlingResize = true;
+            try
             {
-                isHandlingResize = true;
-                try
+                // Set window to true fullscreen mode
+                if (m_appWindow.Presenter is OverlappedPresenter overlappedPresenter)
                 {
-                    m_appWindow.Resize(new SizeInt32(
-                        Math.Max(m_appWindow.Size.Width, 800),
-                        Math.Max(m_appWindow.Size.Height, 600)));
+                    overlappedPresenter.SetBorderAndTitleBar(false, false);
+                    overlappedPresenter.Maximize();
                 }
-                finally
-                {
-                    isHandlingResize = false;
-                }
+
+                // Alternative: Set to fullscreen mode
+                m_appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+            }
+            finally
+            {
+                isHandlingResize = false;
             }
 
             // Register for window closing event
