@@ -23,6 +23,7 @@ using System.Linq;
 using System.Reflection; // For reflection functionality
 using Windows.System.UserProfile; // For wallpaper functionality
 using System.Runtime.InteropServices; // For P/Invoke
+using Windows.ApplicationModel; // For package detection
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -709,7 +710,27 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                     }
 
                     // Make sure the file is accessible after restart by copying to a more permanent location
-                    var localFolder = ApplicationData.Current.LocalFolder;
+                    StorageFolder localFolder;
+                    try
+                    {
+                        // Check if the app is packaged
+                        if (IsPackaged())
+                        {
+                            localFolder = ApplicationData.Current.LocalFolder;
+                        }
+                        else
+                        {
+                            // For unpackaged apps, use a folder in the user's Documents
+                            var documentsFolder = KnownFolders.DocumentsLibrary;
+                            localFolder = await documentsFolder.CreateFolderAsync("WallYouNeedNextGen", CreationCollisionOption.OpenIfExists);
+                        }
+                    }
+                    catch
+                    {
+                        // Fallback: use the same wallpapers folder we already created
+                        localFolder = wallpapersFolder;
+                    }
+
                     var permanentWallpapersFolder = await localFolder.CreateFolderAsync("Wallpapers", CreationCollisionOption.OpenIfExists);
                     var permanentWallpaperFile = await wallpaperFile.CopyAsync(permanentWallpapersFolder, wallpaperFile.Name, NameCollisionOption.ReplaceExisting);
 
@@ -791,6 +812,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                                 errorMessage += $" Fallback method also failed: {innerEx.Message}";
                             }
                         }
+
                     }
                 }
                 catch (Exception ex)
@@ -1019,6 +1041,18 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             };
 
             await dialog.ShowAsync();
+        }
+
+        private bool IsPackaged()
+        {
+            try
+            {
+                return Package.Current != null;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

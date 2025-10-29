@@ -21,6 +21,8 @@ using WinRT.Interop;
 using Windows.Storage;
 using Windows.Graphics;
 using Windows.UI;   // Needed for Colors too (namespace collision needs explicit use)
+using Microsoft.Win32;
+using Windows.ApplicationModel;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -207,7 +209,40 @@ namespace Wall_You_Need_Next_Gen
 
         private void SaveWindowPositionAndSize()
         {
-            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+            try
+            {
+                // Check if the app is packaged
+                if (IsPackaged())
+                {
+                    ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+                    SaveWindowSettingsToAppData(localSettings);
+                }
+                else
+                {
+                    // Use registry for unpackaged apps
+                    SaveWindowSettingsToRegistry();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving window settings: {ex.Message}");
+            }
+        }
+
+        private bool IsPackaged()
+        {
+            try
+            {
+                return Package.Current != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void SaveWindowSettingsToAppData(ApplicationDataContainer localSettings)
+        {
 
             // Get the presenter and save its state
             var presenter = m_appWindow.Presenter as OverlappedPresenter;
@@ -247,9 +282,73 @@ namespace Wall_You_Need_Next_Gen
             }
         }
 
+        private void SaveWindowSettingsToRegistry()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\WallYouNeedNextGen"))
+                {
+                    var presenter = m_appWindow.Presenter as OverlappedPresenter;
+                    if (presenter != null)
+                    {
+                        key.SetValue("WindowState", (int)presenter.State);
+
+                        if (presenter.State == OverlappedPresenterState.Restored)
+                        {
+                            key.SetValue("WindowPositionX", m_appWindow.Position.X);
+                            key.SetValue("WindowPositionY", m_appWindow.Position.Y);
+                            key.SetValue("WindowWidth", m_appWindow.Size.Width);
+                            key.SetValue("WindowHeight", m_appWindow.Size.Height);
+                        }
+                        else
+                        {
+                            key.DeleteValue("WindowWidth", false);
+                            key.DeleteValue("WindowHeight", false);
+                            key.SetValue("WindowPositionX", m_appWindow.Position.X);
+                            key.SetValue("WindowPositionY", m_appWindow.Position.Y);
+                        }
+                    }
+                    else
+                    {
+                        key.SetValue("WindowPositionX", m_appWindow.Position.X);
+                        key.SetValue("WindowPositionY", m_appWindow.Position.Y);
+                        key.SetValue("WindowWidth", m_appWindow.Size.Width);
+                        key.SetValue("WindowHeight", m_appWindow.Size.Height);
+                        key.DeleteValue("WindowState", false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving window settings to registry: {ex.Message}");
+            }
+        }
+
         private void RestoreWindowPositionAndSize()
         {
-            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+            try
+            {
+                // Check if the app is packaged
+                if (IsPackaged())
+                {
+                    ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+                    RestoreWindowSettingsFromAppData(localSettings);
+                }
+                else
+                {
+                    // Use registry for unpackaged apps
+                    RestoreWindowSettingsFromRegistry();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error restoring window settings: {ex.Message}");
+                ApplyDefaultWindowSize();
+            }
+        }
+
+        private void RestoreWindowSettingsFromAppData(ApplicationDataContainer localSettings)
+        {
             bool settingsApplied = false;
 
             try
@@ -351,6 +450,126 @@ namespace Wall_You_Need_Next_Gen
                 // Always resubscribe and clear flag
                 m_appWindow.Changed += AppWindow_Changed;
                 isHandlingResize = false;
+            }
+        }
+
+        private void RestoreWindowSettingsFromRegistry()
+        {
+            bool settingsApplied = false;
+
+            try
+            {
+                isHandlingResize = true;
+                m_appWindow.Changed -= AppWindow_Changed;
+
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WallYouNeedNextGen"))
+                {
+                    if (key != null)
+                    {
+                        var presenter = m_appWindow.Presenter as OverlappedPresenter;
+                        if (presenter == null)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Presenter is not OverlappedPresenter, cannot restore state.");
+                        }
+                        else
+                        {
+                            object stateObj = key.GetValue("WindowState");
+                            if (stateObj != null && int.TryParse(stateObj.ToString(), out int stateInt))
+                            {
+                                var savedState = (OverlappedPresenterState)stateInt;
+
+                                if (savedState == OverlappedPresenterState.Maximized)
+                                {
+                                    presenter.Maximize();
+                                    settingsApplied = true;
+                                }
+                                else if (savedState == OverlappedPresenterState.Restored || savedState == OverlappedPresenterState.Minimized)
+                                {
+                                    if (TryGetRegistryIntValues(key, out int posX, out int posY, out int width, out int height))
+                                    {
+                                        posX = Math.Max(posX, 0);
+                                        posY = Math.Max(posY, 0);
+                                        m_appWindow.Move(new PointInt32(posX, posY));
+
+                                        width = Math.Max(width, 800);
+                                        height = Math.Max(height, 600);
+                                        lastAppliedSize = new SizeInt32(width, height);
+                                        m_appWindow.Resize(lastAppliedSize);
+
+                                        if (presenter.State != OverlappedPresenterState.Restored)
+                                        {
+                                            presenter.Restore();
+                                        }
+                                        settingsApplied = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        // Fallback if no state was saved
+                        if (!settingsApplied)
+                        {
+                            if (TryGetRegistryIntValues(key, out int posX, out int posY, out int width, out int height))
+                            {
+                                posX = Math.Max(posX, 0);
+                                posY = Math.Max(posY, 0);
+                                m_appWindow.Move(new PointInt32(posX, posY));
+
+                                width = Math.Max(width, 800);
+                                height = Math.Max(height, 600);
+                                lastAppliedSize = new SizeInt32(width, height);
+                                m_appWindow.Resize(lastAppliedSize);
+                                settingsApplied = true;
+                            }
+                        }
+                    }
+                }
+
+                if (!settingsApplied)
+                {
+                    ApplyDefaultWindowSize();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error restoring window state from registry: {ex.Message}");
+                if (!settingsApplied)
+                {
+                    ApplyDefaultWindowSize();
+                }
+            }
+            finally
+            {
+                m_appWindow.Changed += AppWindow_Changed;
+                isHandlingResize = false;
+            }
+        }
+
+        private bool TryGetRegistryIntValues(RegistryKey key, out int posX, out int posY, out int width, out int height)
+        {
+            posX = posY = width = height = 0;
+
+            object posXObj = key.GetValue("WindowPositionX");
+            object posYObj = key.GetValue("WindowPositionY");
+            object widthObj = key.GetValue("WindowWidth");
+            object heightObj = key.GetValue("WindowHeight");
+
+            return posXObj != null && int.TryParse(posXObj.ToString(), out posX) &&
+                   posYObj != null && int.TryParse(posYObj.ToString(), out posY) &&
+                   widthObj != null && int.TryParse(widthObj.ToString(), out width) &&
+                   heightObj != null && int.TryParse(heightObj.ToString(), out height);
+        }
+
+        private void ApplyDefaultWindowSize()
+        {
+            try
+            {
+                lastAppliedSize = new SizeInt32(1024, 768);
+                m_appWindow.Resize(lastAppliedSize);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error applying default window size: {ex.Message}");
             }
         }
 
