@@ -7,9 +7,23 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
 {
     public sealed partial class SlideshowPage : Page
     {
+        // Desktop slideshow settings
+        private bool _desktopSlideshowEnabled = false;
+        private string _desktopPlatform = "";
+        private string _desktopCategory = "";
+
+        // Lock screen slideshow settings
+        private bool _lockScreenSlideshowEnabled = false;
+        private string _lockScreenPlatform = "";
+        private string _lockScreenCategory = "";
+
+        // Shared refresh interval
+        private string _refreshInterval = "12 hours";
+
         public SlideshowPage()
         {
             this.InitializeComponent();
+            LoadSettings();
         }
 
         private void ExpandDesktopSlideshow_Click(object sender, RoutedEventArgs e)
@@ -56,6 +70,29 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             await ShowScheduleDialog("Lock Screen");
         }
 
+        private void LoadSettings()
+        {
+            // Update desktop slideshow status
+            if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
+            {
+                DesktopStatusText.Text = $"{_desktopPlatform} - {_desktopCategory}";
+            }
+            else
+            {
+                DesktopStatusText.Text = "No slideshow set";
+            }
+
+            // Update lock screen slideshow status
+            if (_lockScreenSlideshowEnabled && !string.IsNullOrEmpty(_lockScreenPlatform) && !string.IsNullOrEmpty(_lockScreenCategory))
+            {
+                LockScreenStatusText.Text = $"{_lockScreenPlatform} - {_lockScreenCategory}";
+            }
+            else
+            {
+                LockScreenStatusText.Text = "No slideshow set";
+            }
+        }
+
         private async System.Threading.Tasks.Task ShowSlideshowSettingsDialog(string slideshowType)
         {
             // Create the content dialog
@@ -96,9 +133,14 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             };
             Grid.SetColumn(toggleLabel, 0);
 
+            // Load existing settings for this slideshow type
+            bool currentEnabled = slideshowType == "Desktop" ? _desktopSlideshowEnabled : _lockScreenSlideshowEnabled;
+            string currentPlatform = slideshowType == "Desktop" ? _desktopPlatform : _lockScreenPlatform;
+            string currentCategory = slideshowType == "Desktop" ? _desktopCategory : _lockScreenCategory;
+
             var toggleSwitch = new ToggleSwitch
             {
-                IsOn = true,
+                IsOn = currentEnabled,
                 VerticalAlignment = VerticalAlignment.Center
             };
             Grid.SetColumn(toggleSwitch, 1);
@@ -128,7 +170,18 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             };
             platformComboBox.Items.Add("Backiee");
             platformComboBox.Items.Add("AlphaCoders");
-            platformComboBox.SelectedIndex = 0;
+            
+            // Set selected platform based on saved settings
+            if (!string.IsNullOrEmpty(currentPlatform))
+            {
+                int platformIndex = currentPlatform == "AlphaCoders" ? 1 : 0;
+                platformComboBox.SelectedIndex = platformIndex;
+            }
+            else
+            {
+                platformComboBox.SelectedIndex = 0;
+            }
+            
             contentPanel.Children.Add(platformComboBox);
 
             // Category dropdown
@@ -141,6 +194,7 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             };
             
             // Update categories when platform changes
+            bool isInitializing = true;
             platformComboBox.SelectionChanged += (s, e) =>
             {
                 categoryComboBox.Items.Clear();
@@ -156,17 +210,60 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                     categoryComboBox.Items.Add("Harvest Wallpapers");
                     categoryComboBox.Items.Add("Rain Wallpapers");
                 }
+                
+                // Set selected category if we have a saved one and we're initializing
+                if (isInitializing && !string.IsNullOrEmpty(currentCategory))
+                {
+                    for (int i = 0; i < categoryComboBox.Items.Count; i++)
+                    {
+                        if (categoryComboBox.Items[i]?.ToString() == currentCategory)
+                        {
+                            categoryComboBox.SelectedIndex = i;
+                            isInitializing = false;
+                            return;
+                        }
+                    }
+                }
+                
                 if (categoryComboBox.Items.Count > 0)
                 {
                     categoryComboBox.SelectedIndex = 0;
                 }
+                isInitializing = false;
             };
             
-            // Initialize with Backiee categories
-            categoryComboBox.Items.Add("Latest Wallpapers");
-            categoryComboBox.Items.Add("8K UltraHD");
-            categoryComboBox.Items.Add("AI Generated");
-            categoryComboBox.SelectedIndex = 0;
+            // Initialize with current platform's categories
+            if (currentPlatform == "AlphaCoders")
+            {
+                categoryComboBox.Items.Add("4K Wallpapers");
+                categoryComboBox.Items.Add("Harvest Wallpapers");
+                categoryComboBox.Items.Add("Rain Wallpapers");
+            }
+            else
+            {
+                categoryComboBox.Items.Add("Latest Wallpapers");
+                categoryComboBox.Items.Add("8K UltraHD");
+                categoryComboBox.Items.Add("AI Generated");
+            }
+            
+            // Set selected category based on saved settings
+            if (!string.IsNullOrEmpty(currentCategory))
+            {
+                for (int i = 0; i < categoryComboBox.Items.Count; i++)
+                {
+                    if (categoryComboBox.Items[i]?.ToString() == currentCategory)
+                    {
+                        categoryComboBox.SelectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            else if (categoryComboBox.Items.Count > 0)
+            {
+                categoryComboBox.SelectedIndex = 0;
+            }
+            
+            isInitializing = false;
             
             contentPanel.Children.Add(categoryComboBox);
 
@@ -186,15 +283,23 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                 System.Diagnostics.Debug.WriteLine($"  Platform: {selectedPlatform}");
                 System.Diagnostics.Debug.WriteLine($"  Category: {selectedCategory}");
 
-                // Update status text
+                // Save to class fields
                 if (slideshowType == "Desktop")
                 {
+                    _desktopSlideshowEnabled = isEnabled;
+                    _desktopPlatform = selectedPlatform;
+                    _desktopCategory = selectedCategory;
+                    
                     DesktopStatusText.Text = isEnabled 
                         ? $"{selectedPlatform} - {selectedCategory}" 
                         : "No slideshow set";
                 }
                 else
                 {
+                    _lockScreenSlideshowEnabled = isEnabled;
+                    _lockScreenPlatform = selectedPlatform;
+                    _lockScreenCategory = selectedCategory;
+                    
                     LockScreenStatusText.Text = isEnabled 
                         ? $"{selectedPlatform} - {selectedCategory}" 
                         : "No slideshow set";
@@ -245,8 +350,17 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             intervalComboBox.Items.Add("12 hours");
             intervalComboBox.Items.Add("24 hours");
 
-            // Set default to 12 hours
-            intervalComboBox.SelectedIndex = 4;
+            // Set to saved interval or default to 12 hours
+            int savedIndex = 4; // default to 12 hours
+            for (int i = 0; i < intervalComboBox.Items.Count; i++)
+            {
+                if (intervalComboBox.Items[i]?.ToString() == _refreshInterval)
+                {
+                    savedIndex = i;
+                    break;
+                }
+            }
+            intervalComboBox.SelectedIndex = savedIndex;
 
             contentPanel.Children.Add(descriptionText);
             contentPanel.Children.Add(intervalComboBox);
@@ -258,9 +372,20 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             if (result == ContentDialogResult.Primary && intervalComboBox.SelectedItem != null)
             {
                 string selectedInterval = intervalComboBox.SelectedItem.ToString();
+                
+                // Save to class field
+                _refreshInterval = selectedInterval;
+                
                 // Update status text for both desktop and lock screen since it applies to both
-                DesktopStatusText.Text = $"Slideshow refresh interval set to: {selectedInterval}";
-                LockScreenStatusText.Text = $"Slideshow refresh interval set to: {selectedInterval}";
+                if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform))
+                {
+                    DesktopStatusText.Text = $"{_desktopPlatform} - {_desktopCategory} (Refresh: {selectedInterval})";
+                }
+                
+                if (_lockScreenSlideshowEnabled && !string.IsNullOrEmpty(_lockScreenPlatform))
+                {
+                    LockScreenStatusText.Text = $"{_lockScreenPlatform} - {_lockScreenCategory} (Refresh: {selectedInterval})";
+                }
             }
         }
     }
