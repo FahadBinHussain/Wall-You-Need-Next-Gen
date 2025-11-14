@@ -29,6 +29,14 @@ namespace Wall_You_Need_Next_Gen.Services
         private int _desktopCurrentIndex = 0;
         private int _lockScreenCurrentIndex = 0;
         private readonly HttpClient _httpClient = new();
+        
+        // Current wallpaper URLs for display
+        private string _currentDesktopWallpaperUrl = "";
+        private string _currentLockScreenWallpaperUrl = "";
+        
+        // Events for wallpaper changes
+        public event EventHandler<string>? DesktopWallpaperChanged;
+        public event EventHandler<string>? LockScreenWallpaperChanged;
 
         // Windows API for setting desktop wallpaper
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
@@ -376,6 +384,10 @@ namespace Wall_You_Need_Next_Gen.Services
                 if (success)
                 {
                     LogInfo($"Desktop wallpaper set to: {wallpaper.Title}");
+                    
+                    // Store the current wallpaper URL and raise event
+                    _currentDesktopWallpaperUrl = imageUrl;
+                    DesktopWallpaperChanged?.Invoke(this, imageUrl);
                 }
                 else
                 {
@@ -478,6 +490,10 @@ namespace Wall_You_Need_Next_Gen.Services
                 if (success)
                 {
                     LogInfo($"Lock screen set to: {wallpaper.Title}");
+                    
+                    // Store the current wallpaper URL and raise event
+                    _currentLockScreenWallpaperUrl = imageUrl;
+                    LockScreenWallpaperChanged?.Invoke(this, imageUrl);
                 }
                 else
                 {
@@ -516,6 +532,16 @@ namespace Wall_You_Need_Next_Gen.Services
                 return TimeSpan.FromDays(value);
             else
                 return TimeSpan.FromHours(12); // Default
+        }
+        
+        public string GetCurrentDesktopWallpaperUrl()
+        {
+            return _currentDesktopWallpaperUrl;
+        }
+        
+        public string GetCurrentLockScreenWallpaperUrl()
+        {
+            return _currentLockScreenWallpaperUrl;
         }
     }
 }

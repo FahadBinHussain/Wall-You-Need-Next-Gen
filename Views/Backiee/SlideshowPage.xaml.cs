@@ -1,8 +1,10 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using Wall_You_Need_Next_Gen.Services;
+using System.Threading.Tasks;
 
 namespace Wall_You_Need_Next_Gen.Views.Backiee
 {
@@ -25,6 +27,85 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
         {
             this.InitializeComponent();
             LoadSettings();
+            
+            // Subscribe to slideshow wallpaper change events
+            SlideshowService.Instance.DesktopWallpaperChanged += OnDesktopWallpaperChanged;
+            SlideshowService.Instance.LockScreenWallpaperChanged += OnLockScreenWallpaperChanged;
+            
+            // Load current wallpapers
+            _ = LoadCurrentWallpapers();
+        }
+
+        private void OnDesktopWallpaperChanged(object sender, string imageUrl)
+        {
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                await LoadDesktopWallpaper(imageUrl);
+            });
+        }
+
+        private void OnLockScreenWallpaperChanged(object sender, string imageUrl)
+        {
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                await LoadLockScreenWallpaper(imageUrl);
+            });
+        }
+
+        private async Task LoadCurrentWallpapers()
+        {
+            try
+            {
+                // Get current wallpaper URLs from SlideshowService
+                string desktopUrl = SlideshowService.Instance.GetCurrentDesktopWallpaperUrl();
+                string lockScreenUrl = SlideshowService.Instance.GetCurrentLockScreenWallpaperUrl();
+                
+                if (!string.IsNullOrEmpty(desktopUrl))
+                {
+                    await LoadDesktopWallpaper(desktopUrl);
+                }
+                
+                if (!string.IsNullOrEmpty(lockScreenUrl))
+                {
+                    await LoadLockScreenWallpaper(lockScreenUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error loading current wallpapers: {ex.Message}");
+            }
+        }
+
+        private async Task LoadDesktopWallpaper(string imageUrl)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(imageUrl)) return;
+                
+                LogInfo($"Loading desktop wallpaper: {imageUrl}");
+                var bitmap = new BitmapImage(new Uri(imageUrl));
+                DesktopSlideshowImage.Source = bitmap;
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error loading desktop wallpaper image: {ex.Message}");
+            }
+        }
+
+        private async Task LoadLockScreenWallpaper(string imageUrl)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(imageUrl)) return;
+                
+                LogInfo($"Loading lock screen wallpaper: {imageUrl}");
+                var bitmap = new BitmapImage(new Uri(imageUrl));
+                LockScreenSlideshowImage.Source = bitmap;
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error loading lock screen wallpaper image: {ex.Message}");
+            }
         }
 
         private void LogInfo(string message)
