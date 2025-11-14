@@ -21,8 +21,9 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
         private string _lockScreenPlatform = "";
         private string _lockScreenCategory = "";
 
-        // Shared refresh interval
-        private string _refreshInterval = "12 hours";
+        // Separate refresh intervals for desktop and lock screen
+        private string _desktopRefreshInterval = "12 hours";
+        private string _lockScreenRefreshInterval = "12 hours";
         
         // Current wallpaper items for navigation
         private WallpaperItem? _currentDesktopWallpaperItem = null;
@@ -405,11 +406,11 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                 LogInfo($"  Enabled: {isEnabled}");
                 LogInfo($"  Platform: {selectedPlatform}");
                 LogInfo($"  Category: {selectedCategory}");
-                LogInfo($"  Current Refresh Interval: {_refreshInterval}");
 
                 // Save to class fields and start/stop slideshow
                 if (slideshowType == "Desktop")
                 {
+                    LogInfo($"  Current Desktop Refresh Interval: {_desktopRefreshInterval}");
                     _desktopSlideshowEnabled = isEnabled;
                     _desktopPlatform = selectedPlatform;
                     _desktopCategory = selectedCategory;
@@ -424,7 +425,7 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                     if (isEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
                     {
                         LogInfo($"Starting desktop slideshow...");
-                        var interval = SlideshowService.ParseInterval(_refreshInterval);
+                        var interval = SlideshowService.ParseInterval(_desktopRefreshInterval);
                         LogInfo($"Parsed interval: {interval}");
                         await SlideshowService.Instance.StartDesktopSlideshow(_desktopPlatform, _desktopCategory, interval, this.DispatcherQueue);
                         LogInfo($"Desktop slideshow start command completed");
@@ -437,6 +438,7 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                 }
                 else
                 {
+                    LogInfo($"  Current Lock Screen Refresh Interval: {_lockScreenRefreshInterval}");
                     _lockScreenSlideshowEnabled = isEnabled;
                     _lockScreenPlatform = selectedPlatform;
                     _lockScreenCategory = selectedCategory;
@@ -448,7 +450,7 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                     // Start or stop slideshow
                     if (isEnabled && !string.IsNullOrEmpty(_lockScreenPlatform) && !string.IsNullOrEmpty(_lockScreenCategory))
                     {
-                        var interval = SlideshowService.ParseInterval(_refreshInterval);
+                        var interval = SlideshowService.ParseInterval(_lockScreenRefreshInterval);
                         await SlideshowService.Instance.StartLockScreenSlideshow(_lockScreenPlatform, _lockScreenCategory, interval, this.DispatcherQueue);
                     }
                     else
@@ -516,8 +518,9 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             unitComboBox.Items.Add("Hours");
             unitComboBox.Items.Add("Days");
 
-            // Parse current interval to set defaults
-            ParseIntervalString(_refreshInterval, out double value, out string unit);
+            // Parse current interval based on slideshow type to set defaults
+            string currentInterval = slideshowType == "Desktop" ? _desktopRefreshInterval : _lockScreenRefreshInterval;
+            ParseIntervalString(currentInterval, out double value, out string unit);
             numberBox.Value = value;
             
             // Set unit dropdown
@@ -568,23 +571,32 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                     return;
                 }
                 
-                // Save to class field
-                _refreshInterval = selectedInterval;
-                
-                LogInfo($"Parsed to TimeSpan: {interval}");
-                
-                // Restart desktop slideshow with new interval if enabled
-                if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
+                // Save to appropriate class field based on slideshow type
+                if (slideshowType == "Desktop")
                 {
-                    await SlideshowService.Instance.StartDesktopSlideshow(_desktopPlatform, _desktopCategory, interval, this.DispatcherQueue);
-                    DesktopStatusText.Text = $"{_desktopPlatform} - {_desktopCategory} (Refresh: {selectedInterval})";
+                    _desktopRefreshInterval = selectedInterval;
+                    LogInfo($"Updated desktop refresh interval: {selectedInterval}");
+                    LogInfo($"Parsed to TimeSpan: {interval}");
+                    
+                    // Restart desktop slideshow with new interval if enabled
+                    if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
+                    {
+                        await SlideshowService.Instance.StartDesktopSlideshow(_desktopPlatform, _desktopCategory, interval, this.DispatcherQueue);
+                        DesktopStatusText.Text = $"{_desktopPlatform} - {_desktopCategory} (Refresh: {selectedInterval})";
+                    }
                 }
-                
-                // Restart lock screen slideshow with new interval if enabled
-                if (_lockScreenSlideshowEnabled && !string.IsNullOrEmpty(_lockScreenPlatform) && !string.IsNullOrEmpty(_lockScreenCategory))
+                else
                 {
-                    await SlideshowService.Instance.StartLockScreenSlideshow(_lockScreenPlatform, _lockScreenCategory, interval, this.DispatcherQueue);
-                    LockScreenStatusText.Text = $"{_lockScreenPlatform} - {_lockScreenCategory} (Refresh: {selectedInterval})";
+                    _lockScreenRefreshInterval = selectedInterval;
+                    LogInfo($"Updated lock screen refresh interval: {selectedInterval}");
+                    LogInfo($"Parsed to TimeSpan: {interval}");
+                    
+                    // Restart lock screen slideshow with new interval if enabled
+                    if (_lockScreenSlideshowEnabled && !string.IsNullOrEmpty(_lockScreenPlatform) && !string.IsNullOrEmpty(_lockScreenCategory))
+                    {
+                        await SlideshowService.Instance.StartLockScreenSlideshow(_lockScreenPlatform, _lockScreenCategory, interval, this.DispatcherQueue);
+                        LockScreenStatusText.Text = $"{_lockScreenPlatform} - {_lockScreenCategory} (Refresh: {selectedInterval})";
+                    }
                 }
             }
         }
