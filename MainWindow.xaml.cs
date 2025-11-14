@@ -919,34 +919,6 @@ namespace Aura
             // Optional: Adjust margin of the AppTitlePanel based on back button visibility
             // This ensures the title stays visually centered or appropriately spaced
             AppTitlePanel.Margin = ContentFrame.CanGoBack ? new Thickness(0) : new Thickness(16, 0, 0, 0); // Add left margin only if back button is hidden
-
-            // Hide/show navigation container based on current page
-            if (e.SourcePageType != null)
-            {
-                string pageTypeName = e.SourcePageType.FullName;
-                bool isAlphaCodersPage = pageTypeName != null && pageTypeName.Contains("AlphaCoders");
-
-                if (isAlphaCodersPage)
-                {
-                    // Hide navigation container for AlphaCoders pages
-                    NavigationContainer.Visibility = Visibility.Collapsed;
-                    // Adjust the main content to take full width
-                    if (ContentFrame.Parent is Grid parentGrid && parentGrid.ColumnDefinitions.Count > 1)
-                    {
-                        parentGrid.ColumnDefinitions[0].Width = new GridLength(0);
-                    }
-                }
-                else
-                {
-                    // Show navigation container for other pages
-                    NavigationContainer.Visibility = Visibility.Visible;
-                    // Restore the navigation column width
-                    if (ContentFrame.Parent is Grid parentGrid && parentGrid.ColumnDefinitions.Count > 1)
-                    {
-                        parentGrid.ColumnDefinitions[0].Width = new GridLength(76);
-                    }
-                }
-            }
         }
 
         // Event handler for the Back Arrow Button click

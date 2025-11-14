@@ -18,131 +18,121 @@
     </Page.Resources>
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <!-- Left Sidebar -->
-        <Border Grid.Column="0" 
-                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,0,1,0">
-            <StackPanel Margin="16">
-                <TextBlock Text="Categories"
-                           FontSize="20"
+        <!-- Top Navigation Bar -->
+        <Grid Grid.Row="0" 
+              Background="{ThemeResource LayerFillColorDefaultBrush}"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+              BorderThickness="0,0,0,1"
+              Padding="24,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Categories in horizontal layout -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="Categories:"
+                           FontSize="16"
                            FontWeight="SemiBold"
-                           Margin="0,0,0,16"/>
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
                 
-                <!-- 4K Wallpapers Section -->
+                <!-- 4K Wallpapers Button -->
                 <Button x:Name="FourKButton"
                         Content="4K Wallpapers"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
                         Background="{ThemeResource AccentFillColorDefaultBrush}"
                         Foreground="White"
-                        Padding="16,12"
-                        Margin="0,0,0,8"
+                        Padding="16,8"
                         CornerRadius="4"
                         Click="CategoryButton_Click"
-                        Tag="4k"/>
+                        Tag="4k"
+                        VerticalAlignment="Center"/>
                 
-                <!-- Harvest Wallpapers Section -->
+                <!-- Harvest Wallpapers Button -->
                 <Button x:Name="HarvestButton"
                         Content="Harvest Wallpapers"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        Padding="16,12"
-                        Margin="0,0,0,8"
+                        Padding="16,8"
                         CornerRadius="4"
                         Click="CategoryButton_Click"
-                        Tag="harvest"/>
+                        Tag="harvest"
+                        VerticalAlignment="Center"/>
                 
-                <!-- Rain Wallpapers Section -->
+                <!-- Rain Wallpapers Button -->
                 <Button x:Name="RainButton"
                         Content="Rain Wallpapers"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        Padding="16,12"
-                        Margin="0,0,0,8"
+                        Padding="16,8"
                         CornerRadius="4"
                         Click="CategoryButton_Click"
-                        Tag="rain"/>
+                        Tag="rain"
+                        VerticalAlignment="Center"/>
             </StackPanel>
-        </Border>
+
+            <!-- Debug buttons on the right -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Button x:Name="ToggleDebugButton"
+                        Content="Show Debug"
+                        Background="#17a2b8"
+                        Foreground="White"
+                        Padding="15,8"
+                        CornerRadius="4"
+                        Click="ToggleDebugButton_Click"/>
+
+                <Button x:Name="CopyDebugButton"
+                        Content="Copy Debug"
+                        Background="#28a745"
+                        Foreground="White"
+                        Padding="15,8"
+                        CornerRadius="4"
+                        Click="CopyDebugButton_Click"/>
+            </StackPanel>
+        </Grid>
 
         <!-- Main Content Area -->
-        <Grid Grid.Column="1">
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Top bar with title and debug button -->
-            <Grid Grid.Row="0" Margin="24,24,24,12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <!-- Page Title -->
+            <TextBlock x:Name="PageTitleTextBlock"
+                       Grid.Row="0"
+                       Text="4K Wallpapers"
+                       Style="{StaticResource TitleTextBlockStyle}"
+                       Margin="24,24,24,12"/>
 
-                <TextBlock x:Name="PageTitleTextBlock"
-                           Grid.Row="0" Grid.Column="0"
-                           Text="4K Wallpapers"
-                           Style="{StaticResource TitleTextBlockStyle}"
-                           VerticalAlignment="Center"/>
-
-                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                    <Button x:Name="ToggleDebugButton"
-                            Content="Show Debug"
-                            Background="#17a2b8"
-                            Foreground="White"
-                            Padding="15,8"
-                            CornerRadius="4"
-                            Click="ToggleDebugButton_Click"
-                            VerticalAlignment="Center"/>
-
-                    <Button x:Name="CopyDebugButton"
-                            Content="Copy Debug"
-                            Background="#28a745"
-                            Foreground="White"
-                            Padding="15,8"
-                            CornerRadius="4"
-                            Click="CopyDebugButton_Click"
-                            VerticalAlignment="Center"/>
-                </StackPanel>
-
-                <!-- Debug Panel -->
-                <Border x:Name="DebugPanel"
-                        Grid.Row="1"
-                        Grid.ColumnSpan="2"
-                        Background="#f8f9fa"
-                        BorderBrush="#dee2e6"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Margin="0,10,0,0"
-                        Visibility="Collapsed"
-                        MaxHeight="200">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <TextBlock x:Name="DebugTextBlock"
-                                  Padding="15"
-                                  FontFamily="Consolas"
-                                  FontSize="11"
-                                  Text="Debug logs will appear here..."
-                                  Foreground="#495057"
-                                  TextWrapping="Wrap"/>
-                    </ScrollViewer>
-                </Border>
-            </Grid>
+            <!-- Debug Panel -->
+            <Border x:Name="DebugPanel"
+                    Grid.Row="1"
+                    Background="#f8f9fa"
+                    BorderBrush="#dee2e6"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Margin="24,0,24,12"
+                    Visibility="Collapsed"
+                    MaxHeight="200">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBlock x:Name="DebugTextBlock"
+                              Padding="15"
+                              FontFamily="Consolas"
+                              FontSize="11"
+                              Text="Debug logs will appear here..."
+                              Foreground="#495057"
+                              TextWrapping="Wrap"/>
+                </ScrollViewer>
+            </Border>
 
             <!-- Wallpaper grid with adaptive layout -->
             <ScrollViewer x:Name="MainScrollViewer"
-                          Grid.Row="1"
+                          Grid.Row="2"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
                           ViewChanged="MainScrollViewer_ViewChanged"
@@ -255,7 +245,7 @@
 
         <!-- Loading indicator -->
         <ProgressBar x:Name="LoadingProgressBar"
-                     Grid.Row="1"
+                     Grid.Row="2"
                      VerticalAlignment="Bottom"
                      IsIndeterminate="True"
                      Visibility="Collapsed"/>
