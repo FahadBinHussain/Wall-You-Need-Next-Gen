@@ -29,10 +29,9 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             await ShowSlideshowSettingsDialog("Desktop");
         }
 
-        private void ScheduleDesktopSlideshow_Click(object sender, RoutedEventArgs e)
+        private async void ScheduleDesktopSlideshow_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement schedule functionality
-            System.Diagnostics.Debug.WriteLine("Schedule desktop slideshow clicked");
+            await ShowScheduleDialog("Desktop");
         }
 
         private void ExpandLockScreenSlideshow_Click(object sender, RoutedEventArgs e)
@@ -52,10 +51,9 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             await ShowSlideshowSettingsDialog("Lock Screen");
         }
 
-        private void ScheduleLockScreenSlideshow_Click(object sender, RoutedEventArgs e)
+        private async void ScheduleLockScreenSlideshow_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement schedule functionality
-            System.Diagnostics.Debug.WriteLine("Schedule lock screen slideshow clicked");
+            await ShowScheduleDialog("Lock Screen");
         }
 
         private async System.Threading.Tasks.Task ShowSlideshowSettingsDialog(string slideshowType)
@@ -201,6 +199,68 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                         ? $"{selectedPlatform} - {selectedCategory}" 
                         : "No slideshow set";
                 }
+            }
+        }
+
+        private async System.Threading.Tasks.Task ShowScheduleDialog(string slideshowType)
+        {
+            var dialog = new ContentDialog
+            {
+                XamlRoot = this.XamlRoot,
+                Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+                Title = "Slideshow refresh interval",
+                PrimaryButtonText = "Set",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary
+            };
+
+            // Create the content panel
+            var contentPanel = new StackPanel
+            {
+                Spacing = 16,
+                Margin = new Thickness(0, 12, 0, 12)
+            };
+
+            // Description text
+            var descriptionText = new TextBlock
+            {
+                Text = "This setting applies to both desktop and lock screen slideshows.",
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = 14
+            };
+
+            // Interval dropdown
+            var intervalComboBox = new ComboBox
+            {
+                PlaceholderText = "Select interval",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                MinWidth = 400
+            };
+
+            // Add interval options
+            intervalComboBox.Items.Add("30 minutes");
+            intervalComboBox.Items.Add("1 hour");
+            intervalComboBox.Items.Add("3 hours");
+            intervalComboBox.Items.Add("6 hours");
+            intervalComboBox.Items.Add("12 hours");
+            intervalComboBox.Items.Add("24 hours");
+
+            // Set default to 12 hours
+            intervalComboBox.SelectedIndex = 4;
+
+            contentPanel.Children.Add(descriptionText);
+            contentPanel.Children.Add(intervalComboBox);
+
+            dialog.Content = contentPanel;
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary && intervalComboBox.SelectedItem != null)
+            {
+                string selectedInterval = intervalComboBox.SelectedItem.ToString();
+                // Update status text for both desktop and lock screen since it applies to both
+                DesktopStatusText.Text = $"Slideshow refresh interval set to: {selectedInterval}";
+                LockScreenStatusText.Text = $"Slideshow refresh interval set to: {selectedInterval}";
             }
         }
     }
