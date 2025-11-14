@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using Aura.Services;
 using System.Threading.Tasks;
 using Aura.Models;
+using System.IO;
+using System.Text.Json;
 
 namespace Aura.Views.Backiee
 {
@@ -32,14 +34,19 @@ namespace Aura.Views.Backiee
         public SlideshowPage()
         {
             this.InitializeComponent();
-            LoadSettings();
             
             // Subscribe to slideshow wallpaper change events
             SlideshowService.Instance.DesktopWallpaperChanged += OnDesktopWallpaperChanged;
             SlideshowService.Instance.LockScreenWallpaperChanged += OnLockScreenWallpaperChanged;
             
-            // Load current wallpapers
-            _ = LoadCurrentWallpapers();
+            // Delay loading settings until page is fully loaded
+            this.Loaded += SlideshowPage_Loaded;
+        }
+        
+        private async void SlideshowPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            LoadSettings();
+            await LoadCurrentWallpapers();
         }
 
         private void OnDesktopWallpaperChanged(object sender, string imageUrl)
@@ -196,6 +203,72 @@ namespace Aura.Views.Backiee
 
         private void LoadSettings()
         {
+            try
+            {
+                var settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aura", "slideshow_settings.json");
+                
+                if (!File.Exists(settingsPath))
+                {
+                    LogInfo("No saved settings found");
+                    return;
+                }
+
+                var json = File.ReadAllText(settingsPath);
+                var settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+                
+                if (settings == null)
+                {
+                    LogInfo("Failed to deserialize settings");
+                    return;
+                }
+                
+                // Load desktop slideshow settings
+                if (settings.ContainsKey("DesktopSlideshowEnabled"))
+                {
+                    _desktopSlideshowEnabled = settings["DesktopSlideshowEnabled"].GetBoolean();
+                }
+                if (settings.ContainsKey("DesktopSlideshowPlatform"))
+                {
+                    _desktopPlatform = settings["DesktopSlideshowPlatform"].GetString() ?? "Backiee";
+                }
+                if (settings.ContainsKey("DesktopSlideshowCategory"))
+                {
+                    _desktopCategory = settings["DesktopSlideshowCategory"].GetString() ?? "Latest Wallpapers";
+                }
+                if (settings.ContainsKey("DesktopSlideshowInterval"))
+                {
+                    _desktopRefreshInterval = settings["DesktopSlideshowInterval"].GetString() ?? "12 hours";
+                }
+                
+                // Load lock screen slideshow settings
+                if (settings.ContainsKey("LockScreenSlideshowEnabled"))
+                {
+                    _lockScreenSlideshowEnabled = settings["LockScreenSlideshowEnabled"].GetBoolean();
+                }
+                if (settings.ContainsKey("LockScreenSlideshowPlatform"))
+                {
+                    _lockScreenPlatform = settings["LockScreenSlideshowPlatform"].GetString() ?? "Backiee";
+                }
+                if (settings.ContainsKey("LockScreenSlideshowCategory"))
+                {
+                    _lockScreenCategory = settings["LockScreenSlideshowCategory"].GetString() ?? "Latest Wallpapers";
+                }
+                if (settings.ContainsKey("LockScreenSlideshowInterval"))
+                {
+                    _lockScreenRefreshInterval = settings["LockScreenSlideshowInterval"].GetString() ?? "12 hours";
+                }
+                
+                LogInfo($"Loaded settings from {settingsPath}");
+                LogInfo($"Desktop: {_desktopSlideshowEnabled} ({_desktopPlatform}/{_desktopCategory}), Lock: {_lockScreenSlideshowEnabled} ({_lockScreenPlatform}/{_lockScreenCategory})");
+                
+                // Restart slideshows if they were enabled
+                _ = RestoreSlideshows();
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error loading settings: {ex.Message}");
+            }
+            
             // Update desktop slideshow status
             if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
             {
@@ -214,6 +287,67 @@ namespace Aura.Views.Backiee
             else
             {
                 LockScreenStatusText.Text = "No slideshow set";
+            }
+        }
+        
+        private void SaveSettings()
+        {
+            try
+            {
+                var settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aura", "slideshow_settings.json");
+                var directory = Path.GetDirectoryName(settingsPath);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory!);
+                }
+
+                var settings = new Dictionary<string, object>
+                {
+                    ["DesktopSlideshowEnabled"] = _desktopSlideshowEnabled,
+                    ["DesktopSlideshowPlatform"] = string.IsNullOrEmpty(_desktopPlatform) ? "Backiee" : _desktopPlatform,
+                    ["DesktopSlideshowCategory"] = string.IsNullOrEmpty(_desktopCategory) ? "Latest Wallpapers" : _desktopCategory,
+                    ["DesktopSlideshowInterval"] = string.IsNullOrEmpty(_desktopRefreshInterval) ? "12 hours" : _desktopRefreshInterval,
+                    
+                    ["LockScreenSlideshowEnabled"] = _lockScreenSlideshowEnabled,
+                    ["LockScreenSlideshowPlatform"] = string.IsNullOrEmpty(_lockScreenPlatform) ? "Backiee" : _lockScreenPlatform,
+                    ["LockScreenSlideshowCategory"] = string.IsNullOrEmpty(_lockScreenCategory) ? "Latest Wallpapers" : _lockScreenCategory,
+                    ["LockScreenSlideshowInterval"] = string.IsNullOrEmpty(_lockScreenRefreshInterval) ? "12 hours" : _lockScreenRefreshInterval
+                };
+
+                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(settingsPath, json);
+                
+                LogInfo($"Saved settings to {settingsPath}");
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error saving settings: {ex.Message}");
+            }
+        }
+        
+        private async Task RestoreSlideshows()
+        {
+            try
+            {
+                // Restore desktop slideshow if it was enabled
+                if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
+                {
+                    LogInfo($"Restoring desktop slideshow: {_desktopPlatform} - {_desktopCategory}");
+                    var interval = SlideshowService.ParseInterval(_desktopRefreshInterval);
+                    await SlideshowService.Instance.StartDesktopSlideshow(_desktopPlatform, _desktopCategory, interval, this.DispatcherQueue);
+                }
+                
+                // Restore lock screen slideshow if it was enabled
+                if (_lockScreenSlideshowEnabled && !string.IsNullOrEmpty(_lockScreenPlatform) && !string.IsNullOrEmpty(_lockScreenCategory))
+                {
+                    LogInfo($"Restoring lock screen slideshow: {_lockScreenPlatform} - {_lockScreenCategory}");
+                    var interval = SlideshowService.ParseInterval(_lockScreenRefreshInterval);
+                    await SlideshowService.Instance.StartLockScreenSlideshow(_lockScreenPlatform, _lockScreenCategory, interval, this.DispatcherQueue);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error restoring slideshows: {ex.Message}");
             }
         }
 
@@ -458,6 +592,9 @@ namespace Aura.Views.Backiee
                         SlideshowService.Instance.StopLockScreenSlideshow();
                     }
                 }
+                
+                // Save settings to local storage
+                SaveSettings();
             }
         }
 
@@ -598,6 +735,9 @@ namespace Aura.Views.Backiee
                         LockScreenStatusText.Text = $"{_lockScreenPlatform} - {_lockScreenCategory} (Refresh: {selectedInterval})";
                     }
                 }
+                
+                // Save settings to local storage
+                SaveSettings();
             }
         }
 
