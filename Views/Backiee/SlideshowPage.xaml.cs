@@ -172,17 +172,6 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             
             contentPanel.Children.Add(categoryComboBox);
 
-            // Advertisement text
-            var adText = new TextBlock
-            {
-                Text = "Advertisement",
-                HorizontalAlignment = HorizontalAlignment.Center,
-                FontSize = 12,
-                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-                Margin = new Thickness(0, 12, 0, 0)
-            };
-            contentPanel.Children.Add(adText);
-
             dialog.Content = contentPanel;
 
             var result = await dialog.ShowAsync();
