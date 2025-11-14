@@ -44,6 +44,15 @@ A modern wallpaper management and personalization application built with WinUI 3
 # Run Directly
 1. dotnet run
 
+# Build the application
+### Publish as a self-contained executable
+1. dotnet publish -c Release -p:Platform=x64 -r win-x64 --self-contained true
+2. check C:\Users\Admin\Downloads\Wall-You-Need-Next-Gen\bin\x64\Release\win-x64\publish (This folder is portable and can be copied to any location to run the app)
+
+### Publish as a Single EXE, No MSIX, No installer, Self-contained, Works on any Windows 10+ machine
+1. dotnet publish -c Release -p:Platform=x64 -r win-x64 --self-contained true ` -p:PublishSingleFile=true ` -p:IncludeAllContentForSelfExtract=true ` -p:EnableCompressionInSingleFile=true ` -p:WindowsAppSDKSelfContained=true ` -p:UseWinUI=true
+2. check C:\Users\Admin\Downloads\Wall-You-Need-Next-Gen\bin\x64\Release\win-x64\publish\Wall-You-Need-Next-Gen.exe
+
 ## 📁 Project Architecture
 
 Wall-You-Need follows a modern MVVM architecture pattern:

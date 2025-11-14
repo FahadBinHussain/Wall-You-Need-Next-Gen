@@ -33,11 +33,23 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Required;
 
             _alphaCodersService = new AlphaCodersService();
-            WallpapersGridView.ItemsSource = _wallpapers;
-
+            
             // Set up debug logging
             AlphaCodersService.DebugLogger = AppendDebugLog;
             AppendDebugLog("AlphaCodersGridPage initialized");
+            
+            // Set ItemsSource after all initialization is complete
+            try
+            {
+                if (WallpapersGridView != null)
+                {
+                    WallpapersGridView.ItemsSource = _wallpapers;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendDebugLog($"Error setting ItemsSource: {ex.Message}");
+            }
         }
 
         protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
