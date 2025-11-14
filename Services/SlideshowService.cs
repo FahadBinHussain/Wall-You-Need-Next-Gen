@@ -493,16 +493,29 @@ namespace Wall_You_Need_Next_Gen.Services
 
         public static TimeSpan ParseInterval(string interval)
         {
-            return interval switch
-            {
-                "30 minutes" => TimeSpan.FromMinutes(30),
-                "1 hour" => TimeSpan.FromHours(1),
-                "3 hours" => TimeSpan.FromHours(3),
-                "6 hours" => TimeSpan.FromHours(6),
-                "12 hours" => TimeSpan.FromHours(12),
-                "24 hours" => TimeSpan.FromHours(24),
-                _ => TimeSpan.FromHours(12)
-            };
+            if (string.IsNullOrWhiteSpace(interval))
+                return TimeSpan.FromHours(12); // Default
+
+            var parts = interval.Trim().Split(' ');
+            if (parts.Length < 2)
+                return TimeSpan.FromHours(12); // Default
+
+            if (!double.TryParse(parts[0], out double value))
+                return TimeSpan.FromHours(12); // Default
+
+            string unit = parts[1].Trim().ToLower();
+
+            // Handle both singular and plural forms
+            if (unit == "second" || unit == "seconds")
+                return TimeSpan.FromSeconds(value);
+            else if (unit == "minute" || unit == "minutes")
+                return TimeSpan.FromMinutes(value);
+            else if (unit == "hour" || unit == "hours")
+                return TimeSpan.FromHours(value);
+            else if (unit == "day" || unit == "days")
+                return TimeSpan.FromDays(value);
+            else
+                return TimeSpan.FromHours(12); // Default
         }
     }
 }

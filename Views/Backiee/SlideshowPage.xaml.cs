@@ -376,48 +376,74 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                 FontSize = 14
             };
 
-            // Interval dropdown
-            var intervalComboBox = new ComboBox
+            // Horizontal panel for number + unit
+            var intervalPanel = new StackPanel
             {
-                PlaceholderText = "Select interval",
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                MinWidth = 400
+                Orientation = Orientation.Horizontal,
+                Spacing = 12
             };
 
-            // Add interval options
-            intervalComboBox.Items.Add("30 minutes");
-            intervalComboBox.Items.Add("1 hour");
-            intervalComboBox.Items.Add("3 hours");
-            intervalComboBox.Items.Add("6 hours");
-            intervalComboBox.Items.Add("12 hours");
-            intervalComboBox.Items.Add("24 hours");
-
-            // Set to saved interval or default to 12 hours
-            int savedIndex = 4; // default to 12 hours
-            for (int i = 0; i < intervalComboBox.Items.Count; i++)
+            // Number input
+            var numberBox = new Microsoft.UI.Xaml.Controls.NumberBox
             {
-                if (intervalComboBox.Items[i]?.ToString() == _refreshInterval)
-                {
-                    savedIndex = i;
-                    break;
-                }
-            }
-            intervalComboBox.SelectedIndex = savedIndex;
+                PlaceholderText = "Enter value",
+                Minimum = 1,
+                Maximum = 999,
+                SpinButtonPlacementMode = Microsoft.UI.Xaml.Controls.NumberBoxSpinButtonPlacementMode.Inline,
+                Width = 200
+            };
+
+            // Unit dropdown
+            var unitComboBox = new ComboBox
+            {
+                PlaceholderText = "Unit",
+                MinWidth = 150
+            };
+
+            // Add unit options
+            unitComboBox.Items.Add("Seconds");
+            unitComboBox.Items.Add("Minutes");
+            unitComboBox.Items.Add("Hours");
+            unitComboBox.Items.Add("Days");
+
+            // Parse current interval to set defaults
+            ParseIntervalString(_refreshInterval, out double value, out string unit);
+            numberBox.Value = value;
+            
+            // Set unit dropdown
+            int unitIndex = unit switch
+            {
+                "Seconds" => 0,
+                "Minutes" => 1,
+                "Hours" => 2,
+                "Days" => 3,
+                _ => 2 // default to Hours
+            };
+            unitComboBox.SelectedIndex = unitIndex;
+
+            intervalPanel.Children.Add(numberBox);
+            intervalPanel.Children.Add(unitComboBox);
 
             contentPanel.Children.Add(descriptionText);
-            contentPanel.Children.Add(intervalComboBox);
+            contentPanel.Children.Add(intervalPanel);
 
             dialog.Content = contentPanel;
 
             var result = await dialog.ShowAsync();
 
-            if (result == ContentDialogResult.Primary && intervalComboBox.SelectedItem != null)
+            if (result == ContentDialogResult.Primary && unitComboBox.SelectedItem != null && numberBox.Value > 0)
             {
-                string selectedInterval = intervalComboBox.SelectedItem.ToString();
+                double intervalValue = numberBox.Value;
+                string intervalUnit = unitComboBox.SelectedItem.ToString();
+                string selectedInterval = $"{intervalValue} {intervalUnit}";
+                
+                LogInfo($"New interval set: {selectedInterval}");
                 
                 // Save to class field
                 _refreshInterval = selectedInterval;
                 var interval = SlideshowService.ParseInterval(selectedInterval);
+                
+                LogInfo($"Parsed to TimeSpan: {interval}");
                 
                 // Restart desktop slideshow with new interval if enabled
                 if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
@@ -431,6 +457,33 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                 {
                     await SlideshowService.Instance.StartLockScreenSlideshow(_lockScreenPlatform, _lockScreenCategory, interval, this.DispatcherQueue);
                     LockScreenStatusText.Text = $"{_lockScreenPlatform} - {_lockScreenCategory} (Refresh: {selectedInterval})";
+                }
+            }
+        }
+
+        // Helper method to parse interval string like "12 Hours" or "30 Minutes"
+        private void ParseIntervalString(string intervalStr, out double value, out string unit)
+        {
+            // Default values
+            value = 12;
+            unit = "Hours";
+
+            if (string.IsNullOrWhiteSpace(intervalStr))
+                return;
+
+            var parts = intervalStr.Trim().Split(' ');
+            if (parts.Length >= 2)
+            {
+                if (double.TryParse(parts[0], out double parsedValue))
+                {
+                    value = parsedValue;
+                }
+                
+                // Capitalize first letter to match ComboBox items
+                string unitPart = parts[1].Trim();
+                if (!string.IsNullOrEmpty(unitPart))
+                {
+                    unit = char.ToUpper(unitPart[0]) + unitPart.Substring(1).ToLower();
                 }
             }
         }
