@@ -30,6 +30,10 @@ namespace Aura.Services
         private int _lockScreenCurrentIndex = 0;
         private readonly HttpClient _httpClient = new();
         
+        // Track current platform for desktop and lockscreen
+        private string _desktopPlatform = "";
+        private string _lockScreenPlatform = "";
+        
         // Current wallpaper URLs for display
         private string _currentDesktopWallpaperUrl = "";
         private string _currentLockScreenWallpaperUrl = "";
@@ -182,6 +186,7 @@ namespace Aura.Services
             {
                 _desktopWallpapers.Clear();
                 _desktopCurrentIndex = 0;
+                _desktopPlatform = platform; // Store the platform
 
                 LogInfo($"Loading wallpapers - Platform: {platform}, Category: {category}");
 
@@ -250,6 +255,7 @@ namespace Aura.Services
         {
             _lockScreenWallpapers.Clear();
             _lockScreenCurrentIndex = 0;
+            _lockScreenPlatform = platform; // Store the platform
 
             if (platform == "AlphaCoders")
             {
@@ -296,6 +302,26 @@ namespace Aura.Services
         }
 
         private async Task SetDesktopWallpaper(WallpaperItem wallpaper)
+        {
+            try
+            {
+                // Use platform-specific logic
+                if (_desktopPlatform == "AlphaCoders")
+                {
+                    await SetDesktopWallpaper_AlphaCoders(wallpaper);
+                }
+                else // Backiee
+                {
+                    await SetDesktopWallpaper_Backiee(wallpaper);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error setting desktop wallpaper: {ex.Message}");
+            }
+        }
+
+        private async Task SetDesktopWallpaper_Backiee(WallpaperItem wallpaper)
         {
             try
             {
@@ -401,7 +427,143 @@ namespace Aura.Services
             }
         }
 
+        private async Task SetDesktopWallpaper_AlphaCoders(WallpaperItem wallpaper)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(wallpaper.ImageUrl))
+                {
+                    LogInfo($"No image URL available for AlphaCoders wallpaper: {wallpaper.Title}");
+                    return;
+                }
+
+                // Get Pictures folder
+                var picturesFolder = Windows.Storage.KnownFolders.PicturesLibrary;
+                var wallpapersFolder = await picturesFolder.CreateFolderAsync("Aura", Windows.Storage.CreationCollisionOption.OpenIfExists);
+
+                // Get the big thumb URL to extract extension
+                var scraperService = new AlphaCodersScraperService();
+                var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(wallpaper.Id, wallpaper.ImageUrl);
+
+                if (string.IsNullOrEmpty(bigThumbUrl))
+                {
+                    LogInfo($"Could not get big image URL for AlphaCoders wallpaper: {wallpaper.Title}");
+                    return;
+                }
+
+                // Extract extension from big thumb URL
+                var bigThumbUri = new Uri(bigThumbUrl);
+                var bigThumbPath = bigThumbUri.AbsolutePath;
+                var extension = System.IO.Path.GetExtension(bigThumbPath).TrimStart('.');
+
+                // Build original URL with same extension
+                var imageId = wallpaper.Id;
+                var uri = new Uri(wallpaper.ImageUrl);
+                var domainParts = uri.Host.Split('.');
+                var domainShort = domainParts[0];
+
+                var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageId}/{extension}";
+
+                LogInfo($"Downloading AlphaCoders wallpaper from: {originalUrl}");
+
+                byte[] imageBytes;
+                try
+                {
+                    imageBytes = await _httpClient.GetByteArrayAsync(originalUrl);
+                    LogInfo($"Successfully downloaded AlphaCoders wallpaper");
+                }
+                catch (Exception ex)
+                {
+                    LogInfo($"Failed to download from {originalUrl}: {ex.Message}");
+                    return;
+                }
+
+                // Create a file in Pictures folder with a unique name based on timestamp
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+                string fileExtension = !string.IsNullOrEmpty(extension) ? extension : "jpg";
+
+                var wallpaperFile = await wallpapersFolder.CreateFileAsync(
+                    $"wallpaper-{wallpaper.Id}-{timestamp}.{fileExtension}",
+                    Windows.Storage.CreationCollisionOption.ReplaceExisting);
+
+                // Write the image to the file
+                using (var stream = await wallpaperFile.OpenStreamForWriteAsync())
+                {
+                    await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
+                }
+
+                LogInfo($"AlphaCoders wallpaper saved to: {wallpaperFile.Path}");
+
+                // Try to set the wallpaper using WinRT API
+                bool success = false;
+                var userProfilePersonalizationSettings = Windows.System.UserProfile.UserProfilePersonalizationSettings.Current;
+
+                try
+                {
+                    success = await userProfilePersonalizationSettings.TrySetWallpaperImageAsync(wallpaperFile);
+                    LogInfo($"WinRT API result for AlphaCoders desktop wallpaper: {success}");
+                }
+                catch (Exception ex)
+                {
+                    LogInfo($"WinRT API failed for AlphaCoders desktop wallpaper: {ex.Message}");
+                }
+
+                // If WinRT API fails, try SystemParametersInfo as fallback
+                if (!success)
+                {
+                    try
+                    {
+                        LogInfo("WinRT API failed, trying SystemParametersInfo fallback for AlphaCoders...");
+                        SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaperFile.Path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+                        success = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        LogInfo($"SystemParametersInfo fallback also failed for AlphaCoders: {ex.Message}");
+                    }
+                }
+
+                if (success)
+                {
+                    LogInfo($"AlphaCoders desktop wallpaper set to: {wallpaper.Title}");
+                    
+                    // Store the current wallpaper URL and raise event
+                    _currentDesktopWallpaperUrl = originalUrl;
+                    DesktopWallpaperChanged?.Invoke(this, originalUrl);
+                }
+                else
+                {
+                    LogInfo($"Failed to set AlphaCoders desktop wallpaper: {wallpaper.Title}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error setting AlphaCoders desktop wallpaper: {ex.Message}");
+                LogInfo($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
         private async Task SetLockScreenWallpaper(WallpaperItem wallpaper)
+        {
+            try
+            {
+                // Use platform-specific logic
+                if (_lockScreenPlatform == "AlphaCoders")
+                {
+                    await SetLockScreenWallpaper_AlphaCoders(wallpaper);
+                }
+                else // Backiee
+                {
+                    await SetLockScreenWallpaper_Backiee(wallpaper);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error setting lock screen wallpaper: {ex.Message}");
+            }
+        }
+
+        private async Task SetLockScreenWallpaper_Backiee(WallpaperItem wallpaper)
         {
             try
             {
@@ -558,6 +720,107 @@ namespace Aura.Services
             catch (Exception ex)
             {
                 LogInfo($"Error setting lock screen wallpaper: {ex.Message}");
+                LogInfo($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        private async Task SetLockScreenWallpaper_AlphaCoders(WallpaperItem wallpaper)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(wallpaper.ImageUrl))
+                {
+                    LogInfo($"No image URL available for AlphaCoders wallpaper: {wallpaper.Title}");
+                    return;
+                }
+
+                // Get Pictures folder
+                var picturesFolder = Windows.Storage.KnownFolders.PicturesLibrary;
+                var wallpapersFolder = await picturesFolder.CreateFolderAsync("Aura", Windows.Storage.CreationCollisionOption.OpenIfExists);
+
+                // Get the big thumb URL to extract extension
+                var scraperService = new AlphaCodersScraperService();
+                var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(wallpaper.Id, wallpaper.ImageUrl);
+
+                if (string.IsNullOrEmpty(bigThumbUrl))
+                {
+                    LogInfo($"Could not get big image URL for AlphaCoders wallpaper: {wallpaper.Title}");
+                    return;
+                }
+
+                // Extract extension from big thumb URL
+                var bigThumbUri = new Uri(bigThumbUrl);
+                var bigThumbPath = bigThumbUri.AbsolutePath;
+                var extension = System.IO.Path.GetExtension(bigThumbPath).TrimStart('.');
+
+                // Build original URL with same extension
+                var imageId = wallpaper.Id;
+                var uri = new Uri(wallpaper.ImageUrl);
+                var domainParts = uri.Host.Split('.');
+                var domainShort = domainParts[0];
+
+                var originalUrl = $"https://initiate.alphacoders.com/download/{domainShort}/{imageId}/{extension}";
+
+                LogInfo($"Downloading AlphaCoders wallpaper from: {originalUrl}");
+
+                byte[] imageBytes;
+                try
+                {
+                    imageBytes = await _httpClient.GetByteArrayAsync(originalUrl);
+                    LogInfo($"Successfully downloaded AlphaCoders wallpaper for lock screen");
+                }
+                catch (Exception ex)
+                {
+                    LogInfo($"Failed to download from {originalUrl}: {ex.Message}");
+                    return;
+                }
+
+                // Create a file in Pictures folder with a unique name based on timestamp
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+                string fileExtension = !string.IsNullOrEmpty(extension) ? extension : "jpg";
+
+                var wallpaperFile = await wallpapersFolder.CreateFileAsync(
+                    $"lockscreen-{wallpaper.Id}-{timestamp}.{fileExtension}",
+                    Windows.Storage.CreationCollisionOption.ReplaceExisting);
+
+                // Write the image to the file
+                using (var stream = await wallpaperFile.OpenStreamForWriteAsync())
+                {
+                    await stream.WriteAsync(imageBytes, 0, imageBytes.Length);
+                }
+
+                LogInfo($"AlphaCoders lock screen wallpaper saved to: {wallpaperFile.Path}");
+
+                // Try to set the lock screen using WinRT API
+                bool success = false;
+                var userProfilePersonalizationSettings = Windows.System.UserProfile.UserProfilePersonalizationSettings.Current;
+
+                try
+                {
+                    success = await userProfilePersonalizationSettings.TrySetLockScreenImageAsync(wallpaperFile);
+                    LogInfo($"WinRT API result for AlphaCoders lock screen: {success}");
+                }
+                catch (Exception ex)
+                {
+                    LogInfo($"WinRT API failed for AlphaCoders lock screen: {ex.Message}");
+                }
+
+                if (success)
+                {
+                    LogInfo($"AlphaCoders lock screen set to: {wallpaper.Title}");
+                    
+                    // Store the current wallpaper URL and raise event
+                    _currentLockScreenWallpaperUrl = originalUrl;
+                    LockScreenWallpaperChanged?.Invoke(this, originalUrl);
+                }
+                else
+                {
+                    LogInfo($"Failed to set AlphaCoders lock screen: {wallpaper.Title}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error setting AlphaCoders lock screen wallpaper: {ex.Message}");
                 LogInfo($"Stack trace: {ex.StackTrace}");
             }
         }
