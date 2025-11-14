@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,24 +10,39 @@ namespace Wall_You_Need_Next_Gen
     public partial class App : Application
     {
         private Window? m_window;
-        private readonly string logFile = Path.Combine(AppContext.BaseDirectory, "crashlog.txt");
+        private readonly string logFile = Path.Combine(AppContext.BaseDirectory, "app.log");
+
+#if DEBUG
+        [DllImport("kernel32.dll")]
+        private static extern bool AllocConsole();
+#endif
 
         public App()
         {
+#if DEBUG
+            // Allocate console for debug logging
+            AllocConsole();
+#endif
             this.InitializeComponent();
 
             // Catch exceptions on UI and background threads
             UnhandledException += App_UnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+
+            LogInfo("Application initialized");
         }
 
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             try
             {
+                LogInfo("OnLaunched started");
+
                 m_window = new Views.PlatformSelectionWindow();
                 m_window.Activate();
+
+                LogInfo("Main window activated");
             }
             catch (Exception ex)
             {
@@ -54,12 +70,40 @@ namespace Wall_You_Need_Next_Gen
             e.SetObserved();
         }
 
+        /// <summary>
+        /// Log exceptions to file and console
+        /// </summary>
         private void LogException(string source, Exception ex)
         {
             try
             {
-                File.AppendAllText(logFile,
-                    $"\n[{DateTime.Now}] [{source}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n");
+                var text = $"[{DateTime.Now}] [ERROR] [{source}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n";
+                File.AppendAllText(logFile, text);
+
+#if DEBUG
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(text);
+                Console.ResetColor();
+#endif
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Log normal runtime info to file and console
+        /// </summary>
+        public void LogInfo(string message)
+        {
+            try
+            {
+                var text = $"[{DateTime.Now}] [INFO] {message}\n";
+                File.AppendAllText(logFile, text);
+
+#if DEBUG
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(text);
+                Console.ResetColor();
+#endif
             }
             catch { }
         }

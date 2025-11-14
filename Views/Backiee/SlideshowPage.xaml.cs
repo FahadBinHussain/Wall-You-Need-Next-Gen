@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using Wall_You_Need_Next_Gen.Services;
 
 namespace Wall_You_Need_Next_Gen.Views.Backiee
 {
@@ -26,16 +27,28 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             LoadSettings();
         }
 
+        private void LogInfo(string message)
+        {
+            try
+            {
+                ((App)Application.Current).LogInfo($"[SlideshowPage] {message}");
+            }
+            catch
+            {
+                System.Diagnostics.Debug.WriteLine($"[SlideshowPage] {message}");
+            }
+        }
+
         private void ExpandDesktopSlideshow_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Implement expand functionality
-            System.Diagnostics.Debug.WriteLine("Expand desktop slideshow clicked");
+            LogInfo("Expand desktop slideshow clicked");
         }
 
-        private void NextDesktopSlideshow_Click(object sender, RoutedEventArgs e)
+        private async void NextDesktopSlideshow_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement next wallpaper functionality
-            System.Diagnostics.Debug.WriteLine("Next desktop slideshow clicked");
+            await SlideshowService.Instance.NextDesktopWallpaper();
+            LogInfo("Next desktop slideshow clicked");
         }
 
         private async void EditDesktopSlideshow_Click(object sender, RoutedEventArgs e)
@@ -51,13 +64,13 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
         private void ExpandLockScreenSlideshow_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Implement expand functionality
-            System.Diagnostics.Debug.WriteLine("Expand lock screen slideshow clicked");
+            LogInfo("Expand lock screen slideshow clicked");
         }
 
-        private void NextLockScreenSlideshow_Click(object sender, RoutedEventArgs e)
+        private async void NextLockScreenSlideshow_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement next wallpaper functionality
-            System.Diagnostics.Debug.WriteLine("Next lock screen slideshow clicked");
+            await SlideshowService.Instance.NextLockScreenWallpaper();
+            LogInfo("Next lock screen slideshow clicked");
         }
 
         private async void EditLockScreenSlideshow_Click(object sender, RoutedEventArgs e)
@@ -278,21 +291,39 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                 string selectedPlatform = platformComboBox.SelectedItem?.ToString() ?? "Backiee";
                 string selectedCategory = categoryComboBox.SelectedItem?.ToString() ?? "Latest Wallpapers";
 
-                System.Diagnostics.Debug.WriteLine($"{slideshowType} Slideshow Settings:");
-                System.Diagnostics.Debug.WriteLine($"  Enabled: {isEnabled}");
-                System.Diagnostics.Debug.WriteLine($"  Platform: {selectedPlatform}");
-                System.Diagnostics.Debug.WriteLine($"  Category: {selectedCategory}");
+                LogInfo($"========== {slideshowType} Slideshow Settings Dialog - SET CLICKED ==========");
+                LogInfo($"  Enabled: {isEnabled}");
+                LogInfo($"  Platform: {selectedPlatform}");
+                LogInfo($"  Category: {selectedCategory}");
+                LogInfo($"  Current Refresh Interval: {_refreshInterval}");
 
-                // Save to class fields
+                // Save to class fields and start/stop slideshow
                 if (slideshowType == "Desktop")
                 {
                     _desktopSlideshowEnabled = isEnabled;
                     _desktopPlatform = selectedPlatform;
                     _desktopCategory = selectedCategory;
                     
+                    LogInfo($"Saved desktop settings. Enabled={_desktopSlideshowEnabled}, Platform={_desktopPlatform}, Category={_desktopCategory}");
+                    
                     DesktopStatusText.Text = isEnabled 
                         ? $"{selectedPlatform} - {selectedCategory}" 
                         : "No slideshow set";
+
+                    // Start or stop slideshow
+                    if (isEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
+                    {
+                        LogInfo($"Starting desktop slideshow...");
+                        var interval = SlideshowService.ParseInterval(_refreshInterval);
+                        LogInfo($"Parsed interval: {interval}");
+                        await SlideshowService.Instance.StartDesktopSlideshow(_desktopPlatform, _desktopCategory, interval, this.DispatcherQueue);
+                        LogInfo($"Desktop slideshow start command completed");
+                    }
+                    else
+                    {
+                        LogInfo($"Stopping desktop slideshow...");
+                        SlideshowService.Instance.StopDesktopSlideshow();
+                    }
                 }
                 else
                 {
@@ -303,6 +334,17 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                     LockScreenStatusText.Text = isEnabled 
                         ? $"{selectedPlatform} - {selectedCategory}" 
                         : "No slideshow set";
+
+                    // Start or stop slideshow
+                    if (isEnabled && !string.IsNullOrEmpty(_lockScreenPlatform) && !string.IsNullOrEmpty(_lockScreenCategory))
+                    {
+                        var interval = SlideshowService.ParseInterval(_refreshInterval);
+                        await SlideshowService.Instance.StartLockScreenSlideshow(_lockScreenPlatform, _lockScreenCategory, interval, this.DispatcherQueue);
+                    }
+                    else
+                    {
+                        SlideshowService.Instance.StopLockScreenSlideshow();
+                    }
                 }
             }
         }
@@ -375,15 +417,19 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                 
                 // Save to class field
                 _refreshInterval = selectedInterval;
+                var interval = SlideshowService.ParseInterval(selectedInterval);
                 
-                // Update status text for both desktop and lock screen since it applies to both
-                if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform))
+                // Restart desktop slideshow with new interval if enabled
+                if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
                 {
+                    await SlideshowService.Instance.StartDesktopSlideshow(_desktopPlatform, _desktopCategory, interval, this.DispatcherQueue);
                     DesktopStatusText.Text = $"{_desktopPlatform} - {_desktopCategory} (Refresh: {selectedInterval})";
                 }
                 
-                if (_lockScreenSlideshowEnabled && !string.IsNullOrEmpty(_lockScreenPlatform))
+                // Restart lock screen slideshow with new interval if enabled
+                if (_lockScreenSlideshowEnabled && !string.IsNullOrEmpty(_lockScreenPlatform) && !string.IsNullOrEmpty(_lockScreenCategory))
                 {
+                    await SlideshowService.Instance.StartLockScreenSlideshow(_lockScreenPlatform, _lockScreenCategory, interval, this.DispatcherQueue);
                     LockScreenStatusText.Text = $"{_lockScreenPlatform} - {_lockScreenCategory} (Refresh: {selectedInterval})";
                 }
             }
