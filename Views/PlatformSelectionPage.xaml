@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Aura.Views.PlatformSelectionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Aura.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="24,24,24,24">
+            <TextBlock Text="Select Your Wallpaper Source" 
+                       FontSize="32" 
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,8"/>
+            <TextBlock Text="Choose a platform to discover stunning wallpapers for your device" 
+                       FontSize="16" 
+                       Opacity="0.8"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Margin="24,0,24,24" VerticalScrollBarVisibility="Auto">
+            <ItemsRepeater x:Name="PlatformsRepeater">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout MinItemWidth="200" MinItemHeight="200" MinRowSpacing="16" MinColumnSpacing="16"/>
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <Button Click="PlatformButton_Click" 
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Padding="0"
+                                MinWidth="200"
+                                MinHeight="200"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Platform Icon -->
+                                <Grid Grid.Row="0" Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="12,12,0,0">
+                                    <FontIcon Glyph="&#xE91B;" FontSize="48" Opacity="0.9" Margin="0,24,0,24"/>
+                                </Grid>
+                                
+                                <!-- Platform Name -->
+                                <StackPanel Grid.Row="1" Padding="16,12">
+                                    <TextBlock Text="{Binding}" 
+                                               TextWrapping="Wrap"
+                                               FontWeight="SemiBold"
+                                               HorizontalAlignment="Left"
+                                               FontSize="16"/>
+                                    <TextBlock Text="Wallpaper Collection" 
+                                               TextWrapping="Wrap"
+                                               Opacity="0.7"
+                                               Margin="0,4,0,0"
+                                               FontSize="12"/>
+                                </StackPanel>
+                                
+                                <!-- Hover Effect Overlay -->
+                                <Border x:Name="HoverOverlay" Grid.RowSpan="2" Background="{ThemeResource SystemAccentColor}" Opacity="0" CornerRadius="12">
+                                    <TextBlock Text="Select" 
+                                               FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"
+                                               FontSize="18"/>
+                                </Border>
+                            </Grid>
+                            <Button.Resources>
+                                <ResourceDictionary>
+                                    <Storyboard x:Name="HoverOn">
+                                        <DoubleAnimation Storyboard.TargetName="HoverOverlay" 
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0.2" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                    <Storyboard x:Name="HoverOff">
+                                        <DoubleAnimation Storyboard.TargetName="HoverOverlay" 
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </ResourceDictionary>
+                            </Button.Resources>
+                        </Button>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+        
+        <!-- Footer with version info -->
+        <Border Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" 
+                Margin="0,0,24,12" Padding="12,6" CornerRadius="16" 
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                BorderThickness="1">
+            <TextBlock Text="Next Gen Edition" FontSize="12" Opacity="0.7"/>
+        </Border>
+    </Grid>
+</Page>

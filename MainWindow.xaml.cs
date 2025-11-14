@@ -137,8 +137,11 @@ namespace Aura
             // Restore window position and size if available
             RestoreWindowPositionAndSize();
 
-            // Navigate to the homepage by default
-            ContentFrame.Navigate(typeof(HomePage));
+            // Navigate to the platform selection page as home
+            ContentFrame.Navigate(typeof(Views.PlatformSelectionPage));
+            
+            // Register for frame navigation to control back button visibility
+            ContentFrame.Navigated += ContentFrame_Navigated;
 
             // Apply the correct style to the default selected Home button
             if (HomeButton != null)
@@ -149,9 +152,6 @@ namespace Aura
                 // Apply the selected style with the correct text color to Home button
                 ApplySelectedButtonStyle(HomeButton);
             }
-
-            // Register the navigated event handler for the ContentFrame
-            ContentFrame.Navigated += ContentFrame_Navigated;
         }
 
         private void ResetAllNavButtonStyles()
@@ -956,17 +956,6 @@ namespace Aura
             {
                 ContentFrame.GoBack();
             }
-        }
-
-        // Event handler for the Change Platform button
-        private void ChangePlatformButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Create and show the platform selection window
-            var platformSelector = new Views.PlatformSelectionWindow();
-            platformSelector.Activate();
-
-            // Close this window
-            this.Close();
         }
 
         // *** Add Theme Change Handler and Color Update Method ***

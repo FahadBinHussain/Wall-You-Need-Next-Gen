@@ -39,7 +39,7 @@ namespace Aura
             {
                 LogInfo("OnLaunched started");
 
-                m_window = new Views.PlatformSelectionWindow();
+                m_window = new MainWindow();
                 m_window.Activate();
 
                 LogInfo("Main window activated");
