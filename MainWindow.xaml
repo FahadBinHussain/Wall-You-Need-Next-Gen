@@ -527,7 +527,7 @@
                                 Click="NavButton_Click"
                                 Tag="Settings"
                                 Style="{StaticResource FooterNavButtonStyle}">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Grid Width="76" Height="60">
                                     <!-- This Border is initially transparent for non-selected items -->
                                     <Border Background="Transparent"
@@ -555,6 +555,33 @@
                             </StackPanel>
                         </Button>
 
+                        <!-- Change Platform Button -->
+                        <Button x:Name="ChangePlatformButton"
+                                Click="ChangePlatformButton_Click"
+                                Style="{StaticResource FooterNavButtonStyle}">
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Grid Width="76" Height="60">
+                                    <!-- This Border is initially transparent for non-selected items -->
+                                    <Border Background="Transparent"
+                                            BorderThickness="0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"/>
+
+                                    <!-- Content -->
+                                    <StackPanel Orientation="Vertical"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center">
+                                        <FontIcon FontFamily="Segoe Fluent Icons" 
+                                                  Glyph="&#xE8F8;" 
+                                                  FontSize="20"
+                                                  Foreground="{StaticResource NavbarTextBrush}"
+                                                  Margin="0,0,0,4"/>
+                                        <TextBlock Text="Platform"
+                                                   Style="{StaticResource NavTextStyle}" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Button>
 
                     </StackPanel>
                 </Grid>

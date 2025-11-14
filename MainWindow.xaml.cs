@@ -958,6 +958,17 @@ namespace Aura
             }
         }
 
+        // Event handler for the Change Platform button
+        private void ChangePlatformButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Create and show the platform selection window
+            var platformSelector = new Views.PlatformSelectionWindow();
+            platformSelector.Activate();
+
+            // Close this window
+            this.Close();
+        }
+
         // *** Add Theme Change Handler and Color Update Method ***
         private void RootElement_ActualThemeChanged(FrameworkElement sender, object args)
         {
