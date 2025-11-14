@@ -439,9 +439,27 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                 
                 LogInfo($"New interval set: {selectedInterval}");
                 
+                // Parse and validate minimum 10 seconds
+                var interval = SlideshowService.ParseInterval(selectedInterval);
+                
+                if (interval.TotalSeconds < 10)
+                {
+                    LogInfo("Interval too short - minimum is 10 seconds");
+                    
+                    var errorDialog = new ContentDialog
+                    {
+                        XamlRoot = this.XamlRoot,
+                        Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+                        Title = "Invalid Interval",
+                        Content = "The interval must be at least 10 seconds.",
+                        CloseButtonText = "OK"
+                    };
+                    await errorDialog.ShowAsync();
+                    return;
+                }
+                
                 // Save to class field
                 _refreshInterval = selectedInterval;
-                var interval = SlideshowService.ParseInterval(selectedInterval);
                 
                 LogInfo($"Parsed to TimeSpan: {interval}");
                 
