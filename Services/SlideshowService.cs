@@ -543,5 +543,23 @@ namespace Wall_You_Need_Next_Gen.Services
         {
             return _currentLockScreenWallpaperUrl;
         }
+        
+        public WallpaperItem? GetCurrentDesktopWallpaperItem()
+        {
+            if (_desktopWallpapers.Count > 0 && _desktopCurrentIndex < _desktopWallpapers.Count)
+            {
+                return _desktopWallpapers[_desktopCurrentIndex];
+            }
+            return null;
+        }
+        
+        public WallpaperItem? GetCurrentLockScreenWallpaperItem()
+        {
+            if (_lockScreenWallpapers.Count > 0 && _lockScreenCurrentIndex < _lockScreenWallpapers.Count)
+            {
+                return _lockScreenWallpapers[_lockScreenCurrentIndex];
+            }
+            return null;
+        }
     }
 }

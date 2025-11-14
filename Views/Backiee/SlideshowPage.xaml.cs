@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Wall_You_Need_Next_Gen.Services;
 using System.Threading.Tasks;
+using Wall_You_Need_Next_Gen.Models;
 
 namespace Wall_You_Need_Next_Gen.Views.Backiee
 {
@@ -22,6 +23,10 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
 
         // Shared refresh interval
         private string _refreshInterval = "12 hours";
+        
+        // Current wallpaper items for navigation
+        private WallpaperItem? _currentDesktopWallpaperItem = null;
+        private WallpaperItem? _currentLockScreenWallpaperItem = null;
 
         public SlideshowPage()
         {
@@ -122,8 +127,20 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
 
         private void ExpandDesktopSlideshow_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement expand functionality
             LogInfo("Expand desktop slideshow clicked");
+            
+            // Get the current desktop wallpaper item
+            var wallpaperItem = SlideshowService.Instance.GetCurrentDesktopWallpaperItem();
+            
+            if (wallpaperItem != null)
+            {
+                LogInfo($"Navigating to wallpaper detail: {wallpaperItem.Title}");
+                Frame.Navigate(typeof(WallpaperDetailPage), wallpaperItem);
+            }
+            else
+            {
+                LogInfo("No desktop wallpaper item available to expand");
+            }
         }
 
         private async void NextDesktopSlideshow_Click(object sender, RoutedEventArgs e)
@@ -144,8 +161,20 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
 
         private void ExpandLockScreenSlideshow_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement expand functionality
             LogInfo("Expand lock screen slideshow clicked");
+            
+            // Get the current lock screen wallpaper item
+            var wallpaperItem = SlideshowService.Instance.GetCurrentLockScreenWallpaperItem();
+            
+            if (wallpaperItem != null)
+            {
+                LogInfo($"Navigating to wallpaper detail: {wallpaperItem.Title}");
+                Frame.Navigate(typeof(WallpaperDetailPage), wallpaperItem);
+            }
+            else
+            {
+                LogInfo("No lock screen wallpaper item available to expand");
+            }
         }
 
         private async void NextLockScreenSlideshow_Click(object sender, RoutedEventArgs e)
