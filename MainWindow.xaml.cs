@@ -622,10 +622,12 @@ namespace Wall_You_Need_Next_Gen
                     case "Home":
                         ContentFrame.Navigate(typeof(HomePage));
                         break;
+                    case "Slideshow":
+                        ContentFrame.Navigate(typeof(Views.Backiee.SlideshowPage));
+                        break;
                     case "Collections":
                     case "AIGenerated":
                     case "Personal":
-                    case "Slideshow":
                     case "InteractiveSlideshow":
                     case "Widgets":
                     case "UploadWallpaper":
@@ -661,10 +663,12 @@ namespace Wall_You_Need_Next_Gen
                         case "Home":
                             ContentFrame.Navigate(typeof(HomePage));
                             break;
+                        case "Slideshow":
+                            ContentFrame.Navigate(typeof(Views.Backiee.SlideshowPage));
+                            break;
                         case "Collections":
                         case "AIGenerated":
                         case "Personal":
-                        case "Slideshow":
                         case "InteractiveSlideshow":
                         case "Widgets":
                         case "UploadWallpaper":

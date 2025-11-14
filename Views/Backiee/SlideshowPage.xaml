@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Wall_You_Need_Next_Gen.Views.Backiee.SlideshowPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Wall_You_Need_Next_Gen.Views.Backiee"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24,0,24,24" Spacing="16">
+            <!-- Page Title -->
+            <TextBlock Text="Slideshow" Style="{StaticResource TitleTextBlockStyle}" Margin="0,24,0,0" />
+
+            <!-- Two Column Layout -->
+            <Grid ColumnSpacing="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Column: Desktop Slideshow -->
+                <StackPanel Grid.Column="0" Spacing="16">
+                    <!-- Column Title -->
+                    <TextBlock Text="Current desktop slideshow" 
+                               Style="{StaticResource SubtitleTextBlockStyle}"
+                               FontWeight="SemiBold" />
+
+                    <!-- Image Container with Overlay Buttons -->
+                    <Grid CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                        <!-- Placeholder Image -->
+                        <Image x:Name="DesktopSlideshowImage"
+                               Source="ms-appx:///Assets/placeholder.png"
+                               Stretch="UniformToFill"
+                               Height="350" />
+
+                        <!-- Action Buttons Overlay (Bottom Right) -->
+                        <StackPanel Orientation="Horizontal" 
+                                    HorizontalAlignment="Right" 
+                                    VerticalAlignment="Bottom"
+                                    Margin="12"
+                                    Spacing="8">
+                            <!-- Expand Button -->
+                            <Button Width="48" Height="48" 
+                                    CornerRadius="8"
+                                    Background="#404040"
+                                    BorderThickness="0"
+                                    Click="ExpandDesktopSlideshow_Click">
+                                <FontIcon Glyph="&#xE740;" Foreground="White" FontSize="16"/>
+                            </Button>
+
+                            <!-- Next Button -->
+                            <Button Width="48" Height="48" 
+                                    CornerRadius="8"
+                                    Background="#404040"
+                                    BorderThickness="0"
+                                    Click="NextDesktopSlideshow_Click">
+                                <FontIcon Glyph="&#xE76C;" Foreground="White" FontSize="16"/>
+                            </Button>
+
+                            <!-- Edit Button -->
+                            <Button Width="48" Height="48" 
+                                    CornerRadius="8"
+                                    Background="#FF5733"
+                                    BorderThickness="0"
+                                    Click="EditDesktopSlideshow_Click">
+                                <FontIcon Glyph="&#xE70F;" Foreground="White" FontSize="16"/>
+                            </Button>
+
+                            <!-- Schedule Button -->
+                            <Button Width="48" Height="48" 
+                                    CornerRadius="8"
+                                    Background="#FF5733"
+                                    BorderThickness="0"
+                                    Click="ScheduleDesktopSlideshow_Click">
+                                <FontIcon Glyph="&#xE823;" Foreground="White" FontSize="16"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Status Card -->
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="12"
+                            Padding="24">
+                        <TextBlock x:Name="DesktopStatusText"
+                                   Text="No slideshow set" 
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Right Column: Lock Screen Slideshow -->
+                <StackPanel Grid.Column="1" Spacing="16">
+                    <!-- Column Title -->
+                    <TextBlock Text="Current lock screen slideshow" 
+                               Style="{StaticResource SubtitleTextBlockStyle}"
+                               FontWeight="SemiBold" />
+
+                    <!-- Image Container with Overlay Buttons -->
+                    <Grid CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                        <!-- Placeholder Image -->
+                        <Image x:Name="LockScreenSlideshowImage"
+                               Source="ms-appx:///Assets/placeholder.png"
+                               Stretch="UniformToFill"
+                               Height="350" />
+
+                        <!-- Action Buttons Overlay (Bottom Right) -->
+                        <StackPanel Orientation="Horizontal" 
+                                    HorizontalAlignment="Right" 
+                                    VerticalAlignment="Bottom"
+                                    Margin="12"
+                                    Spacing="8">
+                            <!-- Expand Button -->
+                            <Button Width="48" Height="48" 
+                                    CornerRadius="8"
+                                    Background="#404040"
+                                    BorderThickness="0"
+                                    Click="ExpandLockScreenSlideshow_Click">
+                                <FontIcon Glyph="&#xE740;" Foreground="White" FontSize="16"/>
+                            </Button>
+
+                            <!-- Next Button -->
+                            <Button Width="48" Height="48" 
+                                    CornerRadius="8"
+                                    Background="#404040"
+                                    BorderThickness="0"
+                                    Click="NextLockScreenSlideshow_Click">
+                                <FontIcon Glyph="&#xE76C;" Foreground="White" FontSize="16"/>
+                            </Button>
+
+                            <!-- Edit Button -->
+                            <Button Width="48" Height="48" 
+                                    CornerRadius="8"
+                                    Background="#FF5733"
+                                    BorderThickness="0"
+                                    Click="EditLockScreenSlideshow_Click">
+                                <FontIcon Glyph="&#xE70F;" Foreground="White" FontSize="16"/>
+                            </Button>
+
+                            <!-- Schedule Button -->
+                            <Button Width="48" Height="48" 
+                                    CornerRadius="8"
+                                    Background="#FF5733"
+                                    BorderThickness="0"
+                                    Click="ScheduleLockScreenSlideshow_Click">
+                                <FontIcon Glyph="&#xE823;" Foreground="White" FontSize="16"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Status Card -->
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="12"
+                            Padding="24">
+                        <TextBlock x:Name="LockScreenStatusText"
+                                   Text="No slideshow set" 
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
