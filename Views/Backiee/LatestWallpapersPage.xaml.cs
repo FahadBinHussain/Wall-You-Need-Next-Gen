@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Dispatching;
 using System.Threading.Tasks;
-using Wall_You_Need_Next_Gen.Models;
+using Aura.Models;
 using System.Windows.Input;
 using System.Linq;
 using System.Net.Http;
@@ -15,7 +15,7 @@ using System.Text.Json;
 using Microsoft.UI.Xaml.Media.Animation; // For Storyboard
 using Microsoft.UI.Xaml.Data; // For value converter
 
-namespace Wall_You_Need_Next_Gen.Views.Backiee
+namespace Aura.Views.Backiee
 {
     public sealed partial class LatestWallpapersPage : Page
     {

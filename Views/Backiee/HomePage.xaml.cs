@@ -9,10 +9,10 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media.Animation;
-using Wall_You_Need_Next_Gen.Models;
-using Wall_You_Need_Next_Gen.Services;
+using Aura.Models;
+using Aura.Services;
 
-namespace Wall_You_Need_Next_Gen.Views.Backiee
+namespace Aura.Views.Backiee
 {
     public sealed partial class HomePage : Page
     {

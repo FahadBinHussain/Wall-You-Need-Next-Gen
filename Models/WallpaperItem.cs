@@ -11,7 +11,7 @@ using SixLabors.ImageSharp.Formats.Png;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Wall_You_Need_Next_Gen.Models
+namespace Aura.Models
 {
     // Model for wallpaper items
     public class WallpaperItem : INotifyPropertyChanged

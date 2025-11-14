@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35919.96 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wall-You-Need-Next-Gen", "Wall-You-Need-Next-Gen.csproj", "{517373C0-7429-452D-A351-28A58C9552CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aura", "Aura.csproj", "{517373C0-7429-452D-A351-28A58C9552CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

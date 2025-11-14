@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Wall_You_Need_Next_Gen.Models;
+using Aura.Models;
 using System.Linq;
 using System.IO;
 
-namespace Wall_You_Need_Next_Gen.Services
+namespace Aura.Services
 {
     public class AlphaCodersService
     {

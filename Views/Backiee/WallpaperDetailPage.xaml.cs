@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml;
-using Wall_You_Need_Next_Gen.Models;
+using Aura.Models;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
@@ -27,7 +27,7 @@ using System.Runtime.InteropServices; // For P/Invoke
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace Wall_You_Need_Next_Gen.Views.Backiee
+namespace Aura.Views.Backiee
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
@@ -531,7 +531,7 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                 {
                     // Get Pictures folder
                     var picturesFolder = KnownFolders.PicturesLibrary;
-                    var wallpapersFolder = await picturesFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
+                    var wallpapersFolder = await picturesFolder.CreateFolderAsync("Aura", CreationCollisionOption.OpenIfExists);
 
                     // Download the image
                     var imageBytes = await _httpClient.GetByteArrayAsync(_currentWallpaper.FullPhotoUrl);
@@ -715,7 +715,7 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
                     var downloadsFolder = await StorageFolder.GetFolderFromPathAsync(downloadsPath);
 
                     // Create a subfolder for our app if it doesn't exist
-                    var appFolder = await downloadsFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
+                    var appFolder = await downloadsFolder.CreateFolderAsync("Aura", CreationCollisionOption.OpenIfExists);
 
                     // Create a unique filename based on wallpaper title and ID
                     string safeFileName = _currentWallpaper.Title.Replace(" ", "_");

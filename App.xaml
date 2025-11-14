@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Application
-    x:Class="Wall_You_Need_Next_Gen.App"
+    x:Class="Aura.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Wall_You_Need_Next_Gen"
-    xmlns:converters="using:Wall_You_Need_Next_Gen.Converters">
+    xmlns:local="using:Aura"
+    xmlns:converters="using:Aura.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

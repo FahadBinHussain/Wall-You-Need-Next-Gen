@@ -1,6 +1,6 @@
 using System;
 
-namespace Wall_You_Need_Next_Gen.Models
+namespace Aura.Models
 {
     public class Wallpaper
     {

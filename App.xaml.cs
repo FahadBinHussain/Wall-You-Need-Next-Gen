@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Wall_You_Need_Next_Gen
+namespace Aura
 {
     public partial class App : Application
     {

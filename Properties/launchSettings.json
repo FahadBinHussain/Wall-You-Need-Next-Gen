@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "Wall-You-Need-Next-Gen (Package)": {
+    "Aura (Package)": {
       "commandName": "MsixPackage"
     },
-    "Wall-You-Need-Next-Gen (Unpackaged)": {
+    "Aura (Unpackaged)": {
       "commandName": "Project"
     }
   }

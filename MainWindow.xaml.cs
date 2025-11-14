@@ -15,8 +15,8 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Wall_You_Need_Next_Gen.Views;
-using Wall_You_Need_Next_Gen.Views.Backiee;
+using Aura.Views;
+using Aura.Views.Backiee;
 using WinRT.Interop;
 using Windows.Storage;
 using Windows.Graphics;
@@ -27,7 +27,7 @@ using Windows.ApplicationModel;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace Wall_You_Need_Next_Gen
+namespace Aura
 {
     /// <summary>
     /// Main application window with navigation.
@@ -82,7 +82,7 @@ namespace Wall_You_Need_Next_Gen
             }
 
             // Change the window's title
-            Title = "Wall-You-Need";
+            Title = "Aura";
 
             // Get the AppWindow for this window
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -286,7 +286,7 @@ namespace Wall_You_Need_Next_Gen
         {
             try
             {
-                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\WallYouNeedNextGen"))
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Aura"))
                 {
                     var presenter = m_appWindow.Presenter as OverlappedPresenter;
                     if (presenter != null)
@@ -462,7 +462,7 @@ namespace Wall_You_Need_Next_Gen
                 isHandlingResize = true;
                 m_appWindow.Changed -= AppWindow_Changed;
 
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WallYouNeedNextGen"))
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Aura"))
                 {
                     if (key != null)
                     {

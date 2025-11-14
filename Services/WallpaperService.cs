@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Wall_You_Need_Next_Gen.Models;
+using Aura.Models;
 
-namespace Wall_You_Need_Next_Gen.Services
+namespace Aura.Services
 {
     public class WallpaperService
     {

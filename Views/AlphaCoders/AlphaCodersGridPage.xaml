@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="Wall_You_Need_Next_Gen.Views.AlphaCoders.AlphaCodersGridPage"
+    x:Class="Aura.Views.AlphaCoders.AlphaCodersGridPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Wall_You_Need_Next_Gen.Views"
-    xmlns:converters="using:Wall_You_Need_Next_Gen.Converters"
-    xmlns:models="using:Wall_You_Need_Next_Gen.Models"
+    xmlns:local="using:Aura.Views"
+    xmlns:converters="using:Aura.Converters"
+    xmlns:models="using:Aura.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"

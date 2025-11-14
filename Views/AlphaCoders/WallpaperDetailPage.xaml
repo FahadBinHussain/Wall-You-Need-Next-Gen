@@ -1,8 +1,8 @@
 <Page
-    x:Class="Wall_You_Need_Next_Gen.Views.AlphaCoders.WallpaperDetailPage"
+    x:Class="Aura.Views.AlphaCoders.WallpaperDetailPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Wall_You_Need_Next_Gen.Views"
+    xmlns:local="using:Aura.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"

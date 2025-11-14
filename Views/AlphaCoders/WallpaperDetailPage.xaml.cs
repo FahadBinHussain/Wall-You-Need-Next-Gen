@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml;
-using Wall_You_Need_Next_Gen.Models;
+using Aura.Models;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
@@ -28,7 +28,7 @@ using Windows.ApplicationModel; // For package detection
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
+namespace Aura.Views.AlphaCoders
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
@@ -272,7 +272,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                 System.Diagnostics.Debug.WriteLine("Fetching big thumb URL for Alpha Coders wallpaper on-demand");
 
                 // Only fetch the big thumb URL for display
-                var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
+                var scraperService = new Aura.Services.AlphaCodersScraperService();
                 var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(wallpaper.Id, wallpaper.ImageUrl);
 
                 // Update debug TextBlock with big thumb URL
@@ -644,10 +644,10 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                 {
                     // Get Pictures folder
                     var picturesFolder = KnownFolders.PicturesLibrary;
-                    var wallpapersFolder = await picturesFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
+                    var wallpapersFolder = await picturesFolder.CreateFolderAsync("Aura", CreationCollisionOption.OpenIfExists);
 
                     // Get the big thumb URL to extract extension
-                    var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
+                    var scraperService = new Aura.Services.AlphaCodersScraperService();
                     var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(_currentWallpaper.Id, _currentWallpaper.ImageUrl);
 
                     if (string.IsNullOrEmpty(bigThumbUrl))
@@ -722,7 +722,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                         {
                             // For unpackaged apps, use a folder in the user's Documents
                             var documentsFolder = KnownFolders.DocumentsLibrary;
-                            localFolder = await documentsFolder.CreateFolderAsync("WallYouNeedNextGen", CreationCollisionOption.OpenIfExists);
+                            localFolder = await documentsFolder.CreateFolderAsync("Aura", CreationCollisionOption.OpenIfExists);
                         }
                     }
                     catch
@@ -906,10 +906,10 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
                     var downloadsFolder = await StorageFolder.GetFolderFromPathAsync(downloadsPath);
 
                     // Create a subfolder for our app if it doesn't exist
-                    var appFolder = await downloadsFolder.CreateFolderAsync("WallYouNeed", CreationCollisionOption.OpenIfExists);
+                    var appFolder = await downloadsFolder.CreateFolderAsync("Aura", CreationCollisionOption.OpenIfExists);
 
                     // Get the correct extension from the big thumb URL (will be set below)
-                    var scraperService = new Wall_You_Need_Next_Gen.Services.AlphaCodersScraperService();
+                    var scraperService = new Aura.Services.AlphaCodersScraperService();
                     var bigThumbUrl = await scraperService.GetBigImageUrlForWallpaperAsync(_currentWallpaper.Id, _currentWallpaper.ImageUrl);
 
                     if (string.IsNullOrEmpty(bigThumbUrl))

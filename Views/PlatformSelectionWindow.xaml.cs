@@ -9,9 +9,9 @@ using Microsoft.UI.Windowing;
 using WinRT.Interop;
 using Windows.Graphics;
 using Windows.UI;
-using Wall_You_Need_Next_Gen.Views.AlphaCoders;
+using Aura.Views.AlphaCoders;
 
-namespace Wall_You_Need_Next_Gen.Views
+namespace Aura.Views
 {
     public sealed partial class PlatformSelectionWindow : Window
     {

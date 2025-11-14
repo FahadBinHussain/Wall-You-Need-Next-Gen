@@ -10,9 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Wall_You_Need_Next_Gen.Models;
+using Aura.Models;
 
-namespace Wall_You_Need_Next_Gen.Services
+namespace Aura.Services
 {
     public class SlideshowService
     {
@@ -308,7 +308,7 @@ namespace Wall_You_Need_Next_Gen.Services
 
                 // Get Pictures folder
                 var picturesFolder = Windows.Storage.KnownFolders.PicturesLibrary;
-                var wallpapersFolder = await picturesFolder.CreateFolderAsync("WallYouNeed", Windows.Storage.CreationCollisionOption.OpenIfExists);
+                var wallpapersFolder = await picturesFolder.CreateFolderAsync("Aura", Windows.Storage.CreationCollisionOption.OpenIfExists);
 
                 // Download the image
                 byte[] imageBytes;
@@ -414,7 +414,7 @@ namespace Wall_You_Need_Next_Gen.Services
 
                 // Get Pictures folder
                 var picturesFolder = Windows.Storage.KnownFolders.PicturesLibrary;
-                var wallpapersFolder = await picturesFolder.CreateFolderAsync("WallYouNeed", Windows.Storage.CreationCollisionOption.OpenIfExists);
+                var wallpapersFolder = await picturesFolder.CreateFolderAsync("Aura", Windows.Storage.CreationCollisionOption.OpenIfExists);
 
                 // Download the image
                 byte[] imageBytes;

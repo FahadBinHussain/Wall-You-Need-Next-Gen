@@ -6,12 +6,12 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Wall_You_Need_Next_Gen.Models;
-using Wall_You_Need_Next_Gen.Services;
+using Aura.Models;
+using Aura.Services;
 
 using System.Text;
 
-namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
+namespace Aura.Views.AlphaCoders
 {
     public sealed partial class AlphaCodersGridPage : Page
     {

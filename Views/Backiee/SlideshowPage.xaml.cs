@@ -3,11 +3,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
-using Wall_You_Need_Next_Gen.Services;
+using Aura.Services;
 using System.Threading.Tasks;
-using Wall_You_Need_Next_Gen.Models;
+using Aura.Models;
 
-namespace Wall_You_Need_Next_Gen.Views.Backiee
+namespace Aura.Views.Backiee
 {
     public sealed partial class SlideshowPage : Page
     {

@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 using System;
 
-namespace Wall_You_Need_Next_Gen.Converters
+namespace Aura.Converters
 {
     /// <summary>
     /// Converts a string to Visibility - Visible if not null or empty, Collapsed otherwise
