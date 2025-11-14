@@ -347,7 +347,7 @@ namespace Wall_You_Need_Next_Gen.Services
                                 {
                                     System.Diagnostics.Debug.WriteLine($"Error loading image: {ex.Message}");
                                     // Use placeholder image if loading fails
-                                    wallpaper.ImageSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
+                                    wallpaper.ImageSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.png"));
                                 }
 
                                 wallpapers.Add(wallpaper);
@@ -460,7 +460,7 @@ namespace Wall_You_Need_Next_Gen.Services
                         {
                             System.Diagnostics.Debug.WriteLine($"Error loading detail image: {ex.Message}");
                             // Use placeholder image if loading fails
-                            wallpaper.ImageSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
+                            wallpaper.ImageSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.png"));
                         }
 
                         return wallpaper;
@@ -565,14 +565,14 @@ namespace Wall_You_Need_Next_Gen.Services
             for (int i = 1; i <= count; i++)
             {
                 // Create a new BitmapImage directly in the constructor
-                var bitmap = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
+                var bitmap = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.png"));
 
                 var wallpaper = new WallpaperItem
                 {
                     Id = i.ToString(),
                     Title = $"Alpha Coders Wallpaper {i}",
-                    ImageUrl = "ms-appx:///Assets/placeholder-wallpaper-1000.jpg",
-                    FullPhotoUrl = "ms-appx:///Assets/placeholder-wallpaper-1000.jpg",
+                    ImageUrl = "ms-appx:///Assets/placeholder-wallpaper-1000.png",
+                    FullPhotoUrl = "ms-appx:///Assets/placeholder-wallpaper-1000.png",
                     SourceUrl = $"https://wall.alphacoders.com/wallpaper.php?i={i}",
                     Resolution = "3840x2160",
                     QualityTag = "4K",
@@ -593,14 +593,14 @@ namespace Wall_You_Need_Next_Gen.Services
             int idNumber = int.TryParse(id, out int result) ? result : 1;
 
             // Create a new BitmapImage directly in the constructor
-            var bitmap = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
+            var bitmap = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.png"));
 
             return new WallpaperItem
             {
                 Id = id,
                 Title = $"Alpha Coders Wallpaper {id}",
-                ImageUrl = "ms-appx:///Assets/placeholder-wallpaper-1000.jpg",
-                FullPhotoUrl = "ms-appx:///Assets/placeholder-wallpaper-1000.jpg",
+                ImageUrl = "ms-appx:///Assets/placeholder-wallpaper-1000.png",
+                FullPhotoUrl = "ms-appx:///Assets/placeholder-wallpaper-1000.png",
                 SourceUrl = $"https://wall.alphacoders.com/wallpaper.php?i={id}",
                 Resolution = "3840x2160",
                 QualityTag = "4K",

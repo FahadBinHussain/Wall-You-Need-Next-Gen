@@ -78,7 +78,7 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             {
                 _placeholderImage = new BitmapImage();
                 _placeholderImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                _placeholderImage.UriSource = new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg");
+                _placeholderImage.UriSource = new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.png");
 
                 // Log success
                 System.Diagnostics.Debug.WriteLine("Placeholder image initialized successfully");

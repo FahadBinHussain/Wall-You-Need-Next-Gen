@@ -308,7 +308,7 @@ namespace Wall_You_Need_Next_Gen.Views.Backiee
             else
             {
                 TitleTextBlock.Text = "Error: Invalid wallpaper data";
-                WallpaperImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.jpg"));
+                WallpaperImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/placeholder-wallpaper-1000.png"));
                 // Ensure all overlays are hidden/reset in error case
                 AITagBorder.Visibility = Visibility.Collapsed;
                 QualityTagBorder.Visibility = Visibility.Collapsed;

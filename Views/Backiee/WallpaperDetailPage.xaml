@@ -58,7 +58,7 @@
                     <Grid Grid.Row="0">
                         <!-- Wallpaper Image -->
                         <Image x:Name="WallpaperImage"
-                               Source="ms-appx:///Assets/placeholder-wallpaper-1000.jpg"
+                               Source="ms-appx:///Assets/placeholder-wallpaper-1000.png"
                                Stretch="Uniform"
                                CacheMode="BitmapCache"
                                HorizontalAlignment="Center"
