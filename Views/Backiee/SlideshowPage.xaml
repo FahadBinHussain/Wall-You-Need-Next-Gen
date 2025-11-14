@@ -30,11 +30,14 @@
 
                     <!-- Image Container with Overlay Buttons -->
                     <Grid CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                        <!-- Placeholder Image -->
-                        <Image x:Name="DesktopSlideshowImage"
-                               Source="ms-appx:///Assets/placeholder.png"
-                               Stretch="UniformToFill"
-                               Height="350" />
+                        <!-- Responsive Image with Aspect Ratio -->
+                        <Viewbox Stretch="Uniform">
+                            <Grid Width="1920" Height="1080">
+                                <Image x:Name="DesktopSlideshowImage"
+                                       Source="ms-appx:///Assets/placeholder.png"
+                                       Stretch="UniformToFill" />
+                            </Grid>
+                        </Viewbox>
 
                         <!-- Action Buttons Overlay (Bottom Right) -->
                         <StackPanel Orientation="Horizontal" 
@@ -102,11 +105,14 @@
 
                     <!-- Image Container with Overlay Buttons -->
                     <Grid CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                        <!-- Placeholder Image -->
-                        <Image x:Name="LockScreenSlideshowImage"
-                               Source="ms-appx:///Assets/placeholder.png"
-                               Stretch="UniformToFill"
-                               Height="350" />
+                        <!-- Responsive Image with Aspect Ratio -->
+                        <Viewbox Stretch="Uniform">
+                            <Grid Width="1920" Height="1080">
+                                <Image x:Name="LockScreenSlideshowImage"
+                                       Source="ms-appx:///Assets/placeholder.png"
+                                       Stretch="UniformToFill" />
+                            </Grid>
+                        </Viewbox>
 
                         <!-- Action Buttons Overlay (Bottom Right) -->
                         <StackPanel Orientation="Horizontal" 
