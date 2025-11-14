@@ -75,5 +75,8 @@
     <EnableConsoleRedirection>true</EnableConsoleRedirection>
     <NativeExecutableExtension>.exe</NativeExecutableExtension>
   </PropertyGroup>
+  <PropertyGroup>
+    <PublishDir>Portable\</PublishDir>
+  </PropertyGroup>
 
 </Project>

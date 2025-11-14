@@ -116,3 +116,5 @@ $RECYCLE.BIN/
 *.rsuser
 *.png
 scraper.py
+
+Portable/
