@@ -20,6 +20,7 @@ namespace Aura.Services
         public static SlideshowService Instance => _instance ??= new SlideshowService();
 
         private readonly AlphaCodersService _alphaCodersService;
+        private readonly AlphaCodersScraperService _alphaCodersScraperService;
         private readonly WallpaperService _wallpaperService;
 
         private DispatcherQueueTimer? _desktopTimer;
@@ -29,6 +30,16 @@ namespace Aura.Services
         private int _desktopCurrentIndex = 0;
         private int _lockScreenCurrentIndex = 0;
         private readonly HttpClient _httpClient = new();
+        
+        // Batch tracking for continuous slideshow
+        private int _desktopCurrentBatch = 1;
+        private int _lockScreenCurrentBatch = 1;
+        private string _desktopCategory = "";
+        private string _lockScreenCategory = "";
+        private DispatcherQueue? _desktopDispatcherQueue;
+        private DispatcherQueue? _lockScreenDispatcherQueue;
+        private TimeSpan _desktopInterval = TimeSpan.FromHours(12);
+        private TimeSpan _lockScreenInterval = TimeSpan.FromHours(12);
         
         // Track current platform for desktop and lockscreen
         private string _desktopPlatform = "";
@@ -53,6 +64,7 @@ namespace Aura.Services
         private SlideshowService()
         {
             _alphaCodersService = new AlphaCodersService();
+            _alphaCodersScraperService = new AlphaCodersScraperService();
             _wallpaperService = new WallpaperService();
         }
 
@@ -74,8 +86,16 @@ namespace Aura.Services
             {
                 LogInfo($"Starting desktop slideshow: {platform} - {category}, Interval: {interval}");
 
+                // Store parameters for batch loading
+                _desktopCategory = category;
+                _desktopDispatcherQueue = dispatcherQueue;
+                _desktopInterval = interval;
+
                 // Stop existing timer if any
                 StopDesktopSlideshow();
+
+                // Load progress if exists
+                LoadProgress();
 
                 // Fetch wallpapers
                 await LoadWallpapersForDesktop(platform, category);
@@ -88,16 +108,24 @@ namespace Aura.Services
 
                 LogInfo($"Loaded {_desktopWallpapers.Count} wallpapers");
 
-                // Set first wallpaper immediately
-                await SetDesktopWallpaper(_desktopWallpapers[0]);
+                // Set first wallpaper immediately (or current index if resuming)
+                await SetDesktopWallpaper(_desktopWallpapers[_desktopCurrentIndex]);
+                SaveProgress();
 
                 // Create and start timer
                 _desktopTimer = dispatcherQueue.CreateTimer();
                 _desktopTimer.Interval = interval;
                 _desktopTimer.Tick += async (sender, e) =>
                 {
-                    _desktopCurrentIndex = (_desktopCurrentIndex + 1) % _desktopWallpapers.Count;
-                    await SetDesktopWallpaper(_desktopWallpapers[_desktopCurrentIndex]);
+                    try
+                    {
+                        await NextDesktopWallpaper();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogInfo($"ERROR in timer tick: {ex.Message}");
+                        LogInfo($"Stack trace: {ex.StackTrace}");
+                    }
                 };
                 _desktopTimer.Start();
 
@@ -114,8 +142,16 @@ namespace Aura.Services
         {
             LogInfo($"Starting lock screen slideshow: {platform} - {category}, Interval: {interval}");
 
+            // Store parameters for batch loading
+            _lockScreenCategory = category;
+            _lockScreenDispatcherQueue = dispatcherQueue;
+            _lockScreenInterval = interval;
+
             // Stop existing timer if any
             StopLockScreenSlideshow();
+
+            // Load progress if exists
+            LoadProgress();
 
             // Fetch wallpapers
             await LoadWallpapersForLockScreen(platform, category);
@@ -126,16 +162,24 @@ namespace Aura.Services
                 return;
             }
 
-            // Set first wallpaper immediately
-            await SetLockScreenWallpaper(_lockScreenWallpapers[0]);
+            // Set first wallpaper immediately (or current index if resuming)
+            await SetLockScreenWallpaper(_lockScreenWallpapers[_lockScreenCurrentIndex]);
+            SaveProgress();
 
             // Create and start timer
             _lockScreenTimer = dispatcherQueue.CreateTimer();
             _lockScreenTimer.Interval = interval;
             _lockScreenTimer.Tick += async (sender, e) =>
             {
-                _lockScreenCurrentIndex = (_lockScreenCurrentIndex + 1) % _lockScreenWallpapers.Count;
-                await SetLockScreenWallpaper(_lockScreenWallpapers[_lockScreenCurrentIndex]);
+                try
+                {
+                    await NextLockScreenWallpaper();
+                }
+                catch (Exception ex)
+                {
+                    LogInfo($"ERROR in lock screen timer tick: {ex.Message}");
+                    LogInfo($"Stack trace: {ex.StackTrace}");
+                }
             };
             _lockScreenTimer.Start();
 
@@ -164,19 +208,93 @@ namespace Aura.Services
 
         public async Task NextDesktopWallpaper()
         {
-            if (_desktopWallpapers.Count > 0)
+            try
             {
-                _desktopCurrentIndex = (_desktopCurrentIndex + 1) % _desktopWallpapers.Count;
-                await SetDesktopWallpaper(_desktopWallpapers[_desktopCurrentIndex]);
+                LogInfo($"NextDesktopWallpaper called - Current index: {_desktopCurrentIndex}, Batch: {_desktopCurrentBatch}, Count: {_desktopWallpapers.Count}");
+                
+                if (_desktopWallpapers.Count > 0)
+                {
+                    _desktopCurrentIndex++;
+                    LogInfo($"Incremented index to: {_desktopCurrentIndex}");
+                    
+                    // Check if we've reached the end of current batch
+                    if (_desktopCurrentIndex >= _desktopWallpapers.Count)
+                    {
+                        // Load next batch
+                        _desktopCurrentBatch++;
+                        _desktopCurrentIndex = 0;
+                        LogInfo($"End of batch reached. Loading next desktop batch: {_desktopCurrentBatch}, Platform: {_desktopPlatform}, Category: {_desktopCategory}");
+                        await LoadWallpapersForDesktop(_desktopPlatform, _desktopCategory);
+                        SaveProgress(); // Save progress after loading new batch
+                        LogInfo($"After loading: Wallpapers count: {_desktopWallpapers.Count}");
+                    }
+                    
+                    if (_desktopWallpapers.Count > 0 && _desktopCurrentIndex < _desktopWallpapers.Count)
+                    {
+                        LogInfo($"Setting wallpaper at index {_desktopCurrentIndex}");
+                        await SetDesktopWallpaper(_desktopWallpapers[_desktopCurrentIndex]);
+                        SaveProgress(); // Save progress after each wallpaper change
+                    }
+                    else
+                    {
+                        LogInfo($"ERROR: Cannot set wallpaper - Count: {_desktopWallpapers.Count}, Index: {_desktopCurrentIndex}");
+                    }
+                }
+                else
+                {
+                    LogInfo("ERROR: No wallpapers in desktop collection");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"ERROR in NextDesktopWallpaper: {ex.Message}");
+                LogInfo($"Stack trace: {ex.StackTrace}");
             }
         }
 
         public async Task NextLockScreenWallpaper()
         {
-            if (_lockScreenWallpapers.Count > 0)
+            try
             {
-                _lockScreenCurrentIndex = (_lockScreenCurrentIndex + 1) % _lockScreenWallpapers.Count;
-                await SetLockScreenWallpaper(_lockScreenWallpapers[_lockScreenCurrentIndex]);
+                LogInfo($"NextLockScreenWallpaper called - Current index: {_lockScreenCurrentIndex}, Batch: {_lockScreenCurrentBatch}, Count: {_lockScreenWallpapers.Count}");
+                
+                if (_lockScreenWallpapers.Count > 0)
+                {
+                    _lockScreenCurrentIndex++;
+                    LogInfo($"Incremented lock screen index to: {_lockScreenCurrentIndex}");
+                    
+                    // Check if we've reached the end of current batch
+                    if (_lockScreenCurrentIndex >= _lockScreenWallpapers.Count)
+                    {
+                        // Load next batch
+                        _lockScreenCurrentBatch++;
+                        _lockScreenCurrentIndex = 0;
+                        LogInfo($"End of batch reached. Loading next lock screen batch: {_lockScreenCurrentBatch}, Platform: {_lockScreenPlatform}, Category: {_lockScreenCategory}");
+                        await LoadWallpapersForLockScreen(_lockScreenPlatform, _lockScreenCategory);
+                        SaveProgress(); // Save progress after loading new batch
+                        LogInfo($"After loading: Lock screen wallpapers count: {_lockScreenWallpapers.Count}");
+                    }
+                    
+                    if (_lockScreenWallpapers.Count > 0 && _lockScreenCurrentIndex < _lockScreenWallpapers.Count)
+                    {
+                        LogInfo($"Setting lock screen wallpaper at index {_lockScreenCurrentIndex}");
+                        await SetLockScreenWallpaper(_lockScreenWallpapers[_lockScreenCurrentIndex]);
+                        SaveProgress(); // Save progress after each wallpaper change
+                    }
+                    else
+                    {
+                        LogInfo($"ERROR: Cannot set lock screen wallpaper - Count: {_lockScreenWallpapers.Count}, Index: {_lockScreenCurrentIndex}");
+                    }
+                }
+                else
+                {
+                    LogInfo("ERROR: No wallpapers in lock screen collection");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"ERROR in NextLockScreenWallpaper: {ex.Message}");
+                LogInfo($"Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -185,10 +303,9 @@ namespace Aura.Services
             try
             {
                 _desktopWallpapers.Clear();
-                _desktopCurrentIndex = 0;
                 _desktopPlatform = platform; // Store the platform
 
-                LogInfo($"Loading wallpapers - Platform: {platform}, Category: {category}");
+                LogInfo($"Loading wallpapers - Platform: {platform}, Category: {category}, Batch: {_desktopCurrentBatch}");
 
                 if (platform == "AlphaCoders")
                 {
@@ -201,17 +318,19 @@ namespace Aura.Services
                         _ => "4k"
                     };
 
-                    LogInfo($"Fetching from AlphaCoders with category key: {categoryKey}");
-                    var wallpapers = await _alphaCodersService.GetWallpapersByCategoryAsync(categoryKey, 1, 50);
+                    LogInfo($"Fetching from AlphaCoders Scraper with category key: {categoryKey}, batch: {_desktopCurrentBatch}");
+                    // Use scraper directly to avoid cache issues
+                    var wallpapers = await _alphaCodersScraperService.ScrapeWallpapersByCategoryAsync(categoryKey, _desktopCurrentBatch, _desktopCurrentBatch);
                     _desktopWallpapers.AddRange(wallpapers);
-                    LogInfo($"Loaded {wallpapers.Count} wallpapers from AlphaCoders");
+                    LogInfo($"Loaded {wallpapers.Count} wallpapers from AlphaCoders Scraper");
                 }
                 else // Backiee
                 {
-                    LogInfo($"Fetching from Backiee API");
+                    LogInfo($"Fetching from Backiee API, batch: {_desktopCurrentBatch}");
                     
-                    // Fetch from Backiee API just like LatestWallpapersPage does
-                    string apiUrl = "https://backiee.com/api/wallpaper/list.php?action=paging_list&list_type=latest&page=0&page_size=50&category=all&is_ai=all&sort_by=popularity&4k=false&5k=false&8k=false&status=active&args=";
+                    // Use batch number as page number (0-indexed so subtract 1)
+                    int pageNumber = _desktopCurrentBatch - 1;
+                    string apiUrl = $"https://backiee.com/api/wallpaper/list.php?action=paging_list&list_type=latest&page={pageNumber}&page_size=50&category=all&is_ai=all&sort_by=popularity&4k=false&5k=false&8k=false&status=active&args=";
                     
                     HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
                     
@@ -254,8 +373,9 @@ namespace Aura.Services
         private async Task LoadWallpapersForLockScreen(string platform, string category)
         {
             _lockScreenWallpapers.Clear();
-            _lockScreenCurrentIndex = 0;
             _lockScreenPlatform = platform; // Store the platform
+
+            LogInfo($"Loading lock screen wallpapers - Platform: {platform}, Category: {category}, Batch: {_lockScreenCurrentBatch}");
 
             if (platform == "AlphaCoders")
             {
@@ -268,13 +388,19 @@ namespace Aura.Services
                     _ => "4k"
                 };
 
-                var wallpapers = await _alphaCodersService.GetWallpapersByCategoryAsync(categoryKey, 1, 50);
+                LogInfo($"Fetching from AlphaCoders Scraper with category key: {categoryKey}, batch: {_lockScreenCurrentBatch}");
+                // Use scraper directly to avoid cache issues
+                var wallpapers = await _alphaCodersScraperService.ScrapeWallpapersByCategoryAsync(categoryKey, _lockScreenCurrentBatch, _lockScreenCurrentBatch);
                 _lockScreenWallpapers.AddRange(wallpapers);
+                LogInfo($"Loaded {wallpapers.Count} wallpapers from AlphaCoders Scraper for lock screen");
             }
             else // Backiee
             {
-                // Fetch from Backiee API just like LatestWallpapersPage does
-                string apiUrl = "https://backiee.com/api/wallpaper/list.php?action=paging_list&list_type=latest&page=0&page_size=50&category=all&is_ai=all&sort_by=popularity&4k=false&5k=false&8k=false&status=active&args=";
+                LogInfo($"Fetching from Backiee API for lock screen, batch: {_lockScreenCurrentBatch}");
+                
+                // Use batch number as page number (0-indexed so subtract 1)
+                int pageNumber = _lockScreenCurrentBatch - 1;
+                string apiUrl = $"https://backiee.com/api/wallpaper/list.php?action=paging_list&list_type=latest&page={pageNumber}&page_size=50&category=all&is_ai=all&sort_by=popularity&4k=false&5k=false&8k=false&status=active&args=";
                 
                 HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
                 
@@ -297,6 +423,11 @@ namespace Aura.Services
                             });
                         }
                     }
+                    LogInfo($"Loaded {_lockScreenWallpapers.Count} wallpapers from Backiee API for lock screen");
+                }
+                else
+                {
+                    LogInfo($"ERROR: Backiee API returned status {response.StatusCode} for lock screen");
                 }
             }
         }
@@ -878,6 +1009,111 @@ namespace Aura.Services
                 return _lockScreenWallpapers[_lockScreenCurrentIndex];
             }
             return null;
+        }
+
+        private void SaveProgress()
+        {
+            try
+            {
+                var settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aura", "slideshow_settings.json");
+                
+                if (!File.Exists(settingsPath))
+                {
+                    LogInfo("Settings file doesn't exist, skipping progress save");
+                    return;
+                }
+
+                // Read existing settings
+                var json = File.ReadAllText(settingsPath);
+                var settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+                
+                if (settings == null)
+                {
+                    settings = new Dictionary<string, JsonElement>();
+                }
+
+                // Convert to object dictionary for easier manipulation
+                var settingsObj = new Dictionary<string, object>();
+                foreach (var kvp in settings)
+                {
+                    if (kvp.Value.ValueKind == JsonValueKind.True || kvp.Value.ValueKind == JsonValueKind.False)
+                    {
+                        settingsObj[kvp.Key] = kvp.Value.GetBoolean();
+                    }
+                    else if (kvp.Value.ValueKind == JsonValueKind.Number)
+                    {
+                        settingsObj[kvp.Key] = kvp.Value.GetInt32();
+                    }
+                    else
+                    {
+                        settingsObj[kvp.Key] = kvp.Value.GetString() ?? "";
+                    }
+                }
+
+                // Update progress fields
+                settingsObj["DesktopCurrentBatch"] = _desktopCurrentBatch;
+                settingsObj["DesktopCurrentIndex"] = _desktopCurrentIndex;
+                settingsObj["LockScreenCurrentBatch"] = _lockScreenCurrentBatch;
+                settingsObj["LockScreenCurrentIndex"] = _lockScreenCurrentIndex;
+
+                // Save back to file
+                var updatedJson = JsonSerializer.Serialize(settingsObj, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(settingsPath, updatedJson);
+                
+                LogInfo($"Progress saved - Desktop: Batch {_desktopCurrentBatch}, Index {_desktopCurrentIndex}; Lock: Batch {_lockScreenCurrentBatch}, Index {_lockScreenCurrentIndex}");
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error saving progress: {ex.Message}");
+            }
+        }
+
+        private void LoadProgress()
+        {
+            try
+            {
+                var settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aura", "slideshow_settings.json");
+                
+                if (!File.Exists(settingsPath))
+                {
+                    LogInfo("No saved progress found");
+                    return;
+                }
+
+                var json = File.ReadAllText(settingsPath);
+                var settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+                
+                if (settings == null)
+                {
+                    return;
+                }
+
+                // Load desktop progress
+                if (settings.ContainsKey("DesktopCurrentBatch"))
+                {
+                    _desktopCurrentBatch = settings["DesktopCurrentBatch"].GetInt32();
+                }
+                if (settings.ContainsKey("DesktopCurrentIndex"))
+                {
+                    _desktopCurrentIndex = settings["DesktopCurrentIndex"].GetInt32();
+                }
+                
+                // Load lock screen progress
+                if (settings.ContainsKey("LockScreenCurrentBatch"))
+                {
+                    _lockScreenCurrentBatch = settings["LockScreenCurrentBatch"].GetInt32();
+                }
+                if (settings.ContainsKey("LockScreenCurrentIndex"))
+                {
+                    _lockScreenCurrentIndex = settings["LockScreenCurrentIndex"].GetInt32();
+                }
+                
+                LogInfo($"Progress loaded - Desktop: Batch {_desktopCurrentBatch}, Index {_desktopCurrentIndex}; Lock: Batch {_lockScreenCurrentBatch}, Index {_lockScreenCurrentIndex}");
+            }
+            catch (Exception ex)
+            {
+                LogInfo($"Error loading progress: {ex.Message}");
+            }
         }
     }
 }
