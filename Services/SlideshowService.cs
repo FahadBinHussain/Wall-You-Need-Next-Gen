@@ -458,32 +458,87 @@ namespace Wall_You_Need_Next_Gen.Services
 
                 LogInfo($"Lock screen image saved to: {wallpaperFile.Path}");
 
-                // Try to set the lock screen using WinRT API
+                // Use registry method (same as WallpaperDetailPage)
                 bool success = false;
-                var userProfilePersonalizationSettings = Windows.System.UserProfile.UserProfilePersonalizationSettings.Current;
+                const string PERSONALIZE_REG_KEY = @"Software\Microsoft\Windows\CurrentVersion\PersonalizationCSP";
+                const string LOCKSCREEN_PATH_REG_VALUE = "LockScreenImagePath";
+                const string LOCKSCREEN_STATUS_REG_VALUE = "LockScreenImageStatus";
+                const string LOCKSCREEN_URL_REG_VALUE = "LockScreenImageUrl";
 
+                // Method: Using Registry for lock screen with LocalMachine
                 try
                 {
-                    success = await userProfilePersonalizationSettings.TrySetLockScreenImageAsync(wallpaperFile);
-                    LogInfo($"WinRT API result for lock screen: {success}");
+                    LogInfo("Trying LocalMachine registry for lock screen...");
+                    using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(PERSONALIZE_REG_KEY, true))
+                    {
+                        if (key == null)
+                        {
+                            // Try to create the key if it doesn't exist
+                            using (var newKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(PERSONALIZE_REG_KEY, true))
+                            {
+                                if (newKey != null)
+                                {
+                                    newKey.SetValue(LOCKSCREEN_PATH_REG_VALUE, wallpaperFile.Path);
+                                    newKey.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
+                                    newKey.SetValue(LOCKSCREEN_URL_REG_VALUE, wallpaperFile.Path);
+                                    success = true;
+                                    LogInfo("Registry method for lock screen succeeded (created key in LocalMachine)");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Key exists, set the values
+                            key.SetValue(LOCKSCREEN_PATH_REG_VALUE, wallpaperFile.Path);
+                            key.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
+                            key.SetValue(LOCKSCREEN_URL_REG_VALUE, wallpaperFile.Path);
+                            success = true;
+                            LogInfo("Registry method for lock screen succeeded (updated key in LocalMachine)");
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    LogInfo($"WinRT API failed for lock screen: {ex.Message}");
+                    LogInfo($"Registry method for lock screen failed: {ex.Message}");
                 }
 
-                // If WinRT API fails, try SystemParametersInfo as fallback
+                // If LocalMachine failed, try with CurrentUser as fallback
                 if (!success)
                 {
                     try
                     {
-                        LogInfo("WinRT API failed, trying SystemParametersInfo fallback for lock screen...");
-                        SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaperFile.Path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
-                        success = true;
+                        LogInfo("Trying CurrentUser registry for lock screen...");
+                        using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(PERSONALIZE_REG_KEY, true))
+                        {
+                            if (key == null)
+                            {
+                                // Try to create the key if it doesn't exist
+                                using (var newKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(PERSONALIZE_REG_KEY, true))
+                                {
+                                    if (newKey != null)
+                                    {
+                                        newKey.SetValue(LOCKSCREEN_PATH_REG_VALUE, wallpaperFile.Path);
+                                        newKey.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
+                                        newKey.SetValue(LOCKSCREEN_URL_REG_VALUE, wallpaperFile.Path);
+                                        success = true;
+                                        LogInfo("Registry method for lock screen succeeded (created key in CurrentUser)");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Key exists, set the values
+                                key.SetValue(LOCKSCREEN_PATH_REG_VALUE, wallpaperFile.Path);
+                                key.SetValue(LOCKSCREEN_STATUS_REG_VALUE, 1);
+                                key.SetValue(LOCKSCREEN_URL_REG_VALUE, wallpaperFile.Path);
+                                success = true;
+                                LogInfo("Registry method for lock screen succeeded (updated key in CurrentUser)");
+                            }
+                        }
                     }
-                    catch (Exception ex)
+                    catch (Exception innerEx)
                     {
-                        LogInfo($"SystemParametersInfo fallback also failed: {ex.Message}");
+                        LogInfo($"CurrentUser registry method for lock screen also failed: {innerEx.Message}");
                     }
                 }
 
