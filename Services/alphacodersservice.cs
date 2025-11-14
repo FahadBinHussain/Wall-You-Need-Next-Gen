@@ -17,6 +17,7 @@ namespace Wall_You_Need_Next_Gen.Services
         private readonly AlphaCodersScraperService _scraperService;
         private static List<WallpaperItem> _cachedWallpapers = new List<WallpaperItem>();
         private static int _lastScrapedPage = 0;
+        private static string _currentCategory = "4k"; // Track current category for cache management
 
         // Static debug logger that can be set by the UI
         public static Action<string> DebugLogger { get; set; }
@@ -88,6 +89,73 @@ namespace Wall_You_Need_Next_Gen.Services
             catch (Exception ex)
             {
                 LogDebug($"Error fetching wallpapers: {ex.Message}");
+                return new List<WallpaperItem>();
+            }
+        }
+
+        public async Task<List<WallpaperItem>> GetWallpapersByCategoryAsync(string category, int page = 1, int count = 15)
+        {
+            try
+            {
+                LogDebug($"Requesting category '{category}' page {page} with {count} wallpapers");
+
+                // Clear cache if category changed
+                if (category != _currentCategory)
+                {
+                    LogDebug($"Category changed from '{_currentCategory}' to '{category}', clearing cache");
+                    _cachedWallpapers.Clear();
+                    _lastScrapedPage = 0;
+                    _currentCategory = category;
+                }
+
+                // Determine the search term based on category
+                string searchTerm = category switch
+                {
+                    "4k" => "4k",
+                    "harvest" => "harvest",
+                    "rain" => "rain",
+                    _ => "4k"
+                };
+
+                // Load the requested page with the specific search term
+                if (page > _lastScrapedPage)
+                {
+                    for (int p = _lastScrapedPage + 1; p <= page; p++)
+                    {
+                        LogDebug($"Loading page {p} from scraper with search term '{searchTerm}'...");
+                        var newWallpapers = await _scraperService.ScrapeWallpapersByCategoryAsync(searchTerm, p, p);
+                        if (newWallpapers.Count > 0)
+                        {
+                            _cachedWallpapers.AddRange(newWallpapers);
+                            _lastScrapedPage = p;
+                            LogDebug($"Loaded {newWallpapers.Count} wallpapers from page {p}");
+                        }
+                        else
+                        {
+                            LogDebug($"No wallpapers found on page {p}");
+                            break;
+                        }
+                    }
+                }
+
+                // Calculate pagination based on cached wallpapers
+                int startIndex = (page - 1) * count;
+                int endIndex = Math.Min(startIndex + count, _cachedWallpapers.Count);
+
+                if (startIndex >= _cachedWallpapers.Count)
+                {
+                    LogDebug($"No wallpapers available for page {page}");
+                    return new List<WallpaperItem>();
+                }
+
+                var pageWallpapers = _cachedWallpapers.GetRange(startIndex, Math.Min(count, _cachedWallpapers.Count - startIndex));
+                LogDebug($"Returning {pageWallpapers.Count} wallpapers for page {page}");
+
+                return pageWallpapers;
+            }
+            catch (Exception ex)
+            {
+                LogDebug($"Error fetching wallpapers by category: {ex.Message}");
                 return new List<WallpaperItem>();
             }
         }

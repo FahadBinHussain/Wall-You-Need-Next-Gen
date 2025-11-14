@@ -87,6 +87,105 @@ namespace Wall_You_Need_Next_Gen.Services
             }
         }
 
+        public async Task<List<WallpaperItem>> ScrapeWallpapersByCategoryAsync(string category, int startPage = 1, int endPage = 3)
+        {
+            var wallpapers = new List<WallpaperItem>();
+
+            try
+            {
+                var currentPageUrls = new List<string>();
+                string categoryUrl = GetCategoryUrl(category);
+
+                LogDebug($"Starting to scrape category '{category}' pages {startPage} to {endPage}...");
+                for (int page = startPage; page <= endPage; page++)
+                {
+                    LogDebug($"Scraping page {page}...");
+                    var smallUrls = await GetSmallImageUrlsByCategoryAsync(categoryUrl, page);
+                    LogDebug($"Found {smallUrls.Count} small images on page {page}");
+
+                    // Log first few URLs for debugging
+                    for (int i = 0; i < Math.Min(3, smallUrls.Count); i++)
+                    {
+                        LogDebug($"  Small URL {i + 1}: {smallUrls[i]}");
+                    }
+
+                    currentPageUrls.AddRange(smallUrls);
+                }
+                LogDebug($"Total small URLs collected: {currentPageUrls.Count}");
+
+                // Create WallpaperItem objects directly from current scrape
+                wallpapers = CreateWallpaperItemsFromUrls(currentPageUrls);
+
+                return wallpapers;
+            }
+            catch (Exception ex)
+            {
+                LogDebug($"Error in ScrapeWallpapersByCategoryAsync: {ex.Message}");
+                return wallpapers;
+            }
+        }
+
+        private string GetCategoryUrl(string category)
+        {
+            return category.ToLower() switch
+            {
+                "4k" => "https://alphacoders.com/resolution/4k-wallpapers?page={0}",
+                "harvest" => "https://alphacoders.com/search?search=harvest&page={0}",
+                "rain" => "https://alphacoders.com/search?search=rain&page={0}",
+                _ => "https://alphacoders.com/resolution/4k-wallpapers?page={0}"
+            };
+        }
+
+        private async Task<List<string>> GetSmallImageUrlsByCategoryAsync(string categoryUrlTemplate, int pageNumber)
+        {
+            var imageUrls = new List<string>();
+
+            try
+            {
+                var url = string.Format(categoryUrlTemplate, pageNumber);
+                LogDebug($"Fetching URL: {url}");
+                var response = await _httpClient.GetAsync(url);
+                var htmlContent = await response.Content.ReadAsStringAsync();
+                LogDebug($"Got HTML response, length: {htmlContent.Length} characters");
+
+                var doc = new HtmlDocument();
+                doc.LoadHtml(htmlContent);
+
+                var imgNodes = doc.DocumentNode.SelectNodes("//img[@src]");
+                LogDebug($"Found {imgNodes?.Count ?? 0} img nodes");
+
+                if (imgNodes != null)
+                {
+                    int thumbbigCount = 0;
+                    foreach (var imgNode in imgNodes)
+                    {
+                        var src = imgNode.GetAttributeValue("src", "");
+                        if (!string.IsNullOrEmpty(src))
+                        {
+                            if (src.Contains("thumbbig"))
+                            {
+                                thumbbigCount++;
+                                LogDebug($"Found thumbbig image: {src}");
+                            }
+
+                            if (src.Contains("thumbbig") && src.StartsWith("https://images"))
+                            {
+                                imageUrls.Add(src);
+                            }
+                        }
+                    }
+                    LogDebug($"Total thumbbig images found: {thumbbigCount}");
+                    LogDebug($"Valid thumbbig images (starting with https://images): {imageUrls.Count}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebug($"Error getting small image URLs from page {pageNumber}: {ex.Message}");
+            }
+
+            return imageUrls;
+        }
+
         private async Task<List<string>> GetSmallImageUrlsAsync(int pageNumber)
         {
             var imageUrls = new List<string>();

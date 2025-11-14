@@ -23,6 +23,7 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
         private StringBuilder _debugLog = new StringBuilder();
         private bool _debugVisible = false;
         private bool _isInitialized = false;
+        private string _currentCategory = "4k"; // Track current category
 
         public AlphaCodersGridPage()
         {
@@ -55,6 +56,52 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             }
         }
 
+        private void CategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button)
+            {
+                string category = button.Tag?.ToString() ?? "4k";
+                
+                // Update button styles
+                UpdateCategoryButtonStyles(category);
+                
+                // Update title
+                PageTitleTextBlock.Text = button.Content?.ToString() ?? "Alpha Coders Wallpapers";
+                
+                // Reset and reload wallpapers for new category
+                _currentCategory = category;
+                _wallpapers.Clear();
+                _currentPage = 1;
+                _hasMoreWallpapers = true;
+                
+                AppendDebugLog($"Switched to category: {category}");
+                LoadWallpapers();
+            }
+        }
+
+        private void UpdateCategoryButtonStyles(string selectedCategory)
+        {
+            // Reset all buttons to default style
+            FourKButton.Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"];
+            FourKButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+            HarvestButton.Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"];
+            HarvestButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+            RainButton.Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"];
+            RainButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+            
+            // Highlight selected button
+            Button selectedButton = selectedCategory switch
+            {
+                "4k" => FourKButton,
+                "harvest" => HarvestButton,
+                "rain" => RainButton,
+                _ => FourKButton
+            };
+            
+            selectedButton.Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+            selectedButton.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White);
+        }
+
         private async void LoadWallpapers()
         {
             if (_isLoading || !_hasMoreWallpapers)
@@ -64,9 +111,9 @@ namespace Wall_You_Need_Next_Gen.Views.AlphaCoders
             {
                 _isLoading = true;
                 LoadingProgressBar.Visibility = Visibility.Visible;
-                AppendDebugLog($"Loading page {_currentPage}");
+                AppendDebugLog($"Loading page {_currentPage} for category {_currentCategory}");
 
-                var newWallpapers = await _alphaCodersService.GetLatestWallpapersAsync(_currentPage);
+                var newWallpapers = await _alphaCodersService.GetWallpapersByCategoryAsync(_currentCategory, _currentPage);
                 AppendDebugLog($"Received {newWallpapers.Count} wallpapers");
 
                 if (newWallpapers.Count == 0)

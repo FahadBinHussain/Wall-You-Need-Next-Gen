@@ -18,87 +18,145 @@
     </Page.Resources>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <!-- Top bar with title and debug button -->
-        <Grid Grid.Row="0" Margin="24,24,24,12">
+        <!-- Left Sidebar -->
+        <Border Grid.Column="0" 
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,0,1,0">
+            <StackPanel Margin="16">
+                <TextBlock Text="Categories"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,16"/>
+                
+                <!-- 4K Wallpapers Section -->
+                <Button x:Name="FourKButton"
+                        Content="4K Wallpapers"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Background="{ThemeResource AccentFillColorDefaultBrush}"
+                        Foreground="White"
+                        Padding="16,12"
+                        Margin="0,0,0,8"
+                        CornerRadius="4"
+                        Click="CategoryButton_Click"
+                        Tag="4k"/>
+                
+                <!-- Harvest Wallpapers Section -->
+                <Button x:Name="HarvestButton"
+                        Content="Harvest Wallpapers"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        Padding="16,12"
+                        Margin="0,0,0,8"
+                        CornerRadius="4"
+                        Click="CategoryButton_Click"
+                        Tag="harvest"/>
+                
+                <!-- Rain Wallpapers Section -->
+                <Button x:Name="RainButton"
+                        Content="Rain Wallpapers"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        Padding="16,12"
+                        Margin="0,0,0,8"
+                        CornerRadius="4"
+                        Click="CategoryButton_Click"
+                        Tag="rain"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.Column="0"
-                       Text="Alpha Coders Wallpapers"
-                       Style="{StaticResource TitleTextBlockStyle}"
-                       VerticalAlignment="Center"/>
+            <!-- Top bar with title and debug button -->
+            <Grid Grid.Row="0" Margin="24,24,24,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                <Button x:Name="ToggleDebugButton"
-                        Content="Show Debug"
-                        Background="#17a2b8"
-                        Foreground="White"
-                        Padding="15,8"
+                <TextBlock x:Name="PageTitleTextBlock"
+                           Grid.Row="0" Grid.Column="0"
+                           Text="4K Wallpapers"
+                           Style="{StaticResource TitleTextBlockStyle}"
+                           VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button x:Name="ToggleDebugButton"
+                            Content="Show Debug"
+                            Background="#17a2b8"
+                            Foreground="White"
+                            Padding="15,8"
+                            CornerRadius="4"
+                            Click="ToggleDebugButton_Click"
+                            VerticalAlignment="Center"/>
+
+                    <Button x:Name="CopyDebugButton"
+                            Content="Copy Debug"
+                            Background="#28a745"
+                            Foreground="White"
+                            Padding="15,8"
+                            CornerRadius="4"
+                            Click="CopyDebugButton_Click"
+                            VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Debug Panel -->
+                <Border x:Name="DebugPanel"
+                        Grid.Row="1"
+                        Grid.ColumnSpan="2"
+                        Background="#f8f9fa"
+                        BorderBrush="#dee2e6"
+                        BorderThickness="1"
                         CornerRadius="4"
-                        Click="ToggleDebugButton_Click"
-                        VerticalAlignment="Center"/>
+                        Margin="0,10,0,0"
+                        Visibility="Collapsed"
+                        MaxHeight="200">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <TextBlock x:Name="DebugTextBlock"
+                                  Padding="15"
+                                  FontFamily="Consolas"
+                                  FontSize="11"
+                                  Text="Debug logs will appear here..."
+                                  Foreground="#495057"
+                                  TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
 
-                <Button x:Name="CopyDebugButton"
-                        Content="Copy Debug"
-                        Background="#28a745"
-                        Foreground="White"
-                        Padding="15,8"
-                        CornerRadius="4"
-                        Click="CopyDebugButton_Click"
-                        VerticalAlignment="Center"/>
-            </StackPanel>
+            <!-- Wallpaper grid with adaptive layout -->
+            <ScrollViewer x:Name="MainScrollViewer"
+                          Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          ViewChanged="MainScrollViewer_ViewChanged"
+                          Padding="0"
+                          Margin="0">
 
-            <!-- Debug Panel -->
-            <Border x:Name="DebugPanel"
-                    Grid.Row="1"
-                    Grid.ColumnSpan="2"
-                    Background="#f8f9fa"
-                    BorderBrush="#dee2e6"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Margin="0,10,0,0"
-                    Visibility="Collapsed"
-                    MaxHeight="200">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <TextBlock x:Name="DebugTextBlock"
-                              Padding="15"
-                              FontFamily="Consolas"
-                              FontSize="11"
-                              Text="Debug logs will appear here..."
-                              Foreground="#495057"
-                              TextWrapping="Wrap"/>
-                </ScrollViewer>
-            </Border>
-        </Grid>
-
-        <!-- Wallpaper grid with adaptive layout -->
-        <ScrollViewer x:Name="MainScrollViewer"
-                      Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled"
-                      ViewChanged="MainScrollViewer_ViewChanged"
-                      Padding="0"
-                      Margin="0">
-
-            <GridView x:Name="WallpapersGridView"
-                     Margin="12,8,12,12"
-                     SelectionMode="None"
-                     IsItemClickEnabled="True"
-                     ItemClick="WallpapersGridView_ItemClick"
-                     HorizontalAlignment="Stretch"
-                     VerticalAlignment="Stretch"
-                     ContainerContentChanging="WallpapersGridView_ContainerContentChanging">
+                <GridView x:Name="WallpapersGridView"
+                         Margin="12,8,12,12"
+                         SelectionMode="None"
+                         IsItemClickEnabled="True"
+                         ItemClick="WallpapersGridView_ItemClick"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch"
+                         ContainerContentChanging="WallpapersGridView_ContainerContentChanging">
                 <GridView.ItemContainerStyle>
                     <Style TargetType="GridViewItem">
                         <Setter Property="Margin" Value="4"/>
@@ -201,5 +259,6 @@
                      VerticalAlignment="Bottom"
                      IsIndeterminate="True"
                      Visibility="Collapsed"/>
+        </Grid>
     </Grid>
 </Page>
