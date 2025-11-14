@@ -272,7 +272,7 @@ namespace Aura.Views.Backiee
             // Update desktop slideshow status
             if (_desktopSlideshowEnabled && !string.IsNullOrEmpty(_desktopPlatform) && !string.IsNullOrEmpty(_desktopCategory))
             {
-                DesktopStatusText.Text = $"{_desktopPlatform} - {_desktopCategory}";
+                DesktopStatusText.Text = $"{_desktopPlatform} - {_desktopCategory} (Refresh: {_desktopRefreshInterval})";
             }
             else
             {
@@ -282,7 +282,7 @@ namespace Aura.Views.Backiee
             // Update lock screen slideshow status
             if (_lockScreenSlideshowEnabled && !string.IsNullOrEmpty(_lockScreenPlatform) && !string.IsNullOrEmpty(_lockScreenCategory))
             {
-                LockScreenStatusText.Text = $"{_lockScreenPlatform} - {_lockScreenCategory}";
+                LockScreenStatusText.Text = $"{_lockScreenPlatform} - {_lockScreenCategory} (Refresh: {_lockScreenRefreshInterval})";
             }
             else
             {
