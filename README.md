@@ -41,6 +41,9 @@ A modern wallpaper management and personalization application built with WinUI 3
 3. Restore NuGet packages
 4. Build and run the application
 
+# Run Directly
+1. dotnet run
+
 ## 📁 Project Architecture
 
 Wall-You-Need follows a modern MVVM architecture pattern:
